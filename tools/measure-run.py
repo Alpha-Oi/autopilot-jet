@@ -18,11 +18,16 @@
 Это пропорции, а не деньги: они нужны, чтобы сравнивать прогоны между собой.
 """
 
+import argparse
 import json
+import ntpath
 import os
+import posixpath
+import re
 import sys
 import glob
-from datetime import datetime
+from pathlib import Path
+from datetime import datetime, timezone
 from collections import Counter
 
 W_OUT, W_WRITE, W_READ = 5.0, 1.25, 0.1
@@ -30,29 +35,42 @@ IDLE_GAP_SEC = 300          # пауза длиннее — это просто�
 CEILING_HINT = 120_000      # потолок из phases/5-subagents.md, для колонки «перебор»
 
 
-def logs_dir_for(project_path):
-    p = os.path.abspath(os.path.expanduser(project_path))
-    return os.path.join(os.path.expanduser("~/.claude/projects"), p.replace("/", "-"))
+def encode_project_path(path):
+    """Encode an absolute project path using Claude's log-directory rule."""
+    raw = os.path.expanduser(os.fspath(path))
+    if not (ntpath.isabs(raw) or posixpath.isabs(raw)):
+        raw = str(Path(raw).resolve())
+    return re.sub(r"[:/\\]", "-", raw)
+
+
+def logs_dir_for(project_path, root=None):
+    root = Path(root) if root is not None else Path.home() / ".claude" / "projects"
+    return root / encode_project_path(project_path)
 
 
 def parse_ts(s):
     if not s:
         return None
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+        stamp = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=timezone.utc)
+        return stamp.astimezone(timezone.utc)
     except ValueError:
         return None
 
 
 def load(path):
     rows = []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             try:
-                rows.append(json.loads(line))
+                row = json.loads(line)
+                if isinstance(row, dict):
+                    rows.append(row)
             except json.JSONDecodeError:
                 pass
     return rows
@@ -122,16 +140,40 @@ def analyse(path, label):
     }
 
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    d = logs_dir_for(sys.argv[1])
-    if not os.path.isdir(d):
-        sys.exit(f"нет логов: {d}")
+def _check_only():
+    checks = {
+        "/Users/alice/project": "-Users-alice-project",
+        r"C:\Users\Alice\project": "C--Users-Alice-project",
+    }
+    if any(encode_project_path(path) != expected
+           for path, expected in checks.items()):
+        return 1
+    print("measure-run check-only: OK")
+    return 0
 
-    sessions = glob.glob(os.path.join(d, "*.jsonl"))
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check-only", action="store_true")
+    parser.add_argument("project", nargs="?")
+    parser.add_argument("session_id", nargs="?")
+    args = parser.parse_args(argv)
+
+    if args.check_only:
+        return _check_only()
+    if not args.project:
+        parser.print_usage(sys.stderr)
+        return 2
+
+    d = logs_dir_for(args.project)
+    if not os.path.isdir(d):
+        print(f"нет логов: {d}", file=sys.stderr)
+        return 1
+
+    sessions = sorted(glob.glob(os.path.join(d, "*.jsonl")))
     if not sessions:
-        sys.exit(f"в {d} нет .jsonl")
+        print(f"в {d} нет .jsonl", file=sys.stderr)
+        return 1
 
     def weight(p):
         """Прогон Autopilot узнаётся по субагентам, а не по свежести:
@@ -139,10 +181,11 @@ def main():
         n = len(glob.glob(os.path.join(p[:-6], "subagents", "*.jsonl")))
         return (n, os.path.getsize(p))
 
-    if len(sys.argv) > 2:                       # явный выбор: id сессии
-        picked = [p for p in sessions if sys.argv[2] in os.path.basename(p)]
+    if args.session_id:                         # явный выбор: id сессии
+        picked = [p for p in sessions if args.session_id in os.path.basename(p)]
         if not picked:
-            sys.exit(f"сессия {sys.argv[2]} не найдена в {d}")
+            print(f"сессия {args.session_id} не найдена в {d}", file=sys.stderr)
+            return 1
         main_log = picked[0]
     else:
         main_log = max(sessions, key=weight)
@@ -155,7 +198,7 @@ def main():
 
     metas = {}
     for mf in glob.glob(os.path.join(sub_dir, "subagents", "*.meta.json")):
-        with open(mf) as f:
+        with open(mf, encoding="utf-8") as f:
             metas[os.path.basename(mf)[:-10]] = json.load(f)
 
     results = [analyse(main_log, "Оркестратор")]
@@ -165,7 +208,7 @@ def main():
     results.sort(key=lambda r: -r["norm"])
 
     total = sum(r["norm"] for r in results) or 1
-    print(f"\nПрогон: {sys.argv[1]}   контекстов: {len(results)}\n")
+    print(f"\nПрогон: {args.project}   контекстов: {len(results)}\n")
     print(f"{'контекст':<38}{'шагов':>7}{'ср.ctx':>9}{'макс':>9}{'>120K':>7}{'норм.ед':>11}{'доля':>7}")
     print("-" * 88)
     for r in results:
@@ -203,7 +246,8 @@ def main():
     idl = sum(r["idle"] for r in results)
     print(f"\nВремя по всем контекстам: активно {act/60:.0f} мин · простой {idl/60:.0f} мин"
           f" ({act/(act+idl)*100:.0f}% активного)" if act + idl else "")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
