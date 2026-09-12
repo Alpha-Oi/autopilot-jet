@@ -35,3 +35,22 @@
 - `analyse(path, label) -> dict` — анализирует JSONL-сессию, пропуская повреждённые строки.
 - `main(argv=None) -> int` — CLI `<project> [session-id] | --check-only`.
 - Workflow `Verify` запускается для `main`, `master`, `development` и pull request; Python gate не зависит от наличия Node-проекта.
+
+### Из таска 02 — кроссплатформенный `sync.py`
+
+- `cmdline(pid) -> str` — получает командную строку процесса через платформенный адаптер.
+- `iter_processes() -> list[tuple[int, str]]` — выдаёт снимок процессов без Unix-only зависимости.
+- `serve(state) -> str` — переиспользует только принадлежащий Autopilot сервер либо запускает платформенно-безопасный detached process.
+
+### Из таска 03 — state path и быстрый dashboard runtime
+
+- `stateURL() -> URL|null` — разрешает соседний `state.js` из исходного script source для `file:`/`http:`; только `data:` остаётся snapshot-only.
+- `applyState() -> void` и `pollState() -> void` — обновляют состояние; неизменившийся stamp не вызывает `render`.
+- `render(lang) -> void` — полный render только при изменившемся state/language.
+- `tick() -> void` — обновляет clock/progress через кэшированные DOM references без повторных selector queries.
+
+### Из таска 04 — состояние приёмки
+
+- `state.tests = {passed, failed}` — renderer-compatible агрегат локального test gate.
+- `state.checks.flake8.status` — отдельный `NOT_RUN`/итоговый статус lint gate без подмены числа тестов.
+- `state.resolved[] = {status, finding, evidence}` — закрытые findings отделены от активных `concerns`.

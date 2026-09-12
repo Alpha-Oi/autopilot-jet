@@ -4,7 +4,7 @@
 **Blocked by:** 01
 **Зона:** `skills/autopilot/tools/sync.py`, `tests/test_sync.py`
 **Волна:** 2
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 
@@ -21,8 +21,14 @@ Snapshot и локальный dashboard server работают на Windows б
 
 ## Критерии приёмки
 
-- [ ] Windows path не вызывает `FileNotFoundError: [WinError 2]` из-за `ps`.
-- [ ] `cmdline(pid)` и `iter_processes()` имеют переносимую и безопасно деградирующую реализацию.
-- [ ] Сервер привязан только к `127.0.0.1`, повторный запуск использует свой живой процесс/порт.
-- [ ] Тесты доказывают, что чужие процессы не завершаются и finished/SSH/CI не поднимают сервер.
-- [ ] Focused и полный локальный gate зелёные.
+- [x] Windows path не вызывает `FileNotFoundError: [WinError 2]` из-за `ps`.
+- [x] `cmdline(pid)` и `iter_processes()` имеют переносимую и безопасно деградирующую реализацию.
+- [x] Сервер привязан только к `127.0.0.1`, повторный запуск использует свой живой процесс/порт.
+- [x] Тесты доказывают, что чужие процессы не завершаются и finished/SSH/CI не поднимают сервер.
+- [x] Focused и полный доступный локальный gate зелёные.
+
+## Результат
+
+- Commit: `5a44610`
+- Проверки: `python -m unittest discover -s tests -v` → 20 passed; `python -m py_compile skills/autopilot/tools/sync.py` → exit 0; `python tools/measure-run.py --check-only` → exit 0.
+- Локальный `flake8`: NOT_RUN — пакет отсутствует; фактический запуск ожидается в GitHub Actions.

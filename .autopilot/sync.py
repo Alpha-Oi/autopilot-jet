@@ -36,6 +36,7 @@ PAGE = os.path.join(A, "dashboard.html")
 PIDF = os.path.join(A, "serve.pid")
 LOG = os.path.join(A, "serve.log")
 BEGIN, END = "/*STATE-BEGIN*/", "/*STATE-END*/"
+PROCESS_DELIMITER = "\x1f"
 
 
 def fail(msg):
@@ -87,21 +88,64 @@ def http_ok(port, path="/dashboard.html"):
 
 
 def cmdline(pid):
+    if os.name == "nt":
+        command = (
+            "(Get-CimInstance -ClassName Win32_Process -Filter "
+            "'ProcessId = %d').CommandLine" % int(pid)
+        )
+        argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
+    else:
+        argv = ["ps", "-p", str(pid), "-o", "command="]
     try:
-        return subprocess.run(["ps", "-p", str(pid), "-o", "command="],
-                              capture_output=True, text=True, timeout=5).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
+        return subprocess.run(argv, capture_output=True, text=True,
+                              timeout=5, check=False).stdout.strip()
+    except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         return ""
+
+
+def iter_processes():
+    """Возвращает пары ``(pid, command line)`` или пустой список при сбое."""
+    if os.name == "nt":
+        command = (
+            "Get-CimInstance -ClassName Win32_Process | ForEach-Object { "
+            "'{0}{1}{2}' -f $_.ProcessId, [char]31, $_.CommandLine }"
+        )
+        argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
+    else:
+        argv = ["ps", "-Ao", "pid=,command="]
+    try:
+        output = subprocess.run(argv, capture_output=True, text=True, timeout=10,
+                                check=False).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    processes = []
+    for line in output.splitlines():
+        stripped = line.strip()
+        pid_text, separator, command = stripped.partition(PROCESS_DELIMITER)
+        if not separator:
+            pid_text, separator, command = stripped.partition(" ")
+        if separator and pid_text.isdigit():
+            processes.append((int(pid_text), command.strip()))
+    return processes
 
 
 def is_ours(cmd):
     """Наш ли это процесс. Узкая проверка намеренно: широкая уже убивала чужое."""
-    return "-m http.server" in cmd and "--directory " + A in cmd
+    if not re.search(r"(?:^|\s)-m\s+http\.server(?:\s|$)", cmd):
+        return False
+    match = re.search(
+        r"(?:^|\s)--directory(?:=|\s+)(?:\"([^\"]*)\"|'([^']*)'|(\S+))",
+        cmd,
+    )
+    if not match:
+        return False
+    directory = next(value for value in match.groups() if value is not None)
+    return os.path.normcase(os.path.normpath(directory)) == os.path.normcase(os.path.normpath(A))
 
 
 def recorded():
     try:
-        port, pid = open(PIDF).read().split()
+        port, pid = open(PIDF, encoding="utf-8").read().split()
         return int(port), int(pid)
     except (OSError, ValueError):
         return None, None
@@ -128,34 +172,45 @@ def serve(state):
         return "удалённая сессия — без сервера"
 
     port, pid = recorded()
-    if port and http_ok(port) and (not pid or is_ours(cmdline(pid))):
+    if port and pid and http_ok(port) and is_ours(cmdline(pid)):
         return "сервер жив: http://localhost:%d/dashboard.html" % port
 
     # Осиротевшие серверы этого же каталога: их никто не убьёт, кроме нас, и
     # только их — по полному --directory, никогда по «все http.server, кроме...».
-    for line in subprocess.run(["ps", "-Ao", "pid=,command="], capture_output=True,
-                               text=True).stdout.splitlines():
-        num, _, cmd = line.strip().partition(" ")
-        if is_ours(cmd) and num.isdigit():
+    for process_pid, command in iter_processes():
+        if is_ours(command):
             try:
-                os.kill(int(num), 15)
+                os.kill(process_pid, 15)
             except OSError:
                 pass
 
     port = free_port(port)
     if not port:
         return "порт не нашёлся — дашборд открывается файлом: %s" % PAGE
+    detached = {"start_new_session": True}
+    if os.name == "nt":
+        detached = {
+            "creationflags": (
+                getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+                | getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+            )
+        }
+    log = None
     try:
-        log = open(LOG, "a")
+        log = open(LOG, "a", encoding="utf-8")
         srv = subprocess.Popen([sys.executable, "-m", "http.server", str(port),
                                 "--bind", "127.0.0.1", "--directory", A],
                                stdout=subprocess.DEVNULL, stderr=log,
-                               start_new_session=True)     # переживает конец сессии агента
+                               **detached)       # переживает конец сессии агента
     except OSError as e:
         return "сервер не запустился (%s) — дашборд открывается файлом: %s" % (e, PAGE)
+    finally:
+        if log is not None:
+            log.close()
     for _ in range(10):
         if http_ok(port):
-            open(PIDF, "w").write("%d %d\n" % (port, srv.pid))
+            with open(PIDF, "w", encoding="utf-8") as pid_file:
+                pid_file.write("%d %d\n" % (port, srv.pid))
             return "сервер поднят: http://localhost:%d/dashboard.html" % port
         try:
             srv.wait(timeout=0.5)
