@@ -4,7 +4,7 @@
 **Blocked by:** 01
 **Зона:** `skills/autopilot/phases/dashboard-template.html`, `tests/test_dashboard.py`
 **Волна:** 2
-**Status:** done-with-concerns
+**Status:** done
 
 ## Что должно заработать
 

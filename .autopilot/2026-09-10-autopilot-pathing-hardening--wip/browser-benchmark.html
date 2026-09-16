@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase-8 dashboard browser benchmark</title>
+<style>
+  body{margin:24px;font:15px/1.5 system-ui,sans-serif;background:#f7f7f5;color:#16150f}
+  h1{font-size:22px}
+  #status{font-weight:700}
+  #status[data-status="PASS"]{color:#1f7a4d}
+  #status[data-status="FAIL"]{color:#b3352b}
+  pre{padding:16px;background:white;border:1px solid #deded8;overflow:auto;white-space:pre-wrap}
+  iframe{display:block;width:100%;height:640px;border:1px solid #deded8;background:white}
+</style>
+</head>
+<body>
+<h1>Phase-8: tick() на реальном DOM dashboard</h1>
+<p>8 этапов, 100 тасков; прогрев и медиана 5 × 1000 вызовов каждой реализации.
+Состояние fixture существует только в iframe. Файлы dashboard и state.js не изменяются.</p>
+<p id="status" data-status="PENDING">PENDING</p>
+<pre id="result">{"status":"PENDING","reason":"Загрузка ../dashboard.html по HTTP same-origin"}</pre>
+<iframe id="dashboard" title="Изолированный benchmark snapshot dashboard"></iframe>
+
+<!-- Exact tick() body from local upstream/main at
+     99c7e73678195cac08080bdd442f0e49a7ccb640.
+     It is compiled as a named function expression in the iframe realm, so it
+     uses the actual iframe document, STATE, MARKS and runtime helpers without
+     replacing the actual current window.tick function. -->
+<script id="baseline-source" type="text/plain">
+function tick(){
+  const stopped = idleNow();
+  document.querySelectorAll('[data-live][data-from]').forEach(el => {
+    el.textContent = fmtClock(activeMs(el.dataset.from, null));
+    el.classList.toggle('paused', stopped);          // часы стоят — видно, что это не поломка
+  });
+  document.querySelectorAll('[data-idle-note]').forEach(el => {
+    el.hidden = !stopped;
+  });
+  document.querySelectorAll('[data-ago]').forEach(el => {
+    el.textContent = agoText(el.dataset.ago);
+    // Молчание — повод присмотреться, но только когда никто не работает.
+    // Пока хотя бы один таск идёт, записей внутри него нет по устройству
+    // процесса: оркестратор пишет на границах, а таск живёт десятки минут.
+    // Порог тогда — не пять минут, а заметно дольше самого долгого таска.
+    const S = window.STATE || {};
+    const busy = (S.tickets || []).some(t =>
+      t.status === 'in-progress' || t.status === 'review' || t.status === 'repair');
+    el.classList.toggle('stale', !S.finishedAt
+      && spanMs(el.dataset.ago, null) > (busy ? 2700000 : 300000));
+  });
+}
+</script>
+<script>
+'use strict';
+const iframe = document.getElementById('dashboard');
+const resultNode = document.getElementById('result');
+const statusNode = document.getElementById('status');
+const baselineSource = document.getElementById('baseline-source').textContent.trim();
+const ROUNDS = 5;
+const CALLS = 1000;
+const WARMUP = 100;
+
+function publish(result){
+  resultNode.textContent = JSON.stringify(result, null, 2);
+  statusNode.textContent = result.status;
+  statusNode.dataset.status = result.status;
+  document.title = result.status + ' — Phase-8 dashboard browser benchmark';
+}
+
+// Recompiled below in the iframe realm: no synthetic DOM or parent STATE.
+function createState(){
+  const now = Date.now();
+  const at = minutes => new Date(now - minutes * 60000).toISOString();
+  const stageIds = ['preflight','manifest','briefing','spec','plan','build','review','final'];
+  return {
+    slug: 'phase8-browser-benchmark-' + now,
+    dir: '2026-09-10-autopilot-pathing-hardening--wip',
+    title: 'Phase-8 browser benchmark — isolated fixture',
+    mode: 'semi', depth: 'normal', tier: 'T2',
+    startedAt: at(120), updatedAt: at(1), finishedAt: null,
+    requirements: {total: 100, done: 50, dropped: 0, deferred: 0, placeholder: 0},
+    stages: stageIds.map((id, i) => ({
+      id, status: i < 5 ? 'done' : i < 7 ? 'active' : 'pending',
+      startedAt: i < 5 ? at(120 - i * 4) : i === 5 ? at(70) : i === 6 ? at(25) : null,
+      finishedAt: i < 5 ? at(116 - i * 4) : null
+    })),
+    tickets: Array.from({length: 100}, (_, i) => ({
+      id: String(i + 1).padStart(2, '0'), title: 'Ticket ' + (i + 1),
+      status: i < 50 ? 'done' : i < 60 ? 'in-progress' : i < 70 ? 'review'
+        : i < 80 ? 'repair' : 'pending',
+      wave: Math.floor(i / 10) + 1,
+      requirements: ['R' + (i + 1)], blockedBy: [],
+      startedAt: i < 50 ? at(60 + (i % 10) / 2) : i < 80 ? at(30 + i % 10) : null,
+      finishedAt: i < 50 ? at(50 + (i % 10) / 2) : null,
+      tests: i < 50 ? {passed: 3, failed: 0} : null,
+      retries: 0, repairs: i >= 70 && i < 80 ? 1 : 0
+    })),
+    debt: {placeholders: [], assumptions: [], emptyEnv: []},
+    tests: {passed: 150, failed: 0}
+  };
+}
+
+function run(){
+  const started = performance.now();
+  let doc, originalQuery, originalDescriptor, phase = null, fixture, previousBeat;
+  let beatKey = null, storageReadable = false;
+  const queries = {render: 0, warmupBaseline: 0, warmupTick: 0, baseline: 0, tick: 0};
+  try {
+    if (location.protocol !== 'http:') {
+      throw new Error('Откройте harness через HTTP, например http://127.0.0.1:8768/.autopilot/2026-09-10-autopilot-pathing-hardening--wip/browser-benchmark.html');
+    }
+    const win = iframe.contentWindow;
+    if (win.location.origin !== location.origin) throw new Error('iframe must be HTTP same-origin');
+    doc = win.document;
+    if (typeof win.render !== 'function' || typeof win.tick !== 'function') {
+      throw new Error('Actual dashboard render() / tick() is unavailable');
+    }
+
+    // The existing poll timer is cleared by actual pollState(). Nothing is
+    // written to state.js, localStorage auto preferences, or dashboard.html.
+    win.Function('autoOn = false; pollState();')();
+    const actualTick = win.tick;
+    const baselineTick = win.Function('return (' + baselineSource + ');')();
+    fixture = win.Function('return (' + createState.toString() + ')();')();
+    beatKey = 'autopilot-beats:' + fixture.slug + ':' + fixture.startedAt;
+    try {
+      previousBeat = win.localStorage.getItem(beatKey);
+      storageReadable = true;
+    } catch (e) {}
+    win.STATE = fixture;
+
+    originalQuery = doc.querySelectorAll;
+    originalDescriptor = Object.getOwnPropertyDescriptor(doc, 'querySelectorAll');
+    Object.defineProperty(doc, 'querySelectorAll', {
+      configurable: true, writable: true,
+      value: function(){
+        if (phase !== null) queries[phase] += 1;
+        return Reflect.apply(originalQuery, this, arguments);
+      }
+    });
+    phase = 'render';
+    win.render('ru'); // actual renderer creates all DOM and refreshes its cache
+    win.Function('lastStamp = stampOf(window.STATE);')();
+    phase = null;
+    const fixtureDom = {
+      stages: doc.querySelectorAll('.stages .st').length,
+      tickets: doc.querySelectorAll('tbody tr').length,
+      activeTickets: fixture.tickets.filter(t =>
+        ['in-progress','review','repair'].includes(t.status)).length,
+      liveClocks: doc.querySelectorAll('[data-live][data-from]').length,
+      idleNotes: doc.querySelectorAll('[data-idle-note]').length,
+      agoClocks: doc.querySelectorAll('[data-ago]').length,
+      elements: doc.querySelectorAll('*').length
+    };
+    if (fixtureDom.stages !== 8 || fixtureDom.tickets !== 100
+      || fixtureDom.liveClocks < 90 || fixtureDom.idleNotes < 1 || fixtureDom.agoClocks < 1) {
+      throw new Error('Representative actual rendered DOM was not created: ' + JSON.stringify(fixtureDom));
+    }
+
+    // One synchronous task: the 1s dashboard interval cannot run between
+    // samples. Polling is additionally disabled, including visibility events.
+    for (let i = 0; i < WARMUP; i++) {
+      phase = 'warmupBaseline'; baselineTick();
+      phase = 'warmupTick'; actualTick();
+    }
+    const baselineSamplesMs = [], tickSamplesMs = [];
+    const measure = (fn, label) => {
+      phase = label;
+      const start = performance.now();
+      for (let i = 0; i < CALLS; i++) fn();
+      const elapsed = performance.now() - start;
+      phase = null;
+      return elapsed;
+    };
+    // Alternate order to reduce systematic first/second and warm-cache bias.
+    for (let round = 0; round < ROUNDS; round++) {
+      if (round % 2 === 0) {
+        baselineSamplesMs.push(measure(baselineTick, 'baseline'));
+        tickSamplesMs.push(measure(actualTick, 'tick'));
+      } else {
+        tickSamplesMs.push(measure(actualTick, 'tick'));
+        baselineSamplesMs.push(measure(baselineTick, 'baseline'));
+      }
+    }
+    const median = values => values.slice().sort((a, b) => a - b)[2];
+    const baselineMs = median(baselineSamplesMs), tickMs = median(tickSamplesMs);
+    const elapsedMs = performance.now() - started;
+    const completedBeforePoll = elapsedMs < 10000;
+    const snapshotUnchanged = win.STATE === fixture && win.tick === actualTick;
+    const pass = tickMs <= baselineMs && queries.tick === 0 && queries.baseline > 0
+      && queries.warmupTick === 0 && queries.baseline === ROUNDS * CALLS * 3
+      && completedBeforePoll && snapshotUnchanged;
+    publish({
+      status: pass ? 'PASS' : 'FAIL',
+      dashboardURL: win.location.href,
+      baselineRef: 'upstream/main', baselineCommit: '99c7e73678195cac08080bdd442f0e49a7ccb640',
+      baselineFidelity: 'Exact upstream tick() body in actual iframe realm; actual DOM, STATE, MARKS and runtime helpers. idleNow() retains the no-argument STATE fallback.',
+      fixture: fixtureDom,
+      warmupCallsPerImplementation: WARMUP, rounds: ROUNDS, callsPerRound: CALLS,
+      baselineSamplesMs, tickSamplesMs, baselineMs, tickMs,
+      baselineQueries: queries.baseline, tickQueries: queries.tick,
+      baselineQueriesPerCall: queries.baseline / (ROUNDS * CALLS),
+      warmupQueries: {baseline: queries.warmupBaseline, tick: queries.warmupTick},
+      renderQueries: queries.render, elapsedMs, completedBeforePoll,
+      polling: 'Disabled only in iframe runtime; synchronous measurement prevents interval interference',
+      snapshotUnchanged, finalState: 'Isolated fixture remains in iframe; canonical files untouched'
+    });
+  } catch (error) {
+    publish({status: 'FAIL', error: String(error && error.message || error),
+      elapsedMs: performance.now() - started, queries});
+  } finally {
+    phase = null;
+    if (doc && originalQuery) {
+      if (originalDescriptor) Object.defineProperty(doc, 'querySelectorAll', originalDescriptor);
+      else delete doc.querySelectorAll;
+    }
+    // Actual render remembers a heartbeat. Undo only this unique fixture key;
+    // the real run's heartbeat history and auto-refresh preferences are intact.
+    if (storageReadable && beatKey !== null) {
+      try {
+        if (previousBeat === null) iframe.contentWindow.localStorage.removeItem(beatKey);
+        else iframe.contentWindow.localStorage.setItem(beatKey, previousBeat);
+      } catch (e) {}
+    }
+  }
+}
+
+iframe.addEventListener('load', run, {once: true});
+if (location.protocol === 'http:') iframe.src = '../dashboard.html';
+else publish({status: 'FAIL', error: 'Требуется HTTP same-origin; откройте harness на http://127.0.0.1:8768/'});
+</script>
+</body>
+</html>

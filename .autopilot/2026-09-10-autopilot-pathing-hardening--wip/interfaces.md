@@ -34,7 +34,7 @@
 - `logs_dir_for(path, root=None) -> Path` — вычисляет каталог логов независимо от текущего `cwd`.
 - `analyse(path, label) -> dict` — анализирует JSONL-сессию, пропуская повреждённые строки.
 - `main(argv=None) -> int` — CLI `<project> [session-id] | --check-only`.
-- Workflow `Verify` запускается для `main`, `master`, `development` и pull request; Python gate не зависит от наличия Node-проекта.
+- Workflow `Autopilot CI/CD Verification` (name восстановлен T05) запускается для `main`, `master`, `development` и pull request; Python gate не зависит от наличия Node-проекта.
 
 ### Из таска 02 — кроссплатформенный `sync.py`
 

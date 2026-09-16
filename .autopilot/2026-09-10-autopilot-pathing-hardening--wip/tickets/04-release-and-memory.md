@@ -1,7 +1,7 @@
 # 04 — Интеграционная приёмка, память и публикация
 
 **Требования:** R02, R05, R06, R07, R08, R09, R13, R15, R16, R17, R20, R23, R24, R25, R26, R27, R28, R29, R30, R31, R32i
-**Blocked by:** 01, 02, 03
+**Blocked by:** 01, 02, 03, 05
 **Зона:** `AGENTS.md`, `CLAUDE.md`, `.autopilot/`, GitHub release boundary
 **Волна:** 3
 **Status:** in-progress — локальная часть готова; внешний release gate ожидает оркестратор
@@ -39,3 +39,13 @@
 ## Pending orchestrator
 
 - Independent blind acceptance и внешний GitHub gate: target visibility, `origin`, publish `development`, Actions success, PR/merge, remote `main` и post-merge memory/dashboard verification.
+
+## Локальный checkpoint 2026-09-16
+
+- Текущий code checkpoint — `7571f27`; полный unit gate — 24 tests `OK`, full repo local `flake8` 7.3.0 — exit 0 / 0 violations (`flake8-result.json`).
+- Real HTTP browser DOM benchmark — `PASS`: 8 stages, 100 tickets, 94 live clocks; медиана 5 × 1000 calls — 570.7ms против 741.5ms upstream baseline; measured queries 0/15000, console logs пусты. Evidence: `browser-benchmark.html`, `browser-benchmark-result.json` рядом с этим таском в run directory.
+- Dashboard получил текущие 24 tests после очередного live poll; transient старый state при initial reload не является отсутствием обновления.
+- Финальная повторная blind acceptance и внешний release gate всё ещё не завершены. `Alpha-Oi/skills` возвращает API 404; GitHub CLI OAuth завершился `expired_token` без пользовательского подтверждения.
+- Проверочный flake8 установлен отдельно от Git worktree, только в `verification-tools/flake8-7.3.0` внутри Codex workspace. Первый full repo запуск получил sandbox `PermissionError [WinError 5]` в multiprocessing Pipe до checks; exact retry с разрешением дал stdout `0`, exit 0, без exclude/rule changes. Основной Python, global config и production dependencies не изменялись.
+- Перед сохранением локального checkpoint повторены полный suite (24 tests in 8.650s, `OK`), точный full repo flake8 (stdout `0`, exit 0) и measure check (`OK`); команды и raw output находятся в `local-verification-result.json`.
+- Checkpoint включает фактическую память в обоих файлах и пять ADR. Он не закрывает T04, blind acceptance, внешний CI или merge и не переводит dashboard в 100%.

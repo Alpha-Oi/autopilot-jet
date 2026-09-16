@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-12T10:00:13.0072528+03:00",
+  "updatedAt": "2026-09-16T10:50:20.0835684+03:00",
   "finishedAt": null,
   "stages": [
     { "id": "preflight", "status": "done", "startedAt": "2026-09-10T23:25:26.9499987+03:00", "finishedAt": "2026-09-10T23:28:39.9995907+03:00" },
@@ -19,8 +19,8 @@ window.STATE =
     { "id": "briefing", "status": "skipped", "startedAt": "2026-09-10T23:33:37.8823878+03:00", "finishedAt": "2026-09-10T23:35:40.0710546+03:00", "note": "полный автомат — самобрифинг" },
     { "id": "spec", "status": "done", "startedAt": "2026-09-10T23:35:40.0710546+03:00", "finishedAt": "2026-09-10T23:44:53.1001545+03:00" },
     { "id": "plan", "status": "done", "startedAt": "2026-09-10T23:44:53.1001545+03:00", "finishedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "4 таска, ярус T2; CI и measure-run объединены merge-pass" },
-    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "локальная часть T04 готова; commit и публикация ожидают оркестратор" },
-    { "id": "review", "status": "active", "startedAt": "2026-09-11T00:08:00+03:00", "note": "T04 local state repair готов; blind acceptance и внешние gates ожидаются" },
+    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "кодовый checkpoint 7571f27 проверен; память и local evidence сохранены; внешний CI/release gate ожидает авторизацию" },
+    { "id": "review", "status": "active", "startedAt": "2026-09-11T00:08:00+03:00", "note": "craft PASS без BLOCKER/MAJOR; blind NO-GO до публикации, CI и merge" },
     { "id": "final", "status": "pending" }
   ],
   "requirements": {
@@ -59,20 +59,50 @@ window.STATE =
     {
       "id": "04", "title": "Интеграционная приёмка, память и публикация",
       "requirements": ["R02", "R05", "R06", "R07", "R08", "R09", "R13", "R15", "R16", "R17", "R20", "R23", "R24", "R25", "R26", "R27", "R28", "R29", "R30", "R31", "R32i"],
-      "blockedBy": ["01", "02", "03"], "wave": 3,
+      "blockedBy": ["01", "02", "03", "05"], "wave": 3,
       "zone": ["AGENTS.md", "CLAUDE.md", ".autopilot/", "GitHub release boundary"],
       "status": "in-progress", "startedAt": "2026-09-12T09:33:40.0789316+03:00",
-      "tests": "20 passed; measure check OK; py_compile 2 scripts OK; Chrome file/http OK; JS/load errors 0; flake8 NOT_RUN (not installed)",
+      "tests": "24 passed; measure check OK; compileall OK; current HTTP smoke OK; full repo flake8 7.3.0 exit 0; external release pending",
+      "retries": 0, "repairs": 1, "handoffs": 0
+    },
+    {
+      "id": "05", "title": "Усиление доказательств финальной приемки",
+      "requirements": ["R10", "R12", "R15", "R16", "R19", "R21", "R22", "R23", "R24"],
+      "blockedBy": ["01", "02", "03"], "wave": 4,
+      "zone": [".github/workflows/verify.yml", "skills/autopilot/tools/sync.py", "skills/autopilot/phases/dashboard-template.html", "tests/", ".autopilot/runtime copies"],
+      "status": "done", "finishedAt": "2026-09-16T10:11:30.7225688+03:00", "commit": "7571f27",
+      "tests": { "passed": 24, "failed": 0 },
       "retries": 0, "repairs": 1, "handoffs": 0
     }
   ],
   "singlePass": null,
-  "tests": { "passed": 20, "failed": 0 },
+  "tests": { "passed": 24, "failed": 0 },
   "checks": {
+    "unitTests": { "status": "passed", "passed": 24, "failed": 0, "seconds": 8.650, "evidenceFile": "local-verification-result.json" },
     "measureRun": { "status": "passed" },
     "pyCompile": { "status": "passed", "scripts": 2 },
-    "browser": { "status": "passed", "modes": ["file", "http"], "errors": 0 },
-    "flake8": { "status": "NOT_RUN", "reason": "module not installed; dependencies not added" }
+    "browser": {
+      "status": "passed", "modes": ["http"], "errors": 0, "checkedAt": "2026-09-16",
+      "file": "T04 prior smoke passed; current CUA file navigation blocked by URL policy",
+      "performance": {
+        "status": "passed", "environment": "real HTTP browser DOM",
+        "fixture": { "stages": 8, "tickets": 100, "activeTickets": 30, "liveClocks": 94 },
+        "rounds": 5, "callsPerRound": 1000,
+        "baselineMs": 741.5, "tickMs": 570.6999999999534,
+        "baselineQueries": 15000, "tickQueries": 0,
+        "evidenceFile": "browser-benchmark-result.json"
+      }
+    },
+    "flake8": {
+      "status": "passed", "version": "7.3.0", "exitCode": 0, "violations": 0,
+      "environment": "isolated verification venv outside Git worktree; CPython 3.14.3 Windows",
+      "evidenceFile": "flake8-result.json", "checkedAt": "2026-09-16"
+    },
+    "github": {
+      "status": "blocked", "target": "Alpha-Oi/skills", "targetApi": "404", "checkedAt": "2026-09-16T10:50:20.0835684+03:00",
+      "authorizationFlow": "expired_token",
+      "reason": "CLI keyring token invalid; device OAuth expired without user confirmation; connector has no create-repository operation"
+    }
   },
   "debt": {
     "placeholders": [],
@@ -105,30 +135,60 @@ window.STATE =
       "status": "resolved",
       "finding": "data: dashboard мог выглядеть как live state",
       "evidence": "commit dc70117; snapshot-only render; live auto-refresh claim absent"
+    },
+    {
+      "status": "resolved",
+      "finding": "финальные pathing/benchmark test oracles были недостаточно сильными",
+      "evidence": "commit 7571f27; nonzero JSONL metrics, subprocess cwd, default root, measured baselineQueries and tickQueries=0"
+    },
+    {
+      "status": "resolved",
+      "finding": "sync мог завершить unrecorded same-directory server",
+      "evidence": "commit 7571f27; discovery/kill removed; exact loopback launch regression"
+    },
+    {
+      "status": "resolved",
+      "finding": "dashboard test cells показывали undefined и не экранировали object fields",
+      "evidence": "commit 7571f27; legacy/object formatter, malicious regression, live HTTP undefinedTests=false"
+    },
+    {
+      "status": "resolved",
+      "finding": "workflow identifiers и ticket03 status расходились с контрактом",
+      "evidence": "workflow name/job restored in 7571f27; ticket03 status canonical done"
+    },
+    {
+      "status": "resolved",
+      "finding": "Node VM benchmark не подтверждал performance на реальном browser DOM",
+      "evidence": "browser-benchmark-result.json; actual DOM 8 stages/100 tickets/94 clocks; median 570.7ms <= 741.5ms; queries 0/15000; console logs empty"
+    },
+    {
+      "status": "resolved",
+      "finding": "blind NO-GO записан в state, но renderer показывал отсутствие расхождений",
+      "evidence": "blind renderer-compatible checked/matched/mismatches; итоговая повторная приёмка явно не выполнена"
+    },
+    {
+      "status": "resolved",
+      "finding": "локальный syntax/error lint оставался NOT_RUN",
+      "evidence": "flake8-result.json; full repo E9/F63/F7/F82 command exit 0, violations 0; isolated verification environment, production/global unchanged"
     }
   ],
   "concerns": [
-    "Исходный CI-шаблон ссылается на отсутствующие package.json и инструменты/measure-run.py.",
-    "Ускорение дашборда требует воспроизводимого baseline и бюджета регрессии.",
     "Заданный Git email синтаксически ошибочен; глобальный config выходит за scope репозитория.",
-    "AGENTS.md должен быть каноном, а CLAUDE.md — указателем, чтобы память не расходилась.",
     "100% готовность допустима только после фактически зелёного CI и blind acceptance.",
     "Публикация должна сохранить upstream-историю и не менять main до финальной фазы.",
-    "craft · tests/test_measure_run.py:29 · mixed malformed JSONL test использует нулевой oracle; финальная triage должна проверить ненулевой наблюдаемый результат.",
-    "craft · tests/test_measure_run.py:53 · произвольный cwd проверен исполнителем вручную, но не закреплён subprocess-тестом.",
-    "craft · tests/test_measure_run.py:61 · тест выбора сессии связан со скрытыми glob/getsize/analyse вместо публичного main(argv).",
-    "craft · tests/test_measure_run.py:24 · default root при root=None не закреплён отдельным тестом смены cwd.",
-    "craft · skills/autopilot/tools/sync.py:182 · ownership допускает независимый server с тем же --directory; финальная triage должна оценить уникальный lease marker.",
-    "craft · tests/test_sync.py:42 · Windows path case/separator normalization проверена без настоящего Windows path adapter.",
-    "craft · tests/test_sync.py:85 · launch tests не утверждают точный loopback bind 127.0.0.1.",
-    "craft · tests/test_dashboard.py:179 · baseline query count задан отдельно от исполняемого baseline instrumentation.",
-    "craft · tests/test_dashboard.py:183 · порог допускает queries, хотя runtime contract после refreshTickDOM ожидает ноль.",
-    "craft · tests/test_dashboard.py:184 · wall-clock benchmark работает в Node VM, а не на реально загруженной browser page.",
-    "craft · ticket status wording: T04 local readiness должна оставаться частичной до flake8/CI.",
-    "craft · resume status: ticket03 markdown и state должны иметь одно каноническое значение.",
-    "local gate · flake8 NOT_RUN: модуль не установлен, зависимости не добавлялись.",
-    "release · GitHub target/origin/push/Actions/PR/merge и post-merge 100% pending orchestrator."
+    "Ubuntu CI ожидается; real DOM HTTP performance passed, unit evidence не подменяет внешний CI gate.",
+    "release · GitHub target/origin/push/Actions/PR/merge и post-merge 100% pending; API auth requires user device confirmation.",
+    "cleanup · два точных agent-created empty temp dirs не staged; governance hook запрещает удаление."
   ],
-  "reviewers": { "manifestSpec": "/root/review_manifest_spec", "craft": "/root/review_craft" },
-  "blind": null
+  "triageFile": "phase8-triage.md",
+  "reviewers": { "manifestSpec": "/root/review_manifest_spec", "craft": "/root/review_craft", "finalCraft": "/root/phase8_final_review" },
+  "blind": {
+    "result": "NO-GO", "localTests": 24, "checked": 0, "matched": 0,
+    "reason": "external target, Actions, PR and merge missing; final recheck required",
+    "mismatches": [
+      "Повторная итоговая приёмка после текущих исправлений ещё не выполнена; 24 локальных теста не означают финальный GO.",
+      "Public Alpha-Oi/skills и публикация development пока не подтверждены: API 404; device OAuth истёк без пользовательского подтверждения.",
+      "Нет успешного GitHub Actions run, PR/merge и проверки main после merge."
+    ]
+  }
 }
