@@ -18,7 +18,7 @@
 | R12 | «Проект должен корректно определять корневые директории при запуске на любой ОС» | done | Windows/POSIX path adapters, cwd-independent roots и browser URL resolution покрыты в T01–T03; commit `dc70117` | spec §4 → T01, T02, T03 |
 | R13 | «Каждую итерацию автопилота логировать и сохранять глобальное состояние проекта в файлы `CLAUDE.md` и `AGENTS.md`» | in-ticket | Оба файла физически описывают текущий код и pre-release state; свежие проверки сохранены в `local-verification-result.json`. Финальная память после release ещё требуется | spec §7 → T04 |
 | R14 | «На первом этапе создать файл конфигурации автоматических тестов строго по шаблону» | done | Workflow создан с сохранением структуры и исправлением repo-specific путей в `275bb5a`; заданные name `Autopilot CI/CD Verification` и job `validate` восстановлены в `7571f27` | spec §9 → T01 |
-| R15 | «Использовать его логи для контроля качества кода» | in-ticket | Подтверждено | spec §9 → T01–T04 |
+| R15 | «Использовать его логи для контроля качества кода» | done | Логи успешного run 35071567560 изучены: flake8 0, 24 tests OK, measure check OK, DOM 0/15000; raw quality lines в github-actions-result.json | spec §9 → T01–T04 |
 | R16 | «Любая ошибка в рантайме или сборке отменяет коммит» | in-ticket | ASSUMPTION — commit разрешён только после локального эквивалента CI; внешний CI проверяется после push | spec §9 → T01–T04 |
 | R17 | «Склонировать код из nick-vels/skills» | in-ticket | Выполнено локально, upstream сохранён | spec §2 → T04 |
 | R18 | «Провести глубокий анализ импортов в скриптах папки `инструменты` и путей к файлам разметки HTML» | done | Анализ зафиксирован в spec §§4–6; фактическое исправление первого Python path consumer в commit `275bb5a` | spec §4 → T01 |
@@ -28,7 +28,7 @@
 | R22 | «стабильность выполнения Python-скриптов автоматизации» | done | `measure-run.py` и `sync.py` hardened; Windows/POSIX process paths и safe fallback покрыты, commit `5a44610` | spec §5 → T01, T02 |
 | R23 | «Один шаг = один коммит в `development`» | in-ticket | Подтверждено | spec §3 → T01–T04 |
 | R24 | «дашборд отображает 100% готовность» | in-ticket | Только после всех локальных и внешних проверок | spec §9 → T03, T04 |
-| R25 | «тесты GitHub Actions для ветки `development` успешны» | in-ticket | Требует опубликованной ветки и фактического run | spec §9 → T01, T04 |
+| R25 | «тесты GitHub Actions для ветки `development` успешны» | done | GitHub run 35071567560, event push, head 247535a, validate success; exact jobs и quality logs сохранены | spec §9 → T01, T04 |
 | R26 | «Создать Pull Request, слить ветку `development` в `main`» | in-ticket | Внешняя финальная операция после зелёной приёмки | spec §8 → T04 |
 | R27 | «Зафиксировать состояние системы в файле памяти AGENTS.md в ветке `main`» | in-ticket | Подтверждено | spec §7 → T04 |
 | R28 | «Целевой репозиторий (мой профиль): https://github.com/Alpha-Oi» | in-ticket | GitHub connector подтвердил `Alpha-Oi` | spec §8 → T04 |

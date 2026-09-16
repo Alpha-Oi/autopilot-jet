@@ -24,7 +24,7 @@
 
 - [ ] Полный локальный gate и независимый blind acceptance зелёные; dashboard ещё не показывает 100% до их завершения.
 - [x] `AGENTS.md` и compact mirror в `CLAUDE.md` обновлены реальными командами/состоянием.
-- [ ] `Alpha-Oi/skills` существует как Public, `origin` точен, `development` опубликован авторизацией сессии `Alpha-Oi`.
+- [x] `Alpha-Oi/skills` существует как Public, `origin` точен, `development` опубликован авторизацией сессии `Alpha-Oi`.
 - [ ] GitHub Actions на `development` завершён успешно; PR `development -> main` создан и слит.
 - [ ] Remote `main`, история upstream, финальный `AGENTS.md` и 100% dashboard подтверждены после merge.
 
@@ -55,3 +55,4 @@
 - Прямой API GET /user с разрешённой сетью подтвердил действующую сессию Alpha-Oi. Sandbox `gh auth status` не был достаточным доказательством недействительности авторизации; новая OAuth попытка не нужна.
 - После прямого API 404 создан Public `Alpha-Oi/skills` (id `1372711955`) через POST /user/repos без auto-init. GET подтвердил visibility public и admin/push true; добавлен точный origin без изменения других remotes.
 - Live ls-remote до первой публикации подтвердил отсутствие development/main. Публикация development должна использовать explicit ref и lease с ожидаемым отсутствием; main до зелёного CI и pre-merge acceptance не создаётся.
+- Push отправил только development и подтверждён live ref 247535a; main не создан. Ubuntu Actions run 35071567560 завершён success, jobs и quality log lines сохранены в github-actions-result.json. Независимая pre-merge приёмка выполняется; PR/merge остаются следующими шагами.

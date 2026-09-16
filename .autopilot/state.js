@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-16T10:58:52.0388934+03:00",
+  "updatedAt": "2026-09-16T15:12:11.5643111+03:00",
   "finishedAt": null,
   "stages": [
     { "id": "preflight", "status": "done", "startedAt": "2026-09-10T23:25:26.9499987+03:00", "finishedAt": "2026-09-10T23:28:39.9995907+03:00" },
@@ -19,12 +19,12 @@ window.STATE =
     { "id": "briefing", "status": "skipped", "startedAt": "2026-09-10T23:33:37.8823878+03:00", "finishedAt": "2026-09-10T23:35:40.0710546+03:00", "note": "полный автомат — самобрифинг" },
     { "id": "spec", "status": "done", "startedAt": "2026-09-10T23:35:40.0710546+03:00", "finishedAt": "2026-09-10T23:44:53.1001545+03:00" },
     { "id": "plan", "status": "done", "startedAt": "2026-09-10T23:44:53.1001545+03:00", "finishedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "4 таска, ярус T2; CI и measure-run объединены merge-pass" },
-    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "Public Alpha-Oi/skills создан через проверенную CLI API-сессию; development push и внешний CI/release gate ожидаются" },
+    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "Public development опубликована; Ubuntu Actions success для 247535a; независимая pre-merge приёмка выполняется" },
     { "id": "review", "status": "active", "startedAt": "2026-09-11T00:08:00+03:00", "note": "craft PASS без BLOCKER/MAJOR; blind NO-GO до публикации, CI и merge" },
     { "id": "final", "status": "pending" }
   ],
   "requirements": {
-    "total": 32, "done": 9, "inTicket": 20, "inSpec": 0,
+    "total": 32, "done": 11, "inTicket": 18, "inSpec": 0,
     "placeholder": 0, "deferred": 3, "dropped": 0
   },
   "tickets": [
@@ -103,7 +103,9 @@ window.STATE =
       "visibility": "public", "repositoryId": 1372711955,
       "authorization": "GET /user with approved network confirmed Alpha-Oi; API repository creation succeeded",
       "evidenceFile": "github-release-result.json",
-      "reason": "development push, Actions, PR/merge and post-merge verification pending"
+      "publication": { "status": "passed", "sha": "247535a3b0ddd680f6dc538b6002e2a002e78d8f" },
+      "actions": { "status": "passed", "runId": 35071567560, "evidenceFile": "github-actions-result.json" },
+      "reason": "pre-merge blind acceptance, PR/merge and post-merge verification pending"
     }
   },
   "debt": {
@@ -178,19 +180,19 @@ window.STATE =
     "Заданный Git email синтаксически ошибочен; глобальный config выходит за scope репозитория.",
     "100% готовность допустима только после фактически зелёного CI и blind acceptance.",
     "Публикация должна сохранить upstream-историю и не менять main до финальной фазы.",
-    "Ubuntu CI ожидается; real DOM HTTP performance passed, unit evidence не подменяет внешний CI gate.",
-    "release · Public target и origin подтверждены; development push/Actions/PR/merge и post-merge 100% pending.",
+    "Ubuntu Actions подтверждён для 247535a; последующие commits требуют CI на актуальном PR head перед merge.",
+    "release · Public target, origin, development push и Actions подтверждены; PR/merge и post-merge 100% pending.",
     "cleanup · два точных agent-created empty temp dirs не staged; governance hook запрещает удаление."
   ],
   "triageFile": "phase8-triage.md",
   "reviewers": { "manifestSpec": "/root/review_manifest_spec", "craft": "/root/review_craft", "finalCraft": "/root/phase8_final_review" },
   "blind": {
     "result": "NO-GO", "localTests": 24, "checked": 0, "matched": 0,
-    "reason": "development publication, Actions, PR and merge pending; final recheck required",
+    "reason": "pre-merge independent acceptance running; PR and merge pending; full final recheck required",
     "mismatches": [
       "Повторная итоговая приёмка после текущих исправлений ещё не выполнена; 24 локальных теста не означают финальный GO.",
-      "Public Alpha-Oi/skills создан и подтверждён API; публикация development и внешний quality gate ещё ожидаются.",
-      "Нет успешного GitHub Actions run, PR/merge и проверки main после merge."
+      "Public development опубликована, Actions success для 247535a подтверждён логами; повторная независимая приёмка ещё выполняется.",
+      "PR/merge и проверка main после merge ещё не выполнены."
     ]
   }
 }

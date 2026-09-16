@@ -24,7 +24,8 @@
 
 - Состояние — `pre-release`, финальная приёмка — `NO-GO`; `development` code checkpoint `7571f27`, локальный `main` и `upstream/main` — `99c7e73678195cac08080bdd442f0e49a7ccb640`.
 - `upstream` — `https://github.com/nick-vels/skills.git`; `my-skills-fork` — `https://github.com/Alpha-Oi/skills-Pill.git`; `origin` — точный `https://github.com/Alpha-Oi/skills.git`.
-- Прямой approved-network GET /user подтвердил `Alpha-Oi`; Public `Alpha-Oi/skills` создан через API сессии и подтверждён GET (id `1372711955`, admin/push true). Перед первым push refs development/main отсутствуют; Actions, PR/merge и post-merge ожидаются.
+- Прямой approved-network GET /user подтвердил Alpha-Oi; Public Alpha-Oi/skills создан через API (id 1372711955), development опубликована с lease expected absence; remote head 247535a, main отсутствует, default branch development.
+- Ubuntu Actions run 35071567560 для 247535a — success: flake8 0, 24 tests in 3.098s OK, measure check OK, Node VM queries 0/15000. Raw evidence: `.autopilot/2026-09-10-autopilot-pathing-hardening--wip/github-actions-result.json`. Независимая pre-merge приёмка запущена; PR/merge и post-merge ещё ожидаются.
 - Sandbox-сообщение `gh auth status` о token invalid не доказывает отсутствие сессии: сначала используй прямой API GET с разрешённой сетью, без запроса или извлечения токена.
 - `main` до финального acceptance/merge gate не изменён; публикация, PR, merge и release остаются отдельной границей разрешения и live-проверки.
 <!-- autopilot:end -->

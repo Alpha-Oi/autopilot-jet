@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-16T10:58:52.0388934+03:00",
+  "recordedAt": "2026-09-16T15:12:11.5643111+03:00",
   "authorization": {
     "login": "Alpha-Oi",
     "probe": "gh api --method GET user --jq .login",
@@ -31,13 +31,21 @@
     "verifiedVia": "git ls-remote --refs origin refs/heads/development refs/heads/main"
   },
   "publication": {
-    "status": "pending",
+    "status": "passed",
     "ref": "refs/heads/development",
     "expectedRemoteSha": "",
+    "publishedSha": "247535a3b0ddd680f6dc538b6002e2a002e78d8f",
+    "verifiedRemoteDevelopmentSha": "247535a3b0ddd680f6dc538b6002e2a002e78d8f",
+    "verifiedRemoteMainSha": null,
+    "targetDefaultBranchAfterFirstPush": "development",
+    "lease": "refs/heads/development: (explicit expected absence)",
     "mainWritten": false
   },
   "actions": {
-    "status": "NOT_RUN"
+    "status": "passed",
+    "runId": 35071567560,
+    "headSha": "247535a3b0ddd680f6dc538b6002e2a002e78d8f",
+    "evidenceFile": "github-actions-result.json"
   },
   "pullRequest": {
     "status": "NOT_CREATED"
