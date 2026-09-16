@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-16T10:50:20.0835684+03:00",
+  "updatedAt": "2026-09-16T10:58:52.0388934+03:00",
   "finishedAt": null,
   "stages": [
     { "id": "preflight", "status": "done", "startedAt": "2026-09-10T23:25:26.9499987+03:00", "finishedAt": "2026-09-10T23:28:39.9995907+03:00" },
@@ -19,12 +19,12 @@ window.STATE =
     { "id": "briefing", "status": "skipped", "startedAt": "2026-09-10T23:33:37.8823878+03:00", "finishedAt": "2026-09-10T23:35:40.0710546+03:00", "note": "полный автомат — самобрифинг" },
     { "id": "spec", "status": "done", "startedAt": "2026-09-10T23:35:40.0710546+03:00", "finishedAt": "2026-09-10T23:44:53.1001545+03:00" },
     { "id": "plan", "status": "done", "startedAt": "2026-09-10T23:44:53.1001545+03:00", "finishedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "4 таска, ярус T2; CI и measure-run объединены merge-pass" },
-    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "кодовый checkpoint 7571f27 проверен; память и local evidence сохранены; внешний CI/release gate ожидает авторизацию" },
+    { "id": "build", "status": "active", "startedAt": "2026-09-10T23:47:33.4484312+03:00", "note": "Public Alpha-Oi/skills создан через проверенную CLI API-сессию; development push и внешний CI/release gate ожидаются" },
     { "id": "review", "status": "active", "startedAt": "2026-09-11T00:08:00+03:00", "note": "craft PASS без BLOCKER/MAJOR; blind NO-GO до публикации, CI и merge" },
     { "id": "final", "status": "pending" }
   ],
   "requirements": {
-    "total": 32, "done": 8, "inTicket": 21, "inSpec": 0,
+    "total": 32, "done": 9, "inTicket": 20, "inSpec": 0,
     "placeholder": 0, "deferred": 3, "dropped": 0
   },
   "tickets": [
@@ -99,9 +99,11 @@ window.STATE =
       "evidenceFile": "flake8-result.json", "checkedAt": "2026-09-16"
     },
     "github": {
-      "status": "blocked", "target": "Alpha-Oi/skills", "targetApi": "404", "checkedAt": "2026-09-16T10:50:20.0835684+03:00",
-      "authorizationFlow": "expired_token",
-      "reason": "CLI keyring token invalid; device OAuth expired without user confirmation; connector has no create-repository operation"
+      "status": "in-progress", "target": "Alpha-Oi/skills", "targetApi": "200", "checkedAt": "2026-09-16T10:58:52.0388934+03:00",
+      "visibility": "public", "repositoryId": 1372711955,
+      "authorization": "GET /user with approved network confirmed Alpha-Oi; API repository creation succeeded",
+      "evidenceFile": "github-release-result.json",
+      "reason": "development push, Actions, PR/merge and post-merge verification pending"
     }
   },
   "debt": {
@@ -177,17 +179,17 @@ window.STATE =
     "100% готовность допустима только после фактически зелёного CI и blind acceptance.",
     "Публикация должна сохранить upstream-историю и не менять main до финальной фазы.",
     "Ubuntu CI ожидается; real DOM HTTP performance passed, unit evidence не подменяет внешний CI gate.",
-    "release · GitHub target/origin/push/Actions/PR/merge и post-merge 100% pending; API auth requires user device confirmation.",
+    "release · Public target и origin подтверждены; development push/Actions/PR/merge и post-merge 100% pending.",
     "cleanup · два точных agent-created empty temp dirs не staged; governance hook запрещает удаление."
   ],
   "triageFile": "phase8-triage.md",
   "reviewers": { "manifestSpec": "/root/review_manifest_spec", "craft": "/root/review_craft", "finalCraft": "/root/phase8_final_review" },
   "blind": {
     "result": "NO-GO", "localTests": 24, "checked": 0, "matched": 0,
-    "reason": "external target, Actions, PR and merge missing; final recheck required",
+    "reason": "development publication, Actions, PR and merge pending; final recheck required",
     "mismatches": [
       "Повторная итоговая приёмка после текущих исправлений ещё не выполнена; 24 локальных теста не означают финальный GO.",
-      "Public Alpha-Oi/skills и публикация development пока не подтверждены: API 404; device OAuth истёк без пользовательского подтверждения.",
+      "Public Alpha-Oi/skills создан и подтверждён API; публикация development и внешний quality gate ещё ожидаются.",
       "Нет успешного GitHub Actions run, PR/merge и проверки main после merge."
     ]
   }

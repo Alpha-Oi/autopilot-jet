@@ -21,7 +21,7 @@
 | T04 local readiness до flake8/CI | Drop | Full repo local flake8 прошёл, но T04 остаётся in-progress до фактического внешнего CI/release gate. |
 | ticket03 done-with-concerns / state done | Fix now | Канонический status согласован: done. |
 | Local flake8 отсутствует | Fix now | flake8 7.3.0 в изолированном проверочном venv вне worktree; exact full repo CI parameters дают exit 0 / 0 violations. Production/global не менялись; Actions ещё не проверен. |
-| GitHub create/push/Actions/PR/merge pending | Report | Требуется действующая API-авторизация Alpha-Oi; target name не подменяется. |
+| GitHub create/push/Actions/PR/merge pending | Report | Прямой approved-network API подтвердил сессию Alpha-Oi; Public target создан, origin точен. Development/Actions/PR/merge всё ещё отдельные gates. |
 | Dashboard undefined test cells | Fix now | T05 formatter поддерживает legacy string и object-format. |
 | Object passed/failed HTML injection | Fix now | T05 экранирует обе object-format ветки; malicious regression green. |
 | Memory содержит старые test counts | Fix now | Memory checkpoint обновлён до 24/10 перед release. |

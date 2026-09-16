@@ -26,7 +26,7 @@
     "profile": "Alpha-Oi",
     "target": "Alpha-Oi/skills",
     "targetApiStatus": 404,
-    "cliAuthorization": "invalid keyring token",
+    "cliAuthorization": "sandbox gh auth status reported invalid token; not a direct authorization proof",
     "lastDeviceFlow": "expired_token",
     "connectorCreateRepositoryAvailable": false,
     "actions": "NOT_RUN",

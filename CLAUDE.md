@@ -23,7 +23,8 @@
 ## Релиз
 
 - Состояние — `pre-release`, финальная приёмка — `NO-GO`; `development` code checkpoint `7571f27`, локальный `main` и `upstream/main` — `99c7e73678195cac08080bdd442f0e49a7ccb640`.
-- `upstream` — `https://github.com/nick-vels/skills.git`; `my-skills-fork` — `https://github.com/Alpha-Oi/skills-Pill.git`; `origin` отсутствует.
-- API `Alpha-Oi/skills` — `404`, CLI token invalid, последняя device OAuth попытка — `expired_token` без пользовательской авторизации. Actions, PR, merge и post-merge не выполнены; локальные проверки не подтверждают публикацию.
+- `upstream` — `https://github.com/nick-vels/skills.git`; `my-skills-fork` — `https://github.com/Alpha-Oi/skills-Pill.git`; `origin` — точный `https://github.com/Alpha-Oi/skills.git`.
+- Прямой approved-network GET /user подтвердил `Alpha-Oi`; Public `Alpha-Oi/skills` создан через API сессии и подтверждён GET (id `1372711955`, admin/push true). Перед первым push refs development/main отсутствуют; Actions, PR/merge и post-merge ожидаются.
+- Sandbox-сообщение `gh auth status` о token invalid не доказывает отсутствие сессии: сначала используй прямой API GET с разрешённой сетью, без запроса или извлечения токена.
 - `main` до финального acceptance/merge gate не изменён; публикация, PR, merge и release остаются отдельной границей разрешения и live-проверки.
 <!-- autopilot:end -->

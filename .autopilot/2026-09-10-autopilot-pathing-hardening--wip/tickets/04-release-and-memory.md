@@ -49,3 +49,9 @@
 - Проверочный flake8 установлен отдельно от Git worktree, только в `verification-tools/flake8-7.3.0` внутри Codex workspace. Первый full repo запуск получил sandbox `PermissionError [WinError 5]` в multiprocessing Pipe до checks; exact retry с разрешением дал stdout `0`, exit 0, без exclude/rule changes. Основной Python, global config и production dependencies не изменялись.
 - Перед сохранением локального checkpoint повторены полный suite (24 tests in 8.650s, `OK`), точный full repo flake8 (stdout `0`, exit 0) и measure check (`OK`); команды и raw output находятся в `local-verification-result.json`.
 - Checkpoint включает фактическую память в обоих файлах и пять ADR. Он не закрывает T04, blind acceptance, внешний CI или merge и не переводит dashboard в 100%.
+
+## Начало публикации 2026-09-16
+
+- Прямой API GET /user с разрешённой сетью подтвердил действующую сессию Alpha-Oi. Sandbox `gh auth status` не был достаточным доказательством недействительности авторизации; новая OAuth попытка не нужна.
+- После прямого API 404 создан Public `Alpha-Oi/skills` (id `1372711955`) через POST /user/repos без auto-init. GET подтвердил visibility public и admin/push true; добавлен точный origin без изменения других remotes.
+- Live ls-remote до первой публикации подтвердил отсутствие development/main. Публикация development должна использовать explicit ref и lease с ожидаемым отсутствием; main до зелёного CI и pre-merge acceptance не создаётся.
