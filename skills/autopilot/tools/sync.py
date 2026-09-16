@@ -175,15 +175,8 @@ def serve(state):
     if port and pid and http_ok(port) and is_ours(cmdline(pid)):
         return "сервер жив: http://localhost:%d/dashboard.html" % port
 
-    # Осиротевшие серверы этого же каталога: их никто не убьёт, кроме нас, и
-    # только их — по полному --directory, никогда по «все http.server, кроме...».
-    for process_pid, command in iter_processes():
-        if is_ours(command):
-            try:
-                os.kill(process_pid, 15)
-            except OSError:
-                pass
-
+    # Процесс, которого нет в PIDF, не наш: одного совпадения --directory
+    # недостаточно для безопасного завершения. Занятый прежний порт пропускаем.
     port = free_port(port)
     if not port:
         return "порт не нашёлся — дашборд открывается файлом: %s" % PAGE

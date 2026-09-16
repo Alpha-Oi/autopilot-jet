@@ -565,6 +565,13 @@ function render(lang){
   const S = STATE, T = S.tickets || [], R = S.requirements || {};
   MARKS = collectMarks(S);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmtTests = value => {
+    if (typeof value === 'string') return value.trim() ? esc(value.trim()) : '—';
+    if (!value || typeof value !== 'object') return '—';
+    return value.failed
+      ? '<span style="color:var(--bad)">' + esc(value.failed) + ' ✗</span>'
+      : esc(value.passed) + ' ✓';
+  };
   // Таск живёт в трёх активных состояниях, а не в одном: пишется — проверяется —
   // чинится. Ревью и ремонт идут, пока летит следующий таск, поэтому «готово 2 из 8»
   // без них — самый частый вопрос к экрану: «а с третьим-то что».
@@ -749,7 +756,7 @@ function render(lang){
     <td class="mins">${t.startedAt ? timerHTML(t.startedAt, t.finishedAt) : '—'}</td>
     <td class="mins">${t.retries ? t.retries : ''}${
       t.repairs ? `<span style="color:var(--fix)"> +${t.repairs}</span>` : ''}</td>
-    <td class="mins">${t.tests ? (t.tests.failed ? `<span style="color:var(--bad)">${t.tests.failed} ✗</span>` : t.tests.passed + ' ✓') : '—'}</td>
+    <td class="mins">${fmtTests(t.tests)}</td>
     <td class="mins">${t.commit ? `<code>${esc(t.commit).slice(0,7)}</code>` : '—'}</td>
   </tr>`).join('');
 
@@ -758,7 +765,7 @@ function render(lang){
   const t0block = `<div class="note"><b>${L.t0note(sp?.files?.length ? L.t0files(sp.files.length) : '')}</b>
     <div class="sub" style="margin-top:6px">
       ${sp?.startedAt ? `${L.thTime}: ${timerHTML(sp.startedAt, sp.finishedAt)} · ` : ''}
-      ${sp?.tests ? `${L.thTests}: ${sp.tests.failed ? `<span style="color:var(--bad)">${sp.tests.failed} ✗</span>` : sp.tests.passed + ' ✓'} · ` : ''}
+      ${sp?.tests ? `${L.thTests}: ${fmtTests(sp.tests)} · ` : ''}
       ${sp?.commit ? `${L.thCommit}: <code>${esc(sp.commit).slice(0,7)}</code>` : ''}
     </div></div>`;
   const worklog = T.length

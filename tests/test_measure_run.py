@@ -1,11 +1,14 @@
 import importlib.util
 import io
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 from unittest import mock
 
 
-SCRIPT = Path(__file__).parents[1] / "tools" / "measure-run.py"
+SCRIPT = (Path(__file__).parents[1] / "tools" / "measure-run.py").resolve()
 SPEC = importlib.util.spec_from_file_location("measure_run", SCRIPT)
 measure_run = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(measure_run)
@@ -25,6 +28,20 @@ class PathTests(unittest.TestCase):
         self.assertEqual(measure_run.logs_dir_for("/srv/app", root),
                          root / "-srv-app")
 
+    def test_logs_dir_for_default_root_uses_home_independently_of_cwd(self):
+        home = Path("/home/tester")
+        project = "/srv/project"
+        with mock.patch.object(measure_run.Path, "home", return_value=home), \
+                mock.patch.object(measure_run.os, "getcwd", return_value="/first"):
+            first = measure_run.logs_dir_for(project)
+        with mock.patch.object(measure_run.Path, "home", return_value=home), \
+                mock.patch.object(measure_run.os, "getcwd", return_value="/second"):
+            second = measure_run.logs_dir_for(project)
+
+        expected = home / ".claude" / "projects" / measure_run.encode_project_path(project)
+        self.assertEqual(first, expected)
+        self.assertEqual(second, expected)
+
 
 class AnalyseTests(unittest.TestCase):
     def test_empty_jsonl_returns_zeroed_result(self):
@@ -41,10 +58,11 @@ class AnalyseTests(unittest.TestCase):
         self.assertEqual(result["active"], 0)
         self.assertEqual(result["idle"], 0)
 
-    def test_utf8_malformed_jsonl_mixed_timestamps_and_zero_counters(self):
+    def test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics(self):
         payload = (
             '{"timestamp":"2026-01-01T00:00:00Z","message":'
-            '{"role":"assistant","usage":{"output_tokens":0}}}\n'
+            '{"role":"assistant","usage":{"input_tokens":11,"output_tokens":7,'
+            '"cache_creation_input_tokens":13,"cache_read_input_tokens":17}}}\n'
             '{bad json\n'
             '[]\n'
             '{"timestamp":"2026-01-01T00:00:01","message":'
@@ -56,8 +74,14 @@ class AnalyseTests(unittest.TestCase):
 
         opened.assert_called_once_with("session.jsonl", encoding="utf-8")
         self.assertEqual(result["label"], "тест")
-        self.assertEqual(result["steps"], 0)
-        self.assertEqual(result["norm"], 0)
+        self.assertGreater(result["steps"], 0)
+        self.assertGreater(result["avg_ctx"], 0)
+        self.assertGreater(result["max_ctx"], 0)
+        self.assertGreater(result["out"], 0)
+        self.assertGreater(result["write"], 0)
+        self.assertGreater(result["read"], 0)
+        self.assertGreater(result["norm"], 0)
+        self.assertGreater(result["active"], 0)
 
 
 class CliTests(unittest.TestCase):
@@ -68,6 +92,18 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("check-only: OK", output.getvalue())
+
+    def test_check_only_subprocess_is_independent_of_cwd(self):
+        completed = subprocess.run(
+            [sys.executable, "-B", str(SCRIPT), "--check-only"],
+            cwd=tempfile.gettempdir(),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("measure-run check-only: OK", completed.stdout)
 
     def test_main_session_selection_is_independent_of_glob_order(self):
         result = {

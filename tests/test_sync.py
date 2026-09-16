@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import sys
 import unittest
 from unittest import mock
 
@@ -68,7 +69,6 @@ class ProcessQueryTests(unittest.TestCase):
 class ServeTests(unittest.TestCase):
     def test_foreign_process_is_never_terminated(self):
         foreign = (77, "python -m http.server 8123 --directory /somewhere/else")
-        completed = subprocess.CompletedProcess([], 0, stdout="", stderr="")
 
         with mock.patch.dict(sync.os.environ, {}, clear=True), \
                 mock.patch.object(sync, "recorded", return_value=(8123, 77)), \
@@ -76,13 +76,49 @@ class ServeTests(unittest.TestCase):
                 mock.patch.object(sync, "cmdline", return_value=foreign[1]), \
                 mock.patch.object(sync, "iter_processes", return_value=[foreign]) as processes, \
                 mock.patch.object(sync, "free_port", return_value=None), \
-                mock.patch.object(sync.subprocess, "run", return_value=completed), \
                 mock.patch.object(sync.os, "kill") as kill:
             result = sync.serve({})
 
-        processes.assert_called_once_with()
+        processes.assert_not_called()
         kill.assert_not_called()
         self.assertIn("порт не нашёлся", result)
+
+    def test_unrecorded_same_directory_server_is_left_running(self):
+        orphan = (
+            77,
+            'python -m http.server 8123 --directory "%s"' % sync.A,
+        )
+        server = mock.Mock(pid=91)
+        log_handle = mock.MagicMock()
+        pid_handle = mock.MagicMock()
+
+        with mock.patch.dict(sync.os.environ, {}, clear=True), \
+                mock.patch.object(sync, "recorded", return_value=(None, None)), \
+                mock.patch.object(sync, "iter_processes", return_value=[orphan]) as processes, \
+                mock.patch.object(sync, "free_port", return_value=8124) as free_port, \
+                mock.patch.object(sync, "http_ok", return_value=True), \
+                mock.patch("builtins.open", side_effect=[log_handle, pid_handle]), \
+                mock.patch.object(sync.subprocess, "Popen", return_value=server) as popen, \
+                mock.patch.object(sync.os, "kill") as kill:
+            result = sync.serve({})
+
+        processes.assert_not_called()
+        kill.assert_not_called()
+        free_port.assert_called_once_with(None)
+        self.assertEqual(
+            popen.call_args.args[0],
+            [
+                sys.executable,
+                "-m",
+                "http.server",
+                "8124",
+                "--bind",
+                "127.0.0.1",
+                "--directory",
+                sync.A,
+            ],
+        )
+        self.assertIn("сервер поднят", result)
 
     def test_windows_launch_is_detached_hidden_and_closes_parent_log(self):
         server = mock.Mock(pid=91)
