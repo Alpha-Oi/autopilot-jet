@@ -4,7 +4,7 @@
 
 | ID | Из брифа (дословно) | Статус | Основание | Где |
 |----|---------------------|--------|-----------|-----|
-| R01 | «Ядро: GPT-5.6 Sol (Максимальное аналитическое рассуждение)» | in-ticket | Действующее требование не отменено: host model/effort и указанный high требуют достоверной проверки. Тесты не доказывают настройку модели | spec §§3,10 → T04 |
+| R01 | «Ядро: GPT-5.6 Sol (Максимальное аналитическое рассуждение)» | in-ticket | Latest host turn_context подтверждает Sol/max; три начальных context были medium. Literal slash high и единообразие прежнего цикла не объявляются доказанными; host-model-verification.json | spec §§3,10 → T04 |
 | R02 | «использовать токен и права авторизации текущей активной сессии пользователя Alpha-Oi» | in-ticket | Прямой `gh api GET /user` с разрешённой сетью подтвердил `Alpha-Oi`; создание Public выполнено через эту сессию, секреты не извлекаются | spec §8 → T04 |
 | R03 | «git config --global user.name \"Alpha-Oi\"» | in-ticket | Изменение согласовано пользователем 2026-09-17: «Продолжай, как предлагаешь» в ответ на предложение принять repo-local identity; текущий local user.name = Alpha-Oi. Global config не изменяется | spec §§2,10 → T04 |
 | R04 | «git config --global user.email \"Alpha-Oi@://github.com\"» | in-ticket | Тем же ответом согласована фактическая repo-local identity: 266576325+Alpha-Oi@users.noreply.github.com вместо исходного ошибочного адреса; окончательное подтверждение включается в приёмку | spec §§2,10 → T04 |
@@ -28,7 +28,7 @@
 | R22 | «стабильность выполнения Python-скриптов автоматизации» | in-ticket | Новый runtime evidence: unknown process query допускает дублирование серверов; прежний done снят, bounded repair T06 | spec §§5,14 → T01, T02, T06 |
 | R23 | «Один шаг = один коммит в `development`» | in-ticket | Подтверждено | spec §3 → T01–T04 |
 | R24 | «дашборд отображает 100% готовность» | in-ticket | Только после всех локальных и внешних проверок | spec §9 → T03, T04 |
-| R25 | «тесты GitHub Actions для ветки `development` успешны» | done | GitHub run 35071567560, event push, head 247535a, validate success; exact jobs и quality logs сохранены | spec §9 → T01, T04 |
+| R25 | «тесты GitHub Actions для ветки `development` успешны» | in-ticket | Прежний current remote 6265e03/run35094887597 success сохранён как dated fact; новый локальный T06/T07 head требует publication и fresh native Actions, старый результат не выдаётся за новую проверку | spec §9 → T07, T04 |
 | R26 | «Создать Pull Request, слить ветку `development` в `main`» | in-ticket | Внешняя финальная операция после зелёной приёмки | spec §8 → T04 |
 | R27 | «Зафиксировать состояние системы в файле памяти AGENTS.md в ветке `main`» | in-ticket | Подтверждено | spec §7 → T04 |
 | R28 | «Целевой репозиторий (мой профиль): https://github.com/Alpha-Oi» | in-ticket | GitHub connector подтвердил `Alpha-Oi` | spec §8 → T04 |
@@ -41,7 +41,7 @@
 
 | ID | Родитель | Статус | Наблюдение | Где |
 |---|---|---|---|---|
-| D01 | R22, R12 | in-ticket | Recorded own PID жив и HTTP 200, но недоступный command query приводит к новому Popen/порту и накоплению helper copies. Unknown не равен dead | spec §14 → T06 |
+| D01 | R22, R12 | done | T06 1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d; focused14 и root full33 green, independent baseline13 failing subtests/0errors; no duplicate/PID rewrite при unknown на проверенных seams. Real process cleanup не выполнялся | spec §14 → T06 |
 
 ## Согласованные изменения
 

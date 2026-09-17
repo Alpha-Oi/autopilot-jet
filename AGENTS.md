@@ -127,4 +127,6 @@ tests/test_{measure_run,sync,dashboard}.py       portable unit/runtime seams
 
 - T06 local acceptance: root full33/OK (T06+4, uncommitted T07+5; beforewave24), exact full-repo flake80 и measureOK; independent Manifest+Spec/Craft clean, baseline regression13 failing subtests/0errors. Recorded unknown PID не инициирует duplicate/rewrite; actual server cleanup не выполнялся. Native Actions и полный release pending; t06-local-verification.json.
 
+- T07 local gate: root full33/OK in10.553s, exactlint0/measureOK; independent native5 Windows PASS и review clean. Workflow native matrix3 готова, но externalCI3.11/20 ещё NOT_RUN. Live repaired sync повторён3 раза: honest unknown-ownership warning, registry hash/PID unchanged, loopback200; это не доказательство ownership/полного process inventory. t07-local-verification.json/server-query-recheck.json.
+
 <!-- autopilot:end -->

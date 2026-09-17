@@ -4,7 +4,7 @@
 **Blocked by:** 05
 **Зона:** `.github/workflows/verify.yml`, `tests/test_native_runtime.py`
 **Волна:** 5
-**Status:** pending
+**Status:** review — local Windows 5 new tests / full33 green; external native Actions pending
 
 ## Что должно заработать
 

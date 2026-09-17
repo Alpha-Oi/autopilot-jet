@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-17T10:09:14.9304489+03:00",
+  "updatedAt": "2026-09-17T10:15:23.1542926+03:00",
   "finishedAt": null,
   "stages": [
     {
@@ -60,14 +60,14 @@ window.STATE =
       "id": "build",
       "status": "active",
       "startedAt": "2026-09-10T23:47:33.4484312+03:00",
-      "note": "4 из 7 тасков готовы; T06 implementation и T07 native verification запущены после revised G2 и G3",
+      "note": "5 из 7 тасков готовы; T07 independent review, затем external native CI и T04",
       "implementationResumedAt": "2026-09-17T10:02:07.1404981+03:00"
     },
     {
       "id": "review",
       "status": "active",
       "startedAt": "2026-09-11T00:08:00+03:00",
-      "note": "T06 передан независимому review; T07 завершает native tests, внешний CI ещё не запускался",
+      "note": "T06 manifest/spec/craft clean, committed; T07 передан той же independent review pair",
       "resumedAt": "2026-09-17T10:09:14.9304489+03:00"
     },
     {
@@ -78,8 +78,8 @@ window.STATE =
   ],
   "requirements": {
     "total": 32,
-    "done": 8,
-    "inTicket": 24,
+    "done": 7,
+    "inTicket": 25,
     "inSpec": 0,
     "placeholder": 0,
     "deferred": 0,
@@ -290,9 +290,16 @@ window.STATE =
         "tests/test_sync.py",
         ".autopilot/sync.py"
       ],
-      "status": "review",
+      "status": "done",
       "startedAt": "2026-09-16T15:55:36.3885916+03:00",
-      "tests": "read-only baseline: sync 10 OK / full 24 OK / check-only OK / exact flake8 0; no source edits",
+      "tests": {
+        "focusedPassed": 14,
+        "focusedFailed": 0,
+        "rootFullPassed": 33,
+        "rootFullFailed": 0,
+        "scope": "full working tree includes T07",
+        "evidenceFile": "t06-local-verification.json"
+      },
       "retries": 0,
       "repairs": 0,
       "handoffs": 0,
@@ -316,6 +323,14 @@ window.STATE =
         "runtimeParity": true,
         "redBefore": "four regression tests red on previous code",
         "scope": "Executor report; root full gate and independent review pending"
+      },
+      "commit": "1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d",
+      "finishedAt": "2026-09-17T10:14:05+03:00",
+      "review": {
+        "manifest": "clean",
+        "spec": "clean",
+        "craft": "clean",
+        "blocking": []
       }
     },
     {
@@ -339,28 +354,39 @@ window.STATE =
         ".github/workflows/verify.yml",
         "tests/test_native_runtime.py"
       ],
-      "status": "in-progress",
+      "status": "review",
       "retries": 0,
       "repairs": 0,
       "handoffs": 0,
       "startedAt": "2026-09-17T10:02:07.1404981+03:00",
       "implementationStartedAt": "2026-09-17T10:02:07.1404981+03:00",
-      "blocker": null
+      "blocker": null,
+      "reviewStartedAt": "2026-09-17T10:15:23.1542926+03:00",
+      "executor": "/root/t07_native_roots",
+      "reportedVerification": {
+        "newTests": 5,
+        "fullPassed": 33,
+        "baselineBeforeWave": 24,
+        "measure": "OK",
+        "lintExitCode": 0,
+        "scope": "Executor Windows local, native external CI pending"
+      }
     }
   ],
   "singlePass": null,
   "tests": {
-    "passed": 24,
+    "passed": 33,
     "failed": 0
   },
   "checks": {
     "unitTests": {
       "status": "passed",
-      "passed": 24,
+      "passed": 33,
       "failed": 0,
-      "seconds": 7.83,
-      "evidenceFile": "plan-contract-recheck.json",
-      "checkedAt": "2026-09-17T10:02:07.1404981+03:00"
+      "seconds": 11.789,
+      "checkedAt": "2026-09-17T10:15:23.1542926+03:00",
+      "evidenceFile": "t06-local-verification.json",
+      "scope": "Working tree T06+T07"
     },
     "measureRun": {
       "status": "passed",
@@ -403,8 +429,8 @@ window.STATE =
       "exitCode": 0,
       "violations": 0,
       "environment": "isolated verification venv outside Git worktree; CPython 3.14.3 Windows",
-      "evidenceFile": "flake8-result.json",
-      "checkedAt": "2026-09-16"
+      "evidenceFile": "t06-local-verification.json",
+      "checkedAt": "2026-09-17T10:15:23.1542926+03:00"
     },
     "governanceHook": {
       "status": "passed",
@@ -452,7 +478,9 @@ window.STATE =
         "actionsRunId": 35094887597,
         "actionsConclusion": "success"
       },
-      "reason": "Нужны решение заказчика по расхождениям и разрешение финального gate; main не создана, PR/merge/post-merge не выполнены"
+      "reason": "Нужны решение заказчика по расхождениям и разрешение финального gate; main не создана, PR/merge/post-merge не выполнены",
+      "pendingDevelopmentSha": "1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d",
+      "actionsHistorical": true
     },
     "planContract": {
       "status": "passed",
@@ -596,6 +624,11 @@ window.STATE =
       "status": "resolved",
       "finding": "Revised specification did not preserve original requirements and user-approved changes",
       "evidence": "g2-agreed-contract-coverage.md; independent exactly-two-file recheck missing0/half0/extra0; does not supersede earlier blind NO_GO"
+    },
+    {
+      "status": "resolved",
+      "finding": "D01: unavailable process query could accumulate duplicate servers",
+      "evidence": "T06 1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d; independent baseline13 failing subtests, focused14/root33 green, exact lint0, no real process cleanup"
     }
   ],
   "concerns": [
@@ -612,8 +645,8 @@ window.STATE =
   ],
   "triageFile": "phase8-triage.md",
   "reviewers": {
-    "manifestSpec": "/root/g2_agreed_contract",
-    "craft": "/root/review_craft",
+    "manifestSpec": "/root/wave5_manifest_spec",
+    "craft": "/root/wave5_craft",
     "finalCraft": "/root/phase8_final_review",
     "blind": "/root/premerge_blind_acceptance"
   },
@@ -659,7 +692,7 @@ window.STATE =
     {
       "id": "D01",
       "parent": "R22",
-      "status": "in-ticket",
+      "status": "done",
       "ticket": "06",
       "finding": "Unknown process query was treated as dead and could accumulate own servers"
     }

@@ -4,7 +4,7 @@
 **Blocked by:** 02, 05
 **Зона:** `skills/autopilot/tools/sync.py`, `tests/test_sync.py`, `.autopilot/sync.py` (только runtime parity copy)
 **Волна:** 5
-**Status:** ready — read-only intake completed; revised independent G2 passed
+**Status:** done — independent review clean, root local gate green; commit 1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d
 
 ## Состояние на 2026-09-16T16:02:20.9101715+03:00
 
