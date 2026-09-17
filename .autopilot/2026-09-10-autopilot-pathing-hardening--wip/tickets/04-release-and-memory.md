@@ -1,9 +1,9 @@
 # 04 — Интеграционная приёмка, память и публикация
 
-**Требования:** R02, R05, R06, R07, R08, R09, R13, R15, R16, R17, R20, R23, R24, R25, R26, R27, R28, R29, R30, R31, R32i
-**Blocked by:** 01, 02, 03, 05
+**Требования:** R01, R02, R03, R04, R05, R06, R07, R08, R09, R12, R13, R14, R15, R16, R17, R20, R22, R23, R24, R25, R26, R27, R28, R29, R30, R31, R32i; G01, G02
+**Blocked by:** 01, 02, 03, 05, 06, 07
 **Зона:** `AGENTS.md`, `CLAUDE.md`, `.autopilot/`, GitHub release boundary
-**Волна:** 3
+**Волна:** 6
 **Status:** in-progress — локальная часть готова; внешний release gate ожидает оркестратор
 
 ## Что должно заработать
@@ -18,10 +18,12 @@
 
 ## Разделы спецификации
 
-§§2–3, 7–13.
+§§2–3, 4.0.2, 7–15.
 
 ## Критерии приёмки
 
+- [ ] Достоверно проверены фактические host model/effort и не отменённые исторические требования; G01 разрешает только CI/identity замену, G02 — отдельный ремонт хука. Недоказанное не закрывается тестами или новым текстом.
+- [ ] T06 исправлен и native Windows/Linux/macOS CI текущего опубликованного head завершён success; остальные ОС не объявлены проверенными без evidence.
 - [ ] Полный локальный gate и независимый blind acceptance зелёные; dashboard ещё не показывает 100% до их завершения.
 - [x] `AGENTS.md` и compact mirror в `CLAUDE.md` обновлены реальными командами/состоянием.
 - [x] `Alpha-Oi/skills` существует как Public, `origin` точен, `development` опубликован авторизацией сессии `Alpha-Oi`.
@@ -56,3 +58,7 @@
 - После прямого API 404 создан Public `Alpha-Oi/skills` (id `1372711955`) через POST /user/repos без auto-init. GET подтвердил visibility public и admin/push true; добавлен точный origin без изменения других remotes.
 - Live ls-remote до первой публикации подтвердил отсутствие development/main. Публикация development должна использовать explicit ref и lease с ожидаемым отсутствием; main до зелёного CI и pre-merge acceptance не создаётся.
 - Push отправил только development и подтверждён live ref 247535a; main не создан. Ubuntu Actions run 35071567560 завершён success, jobs и quality log lines сохранены в github-actions-result.json. Независимая pre-merge приёмка выполняется; PR/merge остаются следующими шагами.
+
+## Повторный план 2026-09-17
+
+G01 согласован, G02 repair завершён. Revised G2 прошёл independent missing0/half0/extra0. D01 потребовал T06; не подтверждённый native охват R12 потребовал T07. T06/T07 имеют disjoint edit zones и идут одной волной 5; прежняя финальная волна T04 перенесена с 3 на 6 только из-за этих blocking edges, ID и история таска сохранены. Итоговая приёмка/100%/main/PR/merge/post-merge остаются не выполненными.

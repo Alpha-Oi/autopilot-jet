@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-17T10:04:51.9683268+03:00",
+  "count": 34,
+  "first": {
+    "timestamp": "2026-09-10T20:19:34.835Z",
+    "cwd": "C:\\Users\\Crown-Aliy\\Documents\\Codex\\2026-09-10\\engineering-advanced-skills-plugin-engineering-advanced",
+    "model": "gpt-5.6-sol",
+    "effort": "medium"
+  },
+  "latest": {
+    "timestamp": "2026-09-17T06:58:20.554Z",
+    "cwd": "C:\\Users\\Crown-Aliy\\Documents\\Codex\\2026-09-10\\engineering-advanced-skills-plugin-engineering-advanced",
+    "model": "gpt-5.6-sol",
+    "effort": "max"
+  },
+  "configurations": [
+    {
+      "configuration": "gpt-5.6-sol, max",
+      "count": 31,
+      "first": "2026-09-12T06:17:10.725Z",
+      "latest": "2026-09-17T06:58:20.554Z"
+    },
+    {
+      "configuration": "gpt-5.6-sol, medium",
+      "count": 3,
+      "first": "2026-09-10T20:19:34.835Z",
+      "latest": "2026-09-10T21:03:41.532Z"
+    }
+  ],
+  "scope": "Only turn_context model/effort/cwd/timestamp extracted; no prompts, credentials or response bodies exposed; task configuration metadata is not an independent provider request/response trace.",
+  "literalSlashFlag": "NOT_VERIFIED_BY_TURN_CONTEXT",
+  "source": "C:\\Users\\Crown-Aliy\\.codex\\sessions\\2026\\09\\10\\rollout-2026-09-10T23-19-21-01a08cf9-92c2-7b21-b710-fc06374106c3.jsonl",
+  "currentResult": {
+    "model": "gpt-5.6-sol",
+    "effort": "max",
+    "status": "confirmed_by_latest_host_turn_context"
+  },
+  "historicalResult": {
+    "status": "not_uniform",
+    "detail": "Three initial task turn contexts declared medium; later 31 declared max. No retrospective all-phases maximum claim."
+  }
+}

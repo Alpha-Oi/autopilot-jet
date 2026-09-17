@@ -7,7 +7,7 @@
 | `tools/measure-run.py` | нормализация project/log paths и анализ JSONL | `encode_project_path(path)`, `logs_dir_for(path, root=None)`, `analyse(path, label)`, CLI `main(argv=None)` | globbing, weights, формат таблицы |
 | `skills/autopilot/tools/sync.py` | атомарный snapshot и жизненный цикл локального сервера | `read_state()`, `write_snapshot(state)`, `cmdline(pid)`, `iter_processes()`, `serve(state)`, `main()` | платформенные process queries и detached flags |
 | dashboard inline runtime | URL состояния, render и clock updates | `stateURL()`, `applyState()`, `pollState()`, `render(lang)`, `tick()` | DOM caches, presentation HTML, theme/lang storage |
-| `.github/workflows/verify.yml` | воспроизводимый quality gate | команды CI из spec §9 | GitHub runner setup |
+| `.github/workflows/verify.yml` | воспроизводимый quality gate | команды CI §9 | GitHub runner setup |
 | Git release boundary | target visibility, refs, PR, merge | GitHub API metadata и remote refs | credential values |
 
 ## Правила проекта
@@ -31,7 +31,7 @@
 ### Из таска 01 — CI и переносимый `measure-run.py`
 
 - `encode_project_path(path) -> str` — кодирует абсолютный Windows/POSIX-путь в имя каталога Claude projects.
-- `logs_dir_for(path, root=None) -> Path` — вычисляет каталог логов независимо от текущего `cwd`.
+- `logs_dir_for(path, root=None) -> Path` — default logs root не зависит от cwd для одного absolute project input; relative project input сначала разрешается относительно cwd.
 - `analyse(path, label) -> dict` — анализирует JSONL-сессию, пропуская повреждённые строки.
 - `main(argv=None) -> int` — CLI `<project> [session-id] | --check-only`.
 - Workflow `Autopilot CI/CD Verification` (name восстановлен T05) запускается для `main`, `master`, `development` и pull request; Python gate не зависит от наличия Node-проекта.
@@ -54,3 +54,10 @@
 - `state.tests = {passed, failed}` — renderer-compatible агрегат локального test gate.
 - `state.checks.flake8.status` — отдельный `NOT_RUN`/итоговый статус lint gate без подмены числа тестов.
 - `state.resolved[] = {status, finding, evidence}` — закрытые findings отделены от активных `concerns`.
+
+### Из таска 06 — безопасная деградация process query
+
+- `cmdline(pid) -> str`
+- `iter_processes() -> list[tuple[int, str]]`
+- `process_status(pid) -> str`
+- `serve(state) -> str`

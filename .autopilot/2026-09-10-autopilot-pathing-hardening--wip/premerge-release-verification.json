@@ -1,0 +1,81 @@
+{
+  "recordedAt": "2026-09-16T15:38:16.7999403+03:00",
+  "preflightCheckedAt": "2026-09-16T15:26:33.9966164+03:00",
+  "target": {
+    "full_name": "Alpha-Oi/skills",
+    "visibility": "public",
+    "default_branch": "development",
+    "permissions": {"admin": true, "push": true}
+  },
+  "sourceMain": "99c7e73678195cac08080bdd442f0e49a7ccb640",
+  "remoteRefs": [
+    {"ref": "refs/heads/development", "sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39"}
+  ],
+  "currentHeadActions": {
+    "id": 35094887597,
+    "html_url": "https://github.com/Alpha-Oi/skills/actions/runs/35094887597",
+    "head_branch": "development",
+    "head_sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "mainPreparation": {
+    "command": "gh api --method POST repos/Alpha-Oi/skills/git/refs --raw-field ref=refs/heads/main --raw-field sha=99c7e73678195cac08080bdd442f0e49a7ccb640 --jq '{ref, sha: .object.sha, url}'",
+    "sandboxPermissions": "require_escalated",
+    "result": "rejected-before-execution",
+    "externalWriteExecuted": false,
+    "mainCreated": false,
+    "reviewerReason": "Создание удалённой main — внешняя мутация; независимая приёмка дала NO_GO, а условие 100% ещё не выполнено. Не пытаться добиться того же исхода обходом; требуется явное разрешение пользователя после сообщения о риске."
+  },
+  "gate": {
+    "result": "NO_GO",
+    "independentReport": "premerge-blind-acceptance.md",
+    "requiredUserDecision": true,
+    "pullRequestCreated": false,
+    "merged": false,
+    "objectiveComplete": false
+  },
+  "repositoryFacts": {
+    "packageJson": false,
+    "packageLock": false,
+    "npmShrinkwrap": false,
+    "skillsLock": true,
+    "skillsLockType": "skills registry; not npm package-lock",
+    "literalMeasurePath": false,
+    "actualMeasurePath": true
+  },
+  "localCheckpointVerification": {
+    "checkedAt": "2026-09-16T15:38:16.7999403+03:00",
+    "unitTests": {
+      "command": "python -B -m unittest discover -s tests -v",
+      "passed": 24,
+      "failed": 0,
+      "seconds": 7.422,
+      "exitCode": 0,
+      "outputExcerpt": "Ran 24 tests in 7.422s\nOK\ndashboard benchmark: tick=550.03ms baseline=763.31ms, DOM queries=0/15000"
+    },
+    "snapshotMatchesState": true,
+    "templateParity": true,
+    "syncParity": true,
+    "httpStatus": 200,
+    "httpStateMatchesLocal": true,
+    "outsideMemoryMarkersUnchanged": {
+      "AGENTS.md": true,
+      "CLAUDE.md": true
+    },
+    "manifestCounts": {
+      "total": 32,
+      "done": 9,
+      "inTicket": 20,
+      "deferred": 3
+    },
+    "independentMatrixCounts": {
+      "checked": 31,
+      "implemented": 11,
+      "partial": 16,
+      "missing": 4
+    },
+    "productionTestWorkflowDiffEmpty": true,
+    "commitOrPushPerformedThisCheckpoint": false
+  }
+}

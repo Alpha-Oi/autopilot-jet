@@ -91,31 +91,66 @@ def cmdline(pid):
     if os.name == "nt":
         command = (
             "(Get-CimInstance -ClassName Win32_Process -Filter "
-            "'ProcessId = %d').CommandLine" % int(pid)
+            "'ProcessId = %d' -ErrorAction Stop).CommandLine" % int(pid)
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
         argv = ["ps", "-p", str(pid), "-o", "command="]
     try:
-        return subprocess.run(argv, capture_output=True, text=True,
-                              timeout=5, check=False).stdout.strip()
+        result = subprocess.run(argv, capture_output=True, text=True,
+                                timeout=5, check=False)
+        return result.stdout.strip() if result.returncode == 0 else ""
     except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         return ""
+
+
+def process_status(pid):
+    """Положительное отсутствие отличается от сбоя запроса; PID не сигналим."""
+    try:
+        pid = int(pid)
+        if pid <= 0:
+            return "unknown"
+        if os.name == "nt":
+            command = (
+                "$ErrorActionPreference = 'Stop'; "
+                "$process = Get-CimInstance -ClassName Win32_Process -Filter "
+                "'ProcessId = %d' -ErrorAction Stop; "
+                "if ($null -eq $process) { 'absent' } else { 'present' }" % pid
+            )
+            argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
+        else:
+            argv = ["ps", "-Ao", "pid="]
+        result = subprocess.run(argv, capture_output=True, text=True, timeout=5,
+                                check=False)
+        if result.returncode != 0 or result.stderr.strip():
+            return "unknown"
+        output = result.stdout.strip()
+        if os.name == "nt":
+            return output if output in ("present", "absent") else "unknown"
+        pids = output.split()
+        if not pids or not all(value.isdigit() and int(value) > 0 for value in pids):
+            return "unknown"
+        return "present" if str(pid) in pids else "absent"
+    except (OSError, subprocess.SubprocessError, ValueError, TypeError):
+        return "unknown"
 
 
 def iter_processes():
     """Возвращает пары ``(pid, command line)`` или пустой список при сбое."""
     if os.name == "nt":
         command = (
-            "Get-CimInstance -ClassName Win32_Process | ForEach-Object { "
+            "Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object { "
             "'{0}{1}{2}' -f $_.ProcessId, [char]31, $_.CommandLine }"
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
         argv = ["ps", "-Ao", "pid=,command="]
     try:
-        output = subprocess.run(argv, capture_output=True, text=True, timeout=10,
-                                check=False).stdout
+        result = subprocess.run(argv, capture_output=True, text=True, timeout=10,
+                                check=False)
+        if result.returncode != 0:
+            return []
+        output = result.stdout
     except (OSError, subprocess.SubprocessError):
         return []
     processes = []
@@ -172,8 +207,19 @@ def serve(state):
         return "удалённая сессия — без сервера"
 
     port, pid = recorded()
-    if port and pid and http_ok(port) and is_ours(cmdline(pid)):
-        return "сервер жив: http://localhost:%d/dashboard.html" % port
+    if port and pid:
+        responding = http_ok(port)
+        command = cmdline(pid)
+        if is_ours(command):
+            if responding:
+                return "сервер жив: http://localhost:%d/dashboard.html" % port
+            return ("записанный процесс найден, но HTTP не ответил — "
+                    "PID сохранён, новый сервер не запущен; "
+                    "дашборд открывается файлом: %s" % PAGE)
+        if not command and process_status(pid) != "absent":
+            return ("принадлежность записанного процесса не подтверждена — "
+                    "PID сохранён, новый сервер не запущен; "
+                    "дашборд открывается файлом: %s" % PAGE)
 
     # Процесс, которого нет в PIDF, не наш: одного совпадения --directory
     # недостаточно для безопасного завершения. Занятый прежний порт пропускаем.
