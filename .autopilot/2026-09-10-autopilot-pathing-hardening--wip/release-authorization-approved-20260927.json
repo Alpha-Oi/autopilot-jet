@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-27T07:39:12.1492244+03:00",
+  "status": "authorized",
+  "actor": "user",
+  "quote": "Разрешаю описанный в `release-authorization-scope-20260925.md` финальный Public payload и release-последовательность для `Alpha-Oi/autopilot-jet`",
+  "scopeFile": "release-authorization-scope-20260925.md",
+  "target": {
+    "fullName": "Alpha-Oi/autopilot-jet",
+    "repositoryId": 1372711955,
+    "visibility": "public",
+    "defaultBranch": "development"
+  },
+  "revalidatedStart": {
+    "localBranch": "development",
+    "localHead": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "remoteDevelopment": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "remoteMain": "absent",
+    "pullRequestsDevelopmentToMain": 0,
+    "sessionLogin": "Alpha-Oi",
+    "latestDevelopmentActionsRun": 35257607290,
+    "latestDevelopmentActionsConclusion": "success"
+  },
+  "authorizedActions": [
+    "Review and commit the exact final Public payload in development",
+    "Update only refs/heads/development with an explicit lease",
+    "Wait for and inspect terminal-success Actions for each published candidate",
+    "Create absent refs/heads/main at upstream base 99c7e73678195cac08080bdd442f0e49a7ccb640",
+    "Set the verified dashboard to 100 percent before opening the pull request",
+    "Create and merge development to main only after fresh pull-request checks succeed",
+    "Record final memory and dashboard state in main and synchronize non-stale memory back to development",
+    "Perform read-only post-merge verification"
+  ],
+  "precommitVerification": {
+    "checkedAt": "2026-09-27T07:42:40.2506232+03:00",
+    "unitTests": {
+      "command": "python -B -m unittest discover -s tests -v",
+      "passed": 33,
+      "failed": 0,
+      "seconds": 9.977,
+      "dashboardBenchmark": "tick=495.51ms baseline=888.63ms, DOM queries=0/15000",
+      "exactRetryOutsideSandbox": true
+    },
+    "measureRun": {
+      "command": "python -B tools/measure-run.py --check-only",
+      "status": "passed",
+      "output": "measure-run check-only: OK"
+    },
+    "flake8": {
+      "command": "python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "version": "7.3.0",
+      "status": "passed",
+      "violations": 0,
+      "exactRetryOutsideSandbox": true
+    },
+    "diffCheck": "passed",
+    "secretPatternScan": {
+      "status": "passed",
+      "matches": 0
+    },
+    "initialSandboxLimit": "WinError 5 blocked Windows Temp/CIM and multiprocessing Pipe before code checks; exact commands passed outside sandbox without source changes"
+  },
+  "stagedReview": {
+    "files": 37,
+    "unstagedTracked": 0,
+    "untracked": 0,
+    "binaryFiles": 0,
+    "diffCheck": "passed",
+    "secretPatternMatches": 0,
+    "scopeMatch": "12 approved modified files plus 25 approved or explicitly anticipated text evidence files"
+  },
+  "notAuthorized": [
+    "Force-update any ref other than refs/heads/development",
+    "Change global Git configuration",
+    "Install or upgrade dependencies",
+    "Delete user data or the C drive backup",
+    "Publish files outside the reviewed scope"
+  ],
+  "credentialValuesStored": false
+}

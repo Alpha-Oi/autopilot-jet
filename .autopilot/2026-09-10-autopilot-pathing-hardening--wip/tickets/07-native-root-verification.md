@@ -4,7 +4,7 @@
 **Blocked by:** 05
 **Зона:** `.github/workflows/verify.yml`, `tests/test_native_runtime.py`
 **Волна:** 5
-**Status:** review — local Windows 5 new tests / full33 green; external native Actions pending
+**Status:** done — independent review clean, root local gate green; commit 7911d30636afbf2987274e7c881b8a9977eebc67 опубликован с exact informed approval; native Actions35257607290 success на Windows/Linux/macOS (по33 tests/no skips), publication-approval-and-native-ci-20260917.json. Whole-project acceptance остаётся T04.
 
 ## Что должно заработать
 

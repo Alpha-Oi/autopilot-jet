@@ -14,11 +14,14 @@
 
 - Runtime: Python 3.11+ и dependency-free HTML/JavaScript; Node 20 используется для CI/browser checks, production npm dependencies отсутствуют.
 - Ветка реализации: только `development`; `main` до финальной приёмки не изменять.
+- Текущий target после согласованного G03 rename — `Alpha-Oi/autopilot-jet`, origin `https://github.com/Alpha-Oi/autopilot-jet.git`, repository id1372711955. Rename не разрешает ранее остановленный public payload; не создавать заново прежний target.
 - Upstream base: `99c7e73678195cac08080bdd442f0e49a7ccb640` из `nick-vels/skills`.
 - Не устанавливать и не обновлять production dependencies. Недостающая зависимость возвращается как `BLOCKED`, а не устанавливается самостоятельно.
 - Не изменять credential values и не читать `.env`.
 - Локальный gate: `flake8` syntax/error selection, `python -m unittest discover -s tests -v`, `python tools/measure-run.py --check-only`, browser smoke/performance.
 - Каждый таск должен завершаться полным зелёным локальным gate и одним отдельным commit.
+- Контроль качества CI (R15, spec §9/T04): после разрешённой публикации читать jobs/steps и логи run с head_sha текущего опубликованного development, проверять exact flake8/full unittest/measure/benchmark, сохранять необходимые безопасные результаты локально. Failed/cancelled/timed-out/unknown блокируют приёмку; логи старого SHA не доказывают новый код, credentials не извлекать, публикация отчётов отдельно согласуется.
+- G04 разрешает зафиксированную release-последовательность: explicit lease только для `refs/heads/development`; `main` создаётся от `99c7e73678195cac08080bdd442f0e49a7ccb640`; PR/merge допустимы только после fresh checks; post-merge memory/dashboard проверяются отдельно. Любая ошибка останавливает последовательность.
 
 ## Тестовые швы
 

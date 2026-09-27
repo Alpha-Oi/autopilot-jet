@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-09-17T17:33:11.2170302+03:00",
+  "status": "blocked-not-complete",
+  "objective": "Выполнить полный Autopilot-цикл, заданный в goal-objective.md: безопасно определить конкретные репозитории-источник и цель; подготовить рабочую ветку development; добавить заданный GitHub Actions workflow; проанализировать и исправить кроссплатформенные пути measure-run.py и dashboard-template.html; повысить надежность Python-автоматизации и скорость рендеринга дашборда; пройти контракты фаз 0-preflight–9-memory и проверки; после подтвержденной приемки создать PR, слить development в main и обновить AGENTS.md. Соблюдать действующие правила безопасности и разрешений, не раскрывать токены и не выполнять внешние записи или глобальные изменения конфигурации без необходимого разрешения; не считать placeholders https://github.com конкретными репозиториями.",
+  "reason": "Нужно информированное согласие на Public payload двух локальных коммитов с отчётами/локальными путями/метаданными и настройка host effort max. После трёх последовательных goal turns та же граница разрешения сохраняется; без решения не повторять push и уже выполненные проверки.",
+  "resumedAudit": {
+    "turns": 3,
+    "turnsSummary": [
+      "User-triggered resume: progress by current G2/R15 repair and G3/local gate; publication approval absent",
+      "Automatic continuation: progress by fresh real DOM performance/UI evidence; publication approval absent",
+      "Automatic continuation: revalidated same boundary, no further authorized meaningful action; blocked"
+    ]
+  },
+  "externalReadOnly": {
+    "checkedAt": "2026-09-17T17:32:10.2937096+03:00",
+    "target": "Alpha-Oi/autopilot-jet",
+    "refs": [
+      {
+        "ref": "refs/heads/development",
+        "sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39"
+      }
+    ],
+    "actions": [
+      {
+        "conclusion": "success",
+        "head_sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+        "html_url": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35094887597",
+        "id": 35094887597,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "247535a3b0ddd680f6dc538b6002e2a002e78d8f",
+        "html_url": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35071567560",
+        "id": 35071567560,
+        "status": "completed"
+      }
+    ],
+    "activeActions": 0,
+    "publishedLocal7911": false,
+    "mainPresent": false,
+    "externalWrites": false
+  },
+  "host": {
+    "checkedAt": "2026-09-17T17:32:15.5624798+03:00",
+    "latest": {
+      "timestamp": "2026-09-17T14:30:21.109Z",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh"
+    },
+    "requiredEffort": "max",
+    "status": "mismatch",
+    "scope": "Read-only sanitized turn_context metadata, not provider trace; no prompts/secrets/body exposed"
+  },
+  "local": {
+    "workdir": "D:/Development/skills/worktrees/skills-development",
+    "branch": "development",
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "unpublishedCommits": [
+      "1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d",
+      "7911d30636afbf2987274e7c881b8a9977eebc67"
+    ],
+    "implementationGuardExitCode": 0,
+    "previousLocalEvidenceFile": "resumed-goal-local-checkpoint.json",
+    "previousBrowserEvidenceFile": "resumed-goal-browser-checkpoint.json"
+  },
+  "workers": {
+    "g2RenamedChecker": "completed",
+    "g2RecheckChecker": "completed",
+    "activeImplementationWorkers": 0,
+    "dashboardServer": "Left running; not a CI or goal worker"
+  },
+  "requiredUserDecision": {
+    "payload": "Allow publication of the exact two commits in Public Alpha-Oi/autopilot-jet including local paths/run metadata/acceptance and diagnostic reports, or separately authorize code-only candidate preparation",
+    "host": "Change host reasoning effort to max",
+    "credentials": "Not requested"
+  },
+  "remainingScopePreserved": [
+    "current-head native Actions and quality-control logs",
+    "historical model/phase obligations still explicit",
+    "fresh independent whole-project blind acceptance; unattributed harness console finding not declared passed",
+    "truthful dashboard100",
+    "gated main/PR/merge/post-merge AGENTS.md"
+  ],
+  "toolGoalStatus": "blocked",
+  "completionClaim": false,
+  "noPushRetryOrWorkaround": true,
+  "postUpdateVerification": {
+    "dashboardServerNotRestarted": true,
+    "httpDashboard": 200,
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "httpState": 200,
+    "requirements": {
+      "total": 32,
+      "done": 7,
+      "inTicket": 25,
+      "inSpec": 0,
+      "placeholder": 0,
+      "deferred": 0,
+      "dropped": 0
+    },
+    "localSnapshotEqual": true,
+    "localServedEqual": true,
+    "checkedAt": "2026-09-17T17:35:06.3976804+03:00",
+    "snapshotUpdatedAt": "2026-09-17T17:33:11.2170302+03:00",
+    "goalStatus": "blocked",
+    "stagedSetEmpty": true,
+    "branch": "development",
+    "t04": "pending",
+    "outsideAutopilotMarkersUnchanged": {
+      "AGENTS": true,
+      "CLAUDE": true
+    },
+    "measureCheckOnly": "OK",
+    "diffCheckExitCode": 0
+  }
+}

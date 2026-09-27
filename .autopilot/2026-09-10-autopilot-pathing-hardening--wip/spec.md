@@ -1,17 +1,18 @@
-# Спецификация: кроссплатформенный Autopilot и быстрый дашборд
+# Спецификация: Autopilot JET — кроссплатформенность и быстрый дашборд
 
 ## 1. Задача
 
-Владелец `Alpha-Oi` хочет продолжить историю `nick-vels/skills` в публичном `Alpha-Oi/skills`, вести изменения в `development` и получить доказуемо переносимый Autopilot. Сейчас `tools/measure-run.py` неверно кодирует Windows-пути и не имеет `--check-only`; `skills/autopilot/tools/sync.py` падает на Windows при вызове `ps`; дашборд повторяет относительный путь `state.js` и выполняет лишние DOM-сканирования каждую секунду. Предложенный CI-шаблон также ссылается на отсутствующие `package.json` и `инструменты/measure-run.py`.
+Владелец `Alpha-Oi` хочет продолжить историю `nick-vels/skills` в публичном `Alpha-Oi/autopilot-jet` (новое имя явно согласовано G03), вести изменения в `development` и получить доказуемо переносимый Autopilot. Исходные дефекты на момент брифа: `tools/measure-run.py` неверно кодирует Windows-пути и не имеет `--check-only`; `skills/autopilot/tools/sync.py` падает на Windows при вызове `ps`; дашборд повторяет относительный путь `state.js` и выполняет лишние DOM-сканирования каждую секунду. Предложенный CI-шаблон также ссылается на отсутствующие `package.json` и `инструменты/measure-run.py`. Нынешнее состояние исправлений отражено в manifest/state; этот перечень не объявляет старые дефекты текущими.
 
 ## 2. Решение и Git-инварианты
 
 - Рабочая история начинается от upstream commit `99c7e73678195cac08080bdd442f0e49a7ccb640` и развивается только в локальной ветке `development`.
 - На этапе 1 `execution_plan`, сразу после переноса/клонирования исходной истории и до изменений кода, создать и выбрать `development` (`git checkout -b development`). Все дальнейшие улучшения, коммиты и тесты выполняются только в ней; при продолжении уже созданная ветка переиспользуется, а не создаётся заново. Первоначальное время этих действий проверяется по журналу, а не по наличию ветки сегодня.
-- `upstream` остаётся `https://github.com/nick-vels/skills.git`; будущий `origin` — `https://github.com/Alpha-Oi/skills.git`.
+- `upstream` остаётся `https://github.com/nick-vels/skills.git`; текущий `origin` — `https://github.com/Alpha-Oi/autopilot-jet.git` (G03).
 - До финальной приёмки `main` не изменяется. Перед PR нужны слепая независимая приёмка без NO_GO, фактически отображаемые 100% и успешный Actions run именно для опубликованного development head. Только затем создать PR `development -> main` и выполнить merge по подтверждённому состоянию. Если main отсутствует, её подготовка относится только к этому финальному gate; прежний отказ create-ref не обходится.
 - До первого коммита применяется repo-local identity: `user.name = Alpha-Oi`, `user.email = 266576325+Alpha-Oi@users.noreply.github.com`. Это G01, согласованное 2026-09-17 дополнение брифа («Продолжай, как предлагаешь» в контексте принятия адаптированного CI и локальной identity), а не принятое за пользователя предположение. Только этим согласованием исходные global команды заменены на local config; остальные требования не отменены. Проверить local config и автора самого первого коммита; global settings не менять.
-- Репозиторий создаётся Public, если API снова подтверждает отсутствие `Alpha-Oi/skills`. Если он возникнет до публикации, обновляется только `development`; `main` не перезаписывается.
+- Public target уже создан и переименован в `Alpha-Oi/autopilot-jet` с сохранением id `1372711955` (G03). При продолжении проверять этот существующий repository, не создавать заново прежнее имя `Alpha-Oi/skills`. Публикация обновляет только `development` после отдельного разрешения конкретного public payload; `main` не перезаписывается.
+- 2026-09-17 пользователь ответил «согласен» на вопрос о публикации именно `1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d` и `7911d30636afbf2987274e7c881b8a9977eebc67` в Public `Alpha-Oi/autopilot-jet`, включая содержащиеся в них отчёты, локальные пути и метаданные запусков. Для этого точного payload отдельное согласие получено и прежняя остановка публикации снята; незакоммиченные изменения исключены. Разрешение применяется только к `refs/heads/development`, с explicit SHA и lease по прочитанному remote ref; materially different public payload, исходные требования приёмки/host model/effort, 100% и gates main/PR/merge/post-merge этим не разрешены и не отменены. Доказательство согласия, фактического push и нового native CI — publication-approval-and-native-ci-20260917.json; прежний отказ сохраняется датированным в publication-hold.json, не как действующий запрет этого уже согласованного payload.
 
 ## 3. Процесс и доказательства
 
@@ -133,9 +134,9 @@ Platform evidence: Windows runtime и Ubuntu Actions подтверждены о
 
 ## 8. GitHub-публикация
 
-- Read-only API сначала проверяет login и наличие `Alpha-Oi/skills`.
+- Read-only API сначала проверяет login и наличие `Alpha-Oi/autopilot-jet` с id `1372711955`.
 - Все операции создания, клонирования и push выполняются через права текущей активной GitHub-сессии Alpha-Oi, как требует исходный бриф. Это включает clone публичного upstream: session-backed credential helper/API без извлечения или печати токена, а не отмена правила потому, что чтение возможно анонимно. Подтверждать login безопасным GET /user, фиксировать способ выполнения; первоначальную неподтверждённую авторизацию clone не объявлять доказанной.
-- Если репозиторий отсутствует, создать Public через API авторизованной сессии. Доступный путь — gh api с session-backed авторизацией без чтения credential value; API-создание Public target подтверждено отдельным артефактом. Недоступность одного connector не отменяет API-требование.
+- Исходное создание Public через API авторизованной сессии выполнено при прежнем имени `Alpha-Oi/skills`; G03 переименовал тот же repository. При неожиданном отсутствии нового target остановить release и проверить id/доступ, не создавать другой repository автоматически. Доступный путь — gh api с session-backed авторизацией без чтения credential value; API-создание Public target подтверждено отдельным артефактом. Недоступность одного connector не отменяет API-требование.
 - После создания добавить `origin`, проверить точный URL и права, затем опубликовать только `development`.
 - Если target существует на момент публикации, обязательное принудительное обновление выполняется только для `refs/heads/development` после чтения remote ref, через lease-защищённый force update. `main` до финала не обновлять.
 - После успешной независимой приёмки, честных отображаемых 100% и зелёного workflow текущего development head создать PR development -> main, дождаться terminal success для PR head и выполнить merge. Подтвердить remote main, Public visibility и отдельно обновить AGENTS.md на main по §7. Непройденный gate/прежний отказ создания main не обходятся другой командой/API.
@@ -158,6 +159,8 @@ Platform evidence: Windows runtime и Ubuntu Actions подтверждены о
 8. Статическая проверка dashboard и браузерная smoke/performance-проверка локально.
 
 Локальная приёмка повторяет шаги 5–8. Любой ненулевой код блокирует commit. Внешняя приёмка требует успешного GitHub Actions run на опубликованном `development`.
+
+Использовать фактические логи CI/CD для контроля качества кода (R15), а не только общий зелёный статус run. После разрешённой публикации выбрать Actions run с head_sha, равным опубликованному development head; через права текущей сессии прочитать jobs/steps и их логи. Проверить exact flake8-команду и результат, полный unittest/count, measure-run --check-only и dashboard benchmark/query budget; любые traceback, failed/cancelled/timed-out шаги или неизвестный результат блокируют приёмку и release. При дефекте вернуть соответствующий таск на исправление и повторить проверки для нового head. В локальном артефакте прогона сохранить run URL/id, head SHA, время, job/step conclusions и необходимые строки результата; значения credentials не извлекать, возможные секреты редактировать до записи. Исторические логи другого SHA не доказывают качество нового кода. Публикация самого отчёта/локальных метаданных по-прежнему требует отдельного согласия; чтение логов не разрешает push/main/PR/merge.
 
 ## 10. Согласованные изменения и остающиеся ограничения
 
@@ -187,7 +190,7 @@ Platform evidence: Windows runtime и Ubuntu Actions подтверждены о
 | 10 | R13, R27 | Как следующая сессия, я читаю одну непротиворечивую память | `AGENTS.md` канон, `CLAUDE.md` pointer |
 | 11 | R14–R16 | Как сопровождающий, я получаю работающий CI вместо декларативного шаблона | workflow соответствует реальным путям и локально воспроизводим |
 | 12 | R24–R25 | Как заказчик, я вижу 100% только после доказанной готовности | dashboard final state и зелёный Actions run |
-| 13 | R02, R26, R28–R31 | Как `Alpha-Oi`, я получаю Public `Alpha-Oi/skills` и PR в `main` | API metadata, remote refs, PR и merge подтверждены |
+| 13 | R02, R26, R28–R31; G03 | Как `Alpha-Oi`, я получаю Public `Alpha-Oi/autopilot-jet` и PR в `main` | API metadata, remote refs, PR и merge подтверждены |
 
 Для process-only требований измерения First run/Empty/Wrong input/Failure/Interruption/Growth/Boundaries/Aftermath не применимы к отдельному UI; их наблюдаемая приёмка определена Git-инвариантами, CI gate и внешним release gate выше. Для `measure-run.py`, `sync.py` и dashboard все восемь измерений определены в §§4–6.
 
@@ -258,7 +261,7 @@ D01 служит R22/R12 и не отменяет ownership boundary или reco
 | R26 | §§2,8 |
 | R27 | §7 |
 | R28 | §8 |
-| R29 | §8 |
+| R29 | §§8,16; G03 |
 | R30 | §8 |
 | R31 | §8 |
 | R32i | §§2,8 |
@@ -274,3 +277,17 @@ G02 — дополнение пользователя «Исправляй ху�
 Приёмка коррекции — frozen decision-only unit tests и синтетические Python dispatcher события: без запуска опасных команд проверить allow для документации/безопасных команд, deny для опасных команд/защищённых путей и fail-closed для неизвестных tool kinds. Сохранить before/after результаты и source hashes, подтвердить неизменность конфигурации и прохождение harmless live document patch. Simulations не равны full live Codex E2E или доказательству любого будущего перехвата.
 
 Коррекция выполнена по отдельному разрешению; final source SHA256 A9489426518688F5EC772B1FC193D7290491D6CEF482D4B0E08C71288D30CD63 соответствует 45/45 safe decision tests. Backup, frozen harness, результаты и ограничения — verification-tools/governance-hook-repair-20260917-012107 вне Git worktree. Внешние файлы и защита при продолжении не меняются заново без отдельной необходимости/разрешения.
+
+## 16. Согласованное переименование Autopilot JET
+
+G03 — ответ пользователя «да» 2026-09-17 на вопрос «Переименовать `Alpha-Oi/skills` в `Alpha-Oi/autopilot-jet`?». Сценарий: владелец Alpha-Oi продолжает тот же проект под именем Autopilot JET, без повторного создания repository и переписывания истории. PATCH меняет только name; проверка GET должна сохранить id1372711955/Public/default development/remote refs. Origin D: рабочих копий, текущие ссылки плана и dashboard обновляются; локальные папки остаются прежними.
+
+Согласование заменяет только имя R29. Исходный execution_plan и dated evidence с прежним именем не переписываются; G01/G02, full acceptance, current-head native CI и запрет обхода прежнего public-export/main/PR/merge отказа сохраняются. Проверка имени не равна независимому G2 amended brief/spec или release GO. Подтверждение — repository-rename-verification.json.
+
+Более позднее отдельное согласие на exact two-commit public payload описано в §2: G03 сам по себе не разрешал экспорт, но ответ «согласен» снимает прежнюю остановку только для 1ab3dad/7911d30 в development. Остальные ограничения и предыдущие dated evidence сохраняются; публикация нового отчёта или materially different payload не выводится автоматически из согласия на эти два коммита.
+
+## 17. Разрешённая финальная release-последовательность
+
+G04 — ответ пользователя от 2026-09-27: «Разрешаю описанный в `release-authorization-scope-20260925.md` финальный Public payload и release-последовательность для `Alpha-Oi/autopilot-jet`». Разрешение охватывает exact reviewed Public payload и механические финальные записи в тех же зонах, explicit lease-защищённое обновление только `development`, создание отсутствующей `main` строго от `99c7e73678195cac08080bdd442f0e49a7ccb640`, PR `development -> main`, merge только после fresh PR-head checks, затем отдельную final memory/dashboard запись в `main`, CI и read-only verification.
+
+Порядок обязателен: pre-commit local gate и secret/staged-set review → development push → terminal-success Actions и чтение обязательных logs → dashboard 100% → создание main/PR → terminal-success PR checks → merge → post-merge memory/dashboard, CI и синхронизация default development. Ошибка, cancelled/timed-out/unknown результат или несовпадение SHA останавливают последовательность. Разрешение не распространяется на force update других refs, global Git config, dependency changes, пользовательские удаления или новый непроверенный payload.

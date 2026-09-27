@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-09-25T10:33:08.3353008+03:00",
+  "scope": "Fresh read-only resume verification plus local gates; no Git commit, push, branch, PR, merge, repository or global configuration change",
+  "worktree": "D:\\Development\\skills\\worktrees\\skills-development",
+  "branch": "development",
+  "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+  "preExistingChangesPreserved": true,
+  "local": {
+    "unitTests": {
+      "command": "python -B -m unittest discover -s tests -v",
+      "status": "passed",
+      "passed": 33,
+      "failed": 0,
+      "seconds": 9.582,
+      "dashboardBenchmark": {
+        "tickMs": 489.64,
+        "baselineMs": 740.40,
+        "tickQueries": 0,
+        "baselineQueries": 15000
+      },
+      "sandboxFirstAttempt": "FAILED_ENVIRONMENT: Windows sandbox denied Temp fixture writes and own-process command query; exact unsandboxed rerun passed without source changes"
+    },
+    "measureRun": {
+      "command": "python -B tools/measure-run.py --check-only",
+      "status": "passed",
+      "output": "measure-run check-only: OK"
+    },
+    "flake8": {
+      "command": "D:\\Development\\skills\\verification-tools\\flake8-7.3.0\\Scripts\\python.exe -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "status": "passed",
+      "exitCode": 0,
+      "violations": 0,
+      "sandboxFirstAttempt": "FAILED_ENVIRONMENT: Windows sandbox denied multiprocessing Pipe creation; exact unsandboxed rerun passed without rule changes"
+    }
+  },
+  "github": {
+    "checkedReadOnly": true,
+    "repositoryId": 1372711955,
+    "fullName": "Alpha-Oi/autopilot-jet",
+    "visibility": "public",
+    "defaultBranch": "development",
+    "developmentSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "mainPresent": false,
+    "openPullRequests": 0,
+    "latestActions": {
+      "runId": 35257607290,
+      "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290"
+    },
+    "gitLsRemote": "UNAVAILABLE_LOCAL_CREDENTIAL_PROVIDER: SEC_E_NO_CREDENTIALS; authoritative read-only GitHub API ref returned the expected development SHA"
+  },
+  "host": {
+    "source": "sanitized turn_context metadata only",
+    "contexts": 65,
+    "latest": {
+      "timestamp": "2026-09-24T18:12:27.593Z",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh"
+    },
+    "requiredEffort": "max",
+    "status": "mismatch-current",
+    "history": "3 medium / 34 max / 28 xhigh; not uniform"
+  },
+  "phase8": {
+    "memoryReview": "passed; AGENTS.md and CLAUDE.md current blocks required no further changes",
+    "adrReview": "passed; ADR 0001-0006 cover the qualifying decisions and D01; no further ADR needed",
+    "blindAcceptance": {
+      "status": "NO-GO",
+      "checker": "/root/g4_retry_20260925",
+      "checked": 34,
+      "implemented": 20,
+      "partial": 8,
+      "missing": 6,
+      "evidenceFile": "g4-current-blind-acceptance.md"
+    }
+  }
+}

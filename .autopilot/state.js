@@ -2,7 +2,7 @@ window.STATE =
 {
   "slug": "autopilot-pathing-hardening",
   "dir": "2026-09-10-autopilot-pathing-hardening--wip",
-  "title": "Кроссплатформенный Autopilot и быстрый дашборд",
+  "title": "Autopilot JET — кроссплатформенность и быстрый дашборд",
   "mode": "full",
   "depth": "deep",
   "polish": null,
@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-17T10:15:23.1542926+03:00",
+  "updatedAt": "2026-09-27T07:42:40.2506232+03:00",
   "finishedAt": null,
   "stages": [
     {
@@ -37,9 +37,9 @@ window.STATE =
       "id": "spec",
       "status": "done",
       "startedAt": "2026-09-10T23:35:40.0710546+03:00",
-      "finishedAt": "2026-09-17T09:54:04.4822028+03:00",
-      "note": "Независимый повторный проверяющий: пропусков 0, неполных 0, лишних 0",
-      "lastCheckAt": "2026-09-17T09:54:04.4822028+03:00",
+      "finishedAt": "2026-09-10T23:47:33.4484312+03:00",
+      "note": "Свежая независимая сверка брифа с exact Public consent: пропусков0/неполных0/лишних0.",
+      "lastCheckAt": "2026-09-17T18:27:17.632Z",
       "previousCheck": {
         "status": "failed",
         "startedAt": "2026-09-10T23:35:40.0710546+03:00",
@@ -53,33 +53,37 @@ window.STATE =
       "status": "done",
       "startedAt": "2026-09-10T23:44:53.1001545+03:00",
       "finishedAt": "2026-09-10T23:47:33.4484312+03:00",
-      "note": "7 тасков; исправление сервера и native-проверки параллельно, приёмка после них",
-      "recheckedAt": "2026-09-17T10:02:07.1404981+03:00"
+      "note": "32 требования + 3 согласованных изменения / 7 тасков; mapping/waves/зоны проверены, ошибки0",
+      "recheckedAt": "2026-09-17T17:13:06.6472165+03:00"
     },
     {
       "id": "build",
-      "status": "active",
+      "status": "done",
       "startedAt": "2026-09-10T23:47:33.4484312+03:00",
-      "note": "5 из 7 тасков готовы; T07 independent review, затем external native CI и T04",
-      "implementationResumedAt": "2026-09-17T10:02:07.1404981+03:00"
+      "finishedAt": "2026-09-25T22:13:41.9934461+03:00",
+      "note": "Точный кандидат development7911d30 принят независимой G4: local gates, browser smoke и native CI трёх ОС зелёные; current host max подтверждён.",
+      "implementationResumedAt": "2026-09-17T10:02:07.1404981+03:00",
+      "resumedAt": "2026-09-17T21:17:09.3068217+03:00"
     },
     {
       "id": "review",
-      "status": "active",
+      "status": "done",
       "startedAt": "2026-09-11T00:08:00+03:00",
-      "note": "T06 manifest/spec/craft clean, committed; T07 передан той же independent review pair",
-      "resumedAt": "2026-09-17T10:09:14.9304489+03:00"
+      "finishedAt": "2026-09-25T22:13:41.9934461+03:00",
+      "note": "Independent G4 pre-release gate GO: 56 атомарных требований, 37 реализовано / 15 частично / 4 post-acceptance не выполнены.",
+      "resumedAt": "2026-09-17T18:27:17.632Z"
     },
     {
       "id": "final",
-      "status": "pending",
-      "note": "PR/merge не разрешены текущим NO_GO; создание main отклонено проверкой разрешений, ветка не создана"
+      "status": "active",
+      "startedAt": "2026-09-25T22:13:41.9934461+03:00",
+      "note": "G4 GO; G04 разрешил exact Public payload и ordered release sequence. Fresh start revalidation пройдена; commit/push/main/PR/merge ещё не выполнялись."
     }
   ],
   "requirements": {
     "total": 32,
-    "done": 7,
-    "inTicket": 25,
+    "done": 9,
+    "inTicket": 23,
     "inSpec": 0,
     "placeholder": 0,
     "deferred": 0,
@@ -209,7 +213,9 @@ window.STATE =
         "R31",
         "R32i",
         "G01",
-        "G02"
+        "G02",
+        "G03",
+        "G04"
       ],
       "blockedBy": [
         "01",
@@ -228,10 +234,20 @@ window.STATE =
       ],
       "status": "in-progress",
       "startedAt": "2026-09-12T09:33:40.0789316+03:00",
-      "tests": "24 passed; measure check OK; HTTP smoke OK; full repo flake8 exit 0; current development 6265e03 Ubuntu Actions success; blind NO_GO, user decision required",
+      "tests": "2026-09-25 independent G4: GO pre-release; 33/33 tests in9.084s, measureOK, exact flake80, browser smoke pass, benchmark483.02ms<666.80ms/queries0. Native Actions35257607290 at7911d30 success on Windows/Linux/macOS. Full objective matrix: 37 implemented / 15 partial / 4 post-acceptance missing of56.",
       "retries": 0,
       "repairs": 1,
-      "handoffs": 0
+      "handoffs": 0,
+      "blocker": null,
+      "releaseAuthorization": {
+        "status": "authorized",
+        "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
+        "evidenceFile": "release-authorization-approved-20260927.json",
+        "scopeFile": "release-authorization-scope-20260925.md"
+      },
+      "previousStatus": "in-progress",
+      "pausedAt": "2026-09-17T17:33:11.2170302+03:00",
+      "resumedAt": "2026-09-17T21:17:09.3068217+03:00"
     },
     {
       "id": "05",
@@ -354,7 +370,7 @@ window.STATE =
         ".github/workflows/verify.yml",
         "tests/test_native_runtime.py"
       ],
-      "status": "review",
+      "status": "done",
       "retries": 0,
       "repairs": 0,
       "handoffs": 0,
@@ -370,6 +386,21 @@ window.STATE =
         "measure": "OK",
         "lintExitCode": 0,
         "scope": "Executor Windows local, native external CI pending"
+      },
+      "commit": "7911d30636afbf2987274e7c881b8a9977eebc67",
+      "finishedAt": "2026-09-17T10:20:03+03:00",
+      "tests": {
+        "focusedPassed": 5,
+        "rootFullPassed": 33,
+        "failed": 0,
+        "evidenceFile": "t07-local-verification.json",
+        "scope": "Native Windows local; external matrix pending"
+      },
+      "review": {
+        "manifest": "clean",
+        "spec": "clean",
+        "craft": "clean",
+        "blocking": []
       }
     }
   ],
@@ -383,28 +414,37 @@ window.STATE =
       "status": "passed",
       "passed": 33,
       "failed": 0,
-      "seconds": 11.789,
-      "checkedAt": "2026-09-17T10:15:23.1542926+03:00",
-      "evidenceFile": "t06-local-verification.json",
-      "scope": "Working tree T06+T07"
+      "seconds": 9.977,
+      "checkedAt": "2026-09-27T07:42:40.2506232+03:00",
+      "evidenceFile": "release-authorization-approved-20260927.json"
     },
     "measureRun": {
       "status": "passed",
-      "checkedAt": "2026-09-17T01:39:33.436+03:00",
-      "evidenceFile": "dashboard-refresh-checkpoint.json"
+      "checkedAt": "2026-09-27T07:42:40.2506232+03:00",
+      "evidenceFile": "release-authorization-approved-20260927.json"
     },
     "pyCompile": {
       "status": "passed",
       "scripts": 2
     },
     "browser": {
-      "status": "passed",
+      "status": "partial",
       "modes": [
         "http"
       ],
-      "errors": 0,
-      "checkedAt": "2026-09-16",
-      "file": "T04 prior smoke passed; current CUA file navigation blocked by URL policy",
+      "checkedAt": "2026-09-25T10:40:28.6977578+03:00",
+      "evidenceFile": "dashboard-resume-20260925.json",
+      "mainPage": {
+        "status": "passed-observed",
+        "errors": 0,
+        "autoRefresh": true,
+        "tests": 33,
+        "tickets": "6/7",
+        "visiblePercent": 81,
+        "freshCheckpointTextVisible": true,
+        "undefinedVisible": false,
+        "url": "http://127.0.0.1:56521/dashboard.html"
+      },
       "performance": {
         "status": "passed",
         "environment": "real HTTP browser DOM",
@@ -412,15 +452,56 @@ window.STATE =
           "stages": 8,
           "tickets": 100,
           "activeTickets": 30,
-          "liveClocks": 94
+          "liveClocks": 94,
+          "idleNotes": 1,
+          "agoClocks": 1,
+          "elements": 2209
         },
         "rounds": 5,
         "callsPerRound": 1000,
-        "baselineMs": 741.5,
-        "tickMs": 570.6999999999534,
+        "baselineMs": 693.5,
+        "tickMs": 590.2000000001863,
         "baselineQueries": 15000,
         "tickQueries": 0,
-        "evidenceFile": "browser-benchmark-result.json"
+        "repeat": {
+          "baselineMs": 862.5999999996275,
+          "tickMs": 706.1999999992549,
+          "queries": 0
+        },
+        "evidenceFile": "resumed-goal-browser-checkpoint.json"
+      },
+      "harnessConsole": {
+        "status": "UNATTRIBUTED",
+        "reproduced": 2,
+        "errorsPerAttempt": 1,
+        "finding": "Uncaught TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.",
+        "mainPageClean": true
+      },
+      "previousDatedCheck": {
+        "status": "passed",
+        "modes": [
+          "http"
+        ],
+        "errors": 0,
+        "checkedAt": "2026-09-16",
+        "file": "T04 prior smoke passed; current CUA file navigation blocked by URL policy",
+        "performance": {
+          "status": "passed",
+          "environment": "real HTTP browser DOM",
+          "fixture": {
+            "stages": 8,
+            "tickets": 100,
+            "activeTickets": 30,
+            "liveClocks": 94
+          },
+          "rounds": 5,
+          "callsPerRound": 1000,
+          "baselineMs": 741.5,
+          "tickMs": 570.6999999999534,
+          "baselineQueries": 15000,
+          "tickQueries": 0,
+          "evidenceFile": "browser-benchmark-result.json"
+        }
       }
     },
     "flake8": {
@@ -429,8 +510,8 @@ window.STATE =
       "exitCode": 0,
       "violations": 0,
       "environment": "isolated verification venv outside Git worktree; CPython 3.14.3 Windows",
-      "evidenceFile": "t06-local-verification.json",
-      "checkedAt": "2026-09-17T10:15:23.1542926+03:00"
+      "evidenceFile": "release-authorization-approved-20260927.json",
+      "checkedAt": "2026-09-27T07:42:40.2506232+03:00"
     },
     "governanceHook": {
       "status": "passed",
@@ -443,60 +524,158 @@ window.STATE =
       "repair": "Four focused rule corrections; backup outside all repositories; hook configuration and global Git configuration unchanged."
     },
     "github": {
-      "status": "blocked",
-      "target": "Alpha-Oi/skills",
+      "status": "in-progress",
+      "target": "Alpha-Oi/autopilot-jet",
       "targetApi": "200",
-      "checkedAt": "2026-09-16T15:26:33.9966164+03:00",
+      "checkedAt": "2026-09-27T07:39:12.1492244+03:00",
       "visibility": "public",
       "repositoryId": 1372711955,
       "authorization": "GET /user with approved network confirmed Alpha-Oi; API repository creation succeeded",
-      "evidenceFile": "premerge-release-verification.json",
+      "evidenceFile": "publication-approval-and-native-ci-20260917.json",
       "publication": {
         "status": "passed",
-        "sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39"
+        "sha": "7911d30636afbf2987274e7c881b8a9977eebc67"
       },
       "actions": {
         "status": "passed",
-        "runId": 35094887597,
-        "evidenceFile": "premerge-blind-acceptance.md"
+        "runId": 35257607290,
+        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290",
+        "evidenceFile": "publication-approval-and-native-ci-20260917.json",
+        "scope": "Current published head; three native OS jobs and quality logs verified"
       },
       "main": {
         "status": "absent",
         "proposedBase": "99c7e73678195cac08080bdd442f0e49a7ccb640"
       },
       "approval": {
-        "status": "required",
-        "action": "create absent main at upstream base",
-        "result": "rejected before execution: NO_GO and dashboard 100% condition unmet"
+        "status": "authorized",
+        "action": "publish exact final payload; create absent main at upstream base; open and merge development PR; verify post-merge state",
+        "result": "G04 authorized the exact scope on 2026-09-27; execution in progress, no external write yet",
+        "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
+        "evidenceFile": "release-authorization-approved-20260927.json"
       },
       "lastReadOnlyCheck": {
-        "checkedAt": "2026-09-17T00:57:35.4216431+03:00",
-        "evidenceFile": "governance-hook-diagnostic.json",
-        "developmentSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+        "checkedAt": "2026-09-25T22:13:41.9934461+03:00",
+        "evidenceFile": "g4-max-blind-acceptance.md",
+        "repositoryId": 1372711955,
+        "fullName": "Alpha-Oi/autopilot-jet",
+        "visibility": "public",
+        "defaultBranch": "development",
+        "developmentSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
         "mainPresent": false,
-        "openPullRequests": 0,
-        "actionsRunId": 35094887597,
-        "actionsConclusion": "success"
+        "activeActions": 0
       },
-      "reason": "Нужны решение заказчика по расхождениям и разрешение финального gate; main не создана, PR/merge/post-merge не выполнены",
-      "pendingDevelopmentSha": "1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d",
-      "actionsHistorical": true
+      "reason": "Development7911d30 passed independent pre-release G4 and native CI. G04 authorized the ordered payload/development/main/PR/merge/post-merge sequence; execution has started with fresh revalidation.",
+      "pendingDevelopmentSha": null,
+      "actionsHistorical": false,
+      "push": {
+        "status": "passed",
+        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "leaseExpectedSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+        "evidenceFile": "publication-approval-and-native-ci-20260917.json"
+      },
+      "nativeActions": {
+        "status": "passed",
+        "runId": 35257607290,
+        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290",
+        "evidenceFile": "publication-approval-and-native-ci-20260917.json",
+        "scope": "Current published head; three native OS jobs and quality logs verified",
+        "jobs": 3,
+        "testsPerOs": 33,
+        "skipsPerOs": 0,
+        "lintViolationsPerOs": 0,
+        "measure": "OK"
+      },
+      "repositoryUrl": "https://github.com/Alpha-Oi/autopilot-jet",
+      "cloneUrl": "https://github.com/Alpha-Oi/autopilot-jet.git",
+      "rename": {
+        "status": "passed",
+        "checkedAt": "2026-09-17T16:51:05.0807637+03:00",
+        "previousName": "Alpha-Oi/skills",
+        "fullName": "Alpha-Oi/autopilot-jet",
+        "repositoryId": 1372711955,
+        "repositoryIdPreserved": true,
+        "localOrigin": "https://github.com/Alpha-Oi/autopilot-jet.git",
+        "noNewCommitsOrPush": true,
+        "evidenceFile": "repository-rename-verification.json"
+      },
+      "previousPush": {
+        "status": "rejected-before-execution",
+        "checkedAt": "2026-09-17T10:22:46.8835544+03:00",
+        "localHead": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "remoteDevelopment": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+        "reason": "Public export contains reports and local metadata; general force-push authorization did not approve this concrete payload",
+        "noWorkaroundAttempted": true
+      },
+      "previousActions": {
+        "status": "passed",
+        "runId": 35094887597,
+        "evidenceFile": "premerge-blind-acceptance.md",
+        "headSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35094887597",
+        "scope": "Historical published HEAD only; not current development7911d30"
+      }
     },
     "planContract": {
       "status": "passed",
-      "checkedAt": "2026-09-17T10:02:07.1404981+03:00",
-      "evidenceFile": "plan-contract-recheck.json",
+      "checkedAt": "2026-09-17T17:13:06.6472165+03:00",
+      "evidenceFile": "resumed-goal-local-checkpoint.json",
       "required": 32,
-      "tickets": 7
+      "agreedChanges": 4,
+      "tickets": 7,
+      "scope": "Requirement/ticket/state mapping, existing wave/blocking validity, non-overlapping declared same-wave state zones, interface presence. Not runtime/release acceptance"
     },
     "hostModel": {
       "status": "passed-current",
-      "checkedAt": "2026-09-17T10:04:51.9683268+03:00",
+      "checkedAt": "2026-09-25T17:00:25.6920520+03:00",
       "model": "gpt-5.6-sol",
       "effort": "max",
+      "requiredEffort": "max",
       "evidenceFile": "host-model-verification.json",
-      "historicalStatus": "three initial medium contexts; no all-history maximum claim",
-      "literalSlashFlag": "NOT_VERIFIED_BY_TURN_CONTEXT"
+      "historicalStatus": "3 medium / 36 max / 36 xhigh contexts; latest is max, no all-history maximum claim",
+      "literalSlashFlag": "NOT_VERIFIED_BY_TURN_CONTEXT",
+      "reason": "Latest host turn_context declares required max after the user's explicit ready/resume message; historical contexts remain mixed.",
+      "latestTurnContext": {
+        "timestamp": "2026-09-25T13:57:16.339Z",
+        "model": "gpt-5.6-sol",
+        "effort": "max"
+      },
+      "latestRecheckEvidenceFile": "resume-max-verification-20260925.json",
+      "historicalAggregateCheckedAt": "2026-09-25T17:00:25.6920520+03:00"
+    },
+    "liveServerDegradation": {
+      "status": "passed-observed",
+      "checkedAt": "2026-09-17T10:18:12.6842018+03:00",
+      "evidenceFile": "server-query-recheck.json",
+      "ownership": "unconfirmed",
+      "registryUnchanged": true,
+      "attempts": 3
+    },
+    "relocation": {
+      "status": "passed",
+      "checkedAt": "2026-09-17T16:19:23.0596850+03:00",
+      "evidenceFile": "relocation-verification.json",
+      "regularFilesChecked": 1229,
+      "linksChecked": 5,
+      "entriesEach": 1492,
+      "hashMismatches": 0,
+      "gitFsckExitCode": 0,
+      "refsPreserved": true,
+      "preExistingChangesPreserved": true,
+      "sourceBackupPreserved": true,
+      "scope": "Verified local relocation and unchanged source/tests/CI; not publication, external native CI or full goal completion"
+    },
+    "nodeVm": {
+      "status": "passed",
+      "checkedAt": "2026-09-27T07:42:40.2506232+03:00",
+      "tickMs": 495.51,
+      "baselineMs": 888.63,
+      "queries": 0,
+      "baselineQueries": 15000,
+      "evidenceFile": "release-authorization-approved-20260927.json",
+      "scope": "Node VM test only, not fresh actual browser render"
     }
   },
   "debt": {
@@ -511,16 +690,20 @@ window.STATE =
   },
   "additions": [
     "G01 · Пользователь согласовал адаптированный CI и existing repo-local Git identity; остальные требования брифа сохранены.",
-    "G02 · Разрешённый точечный ремонт governance hook завершён: 45/45 safe decision checks; защита не отключалась, это не full live Codex E2E."
+    "G02 · Разрешённый точечный ремонт governance hook завершён: 45/45 safe decision checks; защита не отключалась, это не full live Codex E2E.",
+    "G03 · По явному согласию пользователя тот же Public repository переименован в Alpha-Oi/autopilot-jet; origin, план и дашборд обновлены. Public export/приёмка остаются pending.",
+    "G04 · Пользователь разрешил exact финальный Public payload и ordered development/main/PR/merge/post-merge sequence из release-authorization-scope-20260925.md; выполнение начато с fresh revalidation."
   ],
   "coverage": {
-    "findings": 9,
-    "resolved": 9,
-    "result": "Revised independent G2 passed: missing0 / half0 / extra0. Coverage proof only, not implementation or release acceptance.",
+    "findings": 11,
+    "resolved": 11,
+    "result": "Fresh independent G2 passed missing0/half0/extra0 for brief including exact Public consent; not runtime/release GO.",
     "actions": [
       "Явно оформлены host-model, Git identity и CI-template ограничения.",
       "Добавлено правило 100% phase contract и полный охват текущих scripts/HTML paths.",
-      "Закреплены физическое состояние в обоих memory files и обязательный lease force update development."
+      "Закреплены физическое состояние в обоих memory files и обязательный lease force update development.",
+      "R15: явная проверка jobs/steps/logs нового опубликованного HEAD и безопасное локальное сохранение доказательств.",
+      "Exact two-commit Public consent/excluded uncommitted changes/resolved hold reflected in §2/§16, independently rechecked."
     ],
     "artifactCheck": {
       "checkedAt": "2026-09-16T16:06:07.4289948+03:00",
@@ -532,6 +715,55 @@ window.STATE =
       "scope": "static source-artifact completeness only; not G2/G4/GO"
     },
     "latestCheck": {
+      "status": "passed",
+      "checkedAt": "2026-09-17T18:27:17.632Z",
+      "checker": "/root/g2_publication_consent_recheck",
+      "missing": 0,
+      "halfCovered": 0,
+      "extra": 0,
+      "briefHash": "64296FA38E3F4ADD8C599EA73BDE4DBF2D9E28EE1561A411D2D94C8EB46D91C0",
+      "specHash": "FF52C5693010F6A74BE0884382426F401D6CB06A7B1B0F0219520FA26335F60B",
+      "evidenceFile": "g2-publication-consent-contract.md",
+      "firstPass": {
+        "checker": "/root/g2_publication_consent_contract",
+        "missing": 0,
+        "halfCovered": 1,
+        "extra": 0,
+        "fixed": "Explicit two-commit Public consent and precise limits in spec §2/§16"
+      },
+      "isCurrent": true,
+      "scope": "Exactly full brief+spec, no other files; not execution/release/host-model proof"
+    },
+    "previousFailedCheck": {
+      "checkedAt": "2026-09-16T16:02:20.9101715+03:00",
+      "checker": "/root/t06_spec_coverage",
+      "missing": 6,
+      "halfCovered": 4,
+      "extra": 0,
+      "evidenceFile": "t06-spec-coverage.md",
+      "amendment": "rejected before execution by governance hook; no workaround"
+    },
+    "currentContractCheck": {
+      "status": "passed",
+      "checkedAt": "2026-09-17T18:27:17.632Z",
+      "checker": "/root/g2_publication_consent_recheck",
+      "missing": 0,
+      "halfCovered": 0,
+      "extra": 0,
+      "briefHash": "64296FA38E3F4ADD8C599EA73BDE4DBF2D9E28EE1561A411D2D94C8EB46D91C0",
+      "specHash": "FF52C5693010F6A74BE0884382426F401D6CB06A7B1B0F0219520FA26335F60B",
+      "evidenceFile": "g2-publication-consent-contract.md",
+      "firstPass": {
+        "checker": "/root/g2_publication_consent_contract",
+        "missing": 0,
+        "halfCovered": 1,
+        "extra": 0,
+        "fixed": "Explicit two-commit Public consent and precise limits in spec §2/§16"
+      },
+      "isCurrent": true,
+      "scope": "Exactly full brief+spec, no other files; not execution/release/host-model proof"
+    },
+    "previousPassedCheck": {
       "status": "passed",
       "checkedAt": "2026-09-17T09:54:04.4822028+03:00",
       "checker": "/root/g2_agreed_contract",
@@ -547,16 +779,28 @@ window.STATE =
       },
       "briefHash": "2d8b4d83ca23752e879e01d5acc7d9018e9407995e68a73e8149e63609eedcc5",
       "specHash": "b5ed6962c0c2461bfb453fe16c69e0b382fdead1ad0b110d3de6ed777da47e47",
-      "scope": "Exactly brief+spec, not runtime or release acceptance"
+      "scope": "Exactly brief+spec, not runtime or release acceptance",
+      "isCurrent": false
     },
-    "previousFailedCheck": {
-      "checkedAt": "2026-09-16T16:02:20.9101715+03:00",
-      "checker": "/root/t06_spec_coverage",
-      "missing": 6,
-      "halfCovered": 4,
+    "previousConsentPreCheck": {
+      "status": "passed",
+      "checkedAt": "2026-09-17T17:17:47.1649340+03:00",
+      "checker": "/root/g2_jet_contract_recheck",
+      "missing": 0,
+      "halfCovered": 0,
       "extra": 0,
-      "evidenceFile": "t06-spec-coverage.md",
-      "amendment": "rejected before execution by governance hook; no workaround"
+      "evidenceFile": "g2-jet-contract-coverage.md",
+      "firstPass": {
+        "checker": "/root/g2_jet_renamed_contract",
+        "missing": 1,
+        "halfCovered": 0,
+        "extra": 0,
+        "fixed": "Explicit R15 current-head CI-log quality contract §9 / T04 / interfaces"
+      },
+      "briefHash": "49850B2B798484F44973B16988EEE18B4747701040578899058E9EB9789CF96B",
+      "specHash": "3C26F9963B911B66FBBEFD934A130E1877F66614E80DABEFC3283855246AD54D",
+      "scope": "Exactly brief+spec; not runtime/release or parent model proof",
+      "isCurrent": false
     }
   },
   "resolved": [
@@ -629,51 +873,111 @@ window.STATE =
       "status": "resolved",
       "finding": "D01: unavailable process query could accumulate duplicate servers",
       "evidence": "T06 1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d; independent baseline13 failing subtests, focused14/root33 green, exact lint0, no real process cleanup"
-    }
+    },
+    "Public publication hold resolved by exact user approval; development7911d30 and fresh three-OS CI35257607290 verified, previous rejection history preserved."
   ],
   "concerns": [
-    "100% готовность допустима только после фактически зелёного CI и blind acceptance.",
+    "100% готовность выставляется только в финализации после фактически зелёных CI и blind acceptance; оба pre-release gate теперь зелёные.",
     "Публикация должна сохранить upstream-историю и не менять main до финальной фазы.",
     "Ubuntu Actions 35094887597 success для 6265e03; будущий PR head требует своей свежей CI-проверки.",
-    "release · Public target, development и CI подтверждены; blind NO_GO, main отсутствует, PR/merge и post-merge pending.",
+    "release · Public target, development, CI и independent G4 GO подтверждены; main отсутствует, PR/merge и post-merge pending.",
     "R14 · Адаптация CI согласована; историческое время создания и свежий head CI остаются отдельными пунктами приёмки.",
-    "R12 · Windows и Ubuntu Linux проверены, native macOS и буквальная универсальность любой ОС не проверены. R12 возвращён в in-ticket.",
-    "approval · Create-ref main отклонён до выполнения из-за NO_GO/100% gate. Требуется явное решение пользователя; обход не выполняется.",
+    "R12 · Fresh native Windows/Linux/macOS CI35257607290 success with33 tests/no skips on each; literal universal-any-OS and full path/import-map acceptance still require blind assessment.",
+    "approval · G04 получен 2026-09-27 для exact scope; release выполняется последовательно, ошибка или несовпадение SHA останавливают следующий шаг.",
     "cleanup · два точных agent-created empty temp dirs не staged; прежний отказ удаления не обходился, удаление не выполнялось.",
     "installation · подключённая глобальная копия Autopilot не содержит текущие Windows/safety/runtime правки development; глобальная установка не менялась.",
-    "T06/T07 · Доработки выполняются; нужны independent review, local gate, отдельные commits и native Actions свежего head до итоговой приёмки."
+    "T06/T07 · Independent reviews/local gate/separate commits, native three-OS Actions35257607290 и whole-project pre-release G4 completed.",
+    "publication · Exact two-commit payload опубликован ранее; новый финальный report/local-metadata payload разрешён G04, но ещё не committed/pushed. Любой payload вне review scope требует нового решения.",
+    "R01 · Latest host turn_context Sol/max подтверждён; история содержит medium/xhigh и потому не выдаётся за единообразный max-весь-цикл. G4 учитывает это как историческое partial, current requirement выполнено.",
+    "Browser · Actual HTTP main page renders current state and logs clean; performance PASS twice, but benchmark tab has reproducible unattributed MutationObserver error. Not full clean-console acceptance; resumed-goal-browser-checkpoint.json"
   ],
   "triageFile": "phase8-triage.md",
   "reviewers": {
     "manifestSpec": "/root/wave5_manifest_spec",
     "craft": "/root/wave5_craft",
     "finalCraft": "/root/phase8_final_review",
-    "blind": "/root/premerge_blind_acceptance"
+    "blind": "/root/premerge_blind_acceptance",
+    "currentSpec": "/root/g2_jet_contract_recheck",
+    "blindCurrent": {
+      "checker": "/root/g4_max_blind_20260925",
+      "status": "completed-go",
+      "checkedAt": "2026-09-25T22:13:41.9934461+03:00",
+      "evidenceFile": "g4-max-blind-acceptance.md",
+      "briefHash": "64296FA38E3F4ADD8C599EA73BDE4DBF2D9E28EE1561A411D2D94C8EB46D91C0",
+      "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+      "independence": "Full brief/repo/live commands only; no spec/manifest/tickets/state/previous acceptance reports"
+    }
   },
   "pendingDecision": {
-    "status": "awaiting-user",
-    "evidenceFile": "premerge-blind-acceptance.md",
+    "status": "authorized-release-in-progress",
+    "evidenceFile": "release-authorization-approved-20260927.json",
+    "scopeFile": "release-authorization-scope-20260925.md",
+    "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
+    "quote": "Разрешаю описанный в `release-authorization-scope-20260925.md` финальный Public payload и release-последовательность для `Alpha-Oi/autopilot-jet`",
     "items": [
-      "Уточнить host model/reasoning и непроверенные исторические/платформенные требования.",
-      "Разрешение подготовки main запрашивается только после успешной итоговой проверки; прежний отказ не обходится."
+      "Commit and publish the reviewed final payload to development with an explicit lease",
+      "Wait for and inspect exact-SHA development Actions",
+      "Set verified dashboard to 100 percent, create main at the preserved upstream base, and open the pull request",
+      "Merge only after fresh pull-request checks, then finalize AGENTS.md/dashboard in main and synchronize current memory to development"
+    ],
+    "remainingOriginalObligations": [
+      "Current host Sol/max is confirmed; historical medium/xhigh and phase guarantees remain explicit",
+      "Dashboard100/main/PR/merge/post-merge remain incomplete post-acceptance actions"
     ],
     "resolved": [
       "Adapted CI accepted by the user on 2026-09-17.",
       "Existing repo-local Git identity accepted by the user on 2026-09-17.",
-      "Global governance hook repair explicitly authorized and completed; 45 safe decision checks pass."
-    ]
+      "Global governance hook repair explicitly authorized and completed; 45 safe decision checks pass.",
+      "Existing repository rename to Alpha-Oi/autopilot-jet explicitly accepted and verified on 2026-09-17; public payload approval was not granted.",
+      "Exact two-commit Public payload explicitly approved by user reply «согласен» on 2026-09-17; only development7911d30 published, native three-OS CI35257607290 success."
+      ,"Latest host Sol/max and independent pre-release G4 GO confirmed on 2026-09-25."
+      ,"G04 explicitly authorized the exact final Public payload and ordered main/PR/merge/post-merge sequence on 2026-09-27."
+    ],
+    "lastRevalidatedAt": "2026-09-27T07:39:12.1492244+03:00",
+    "previousAwaitingPayload": {
+      "status": "awaiting-user",
+      "evidenceFile": "publication-hold.json",
+      "items": [
+        "Разрешить public export в Alpha-Oi/autopilot-jet: development HEAD 7911d30636afbf2987274e7c881b8a9977eebc67 вместе с included reports/local paths/run metadata или выбрать отдельно подготовленный code-only payload"
+      ],
+      "remainingOriginalObligations": [
+        "Current host Sol/xhigh mismatches required max; historical medium/xhigh and phase guarantees remain explicit",
+        "Dashboard100/main/PR/merge/post-merge remain incomplete"
+      ],
+      "resolved": [
+        "Adapted CI accepted by the user on 2026-09-17.",
+        "Existing repo-local Git identity accepted by the user on 2026-09-17.",
+        "Global governance hook repair explicitly authorized and completed; 45 safe decision checks pass.",
+        "Existing repository rename to Alpha-Oi/autopilot-jet explicitly accepted and verified on 2026-09-17; public payload approval was not granted."
+      ],
+      "lastRevalidatedAt": "2026-09-17T21:06:54.4568246+03:00"
+    }
   },
   "blind": {
-    "result": "NO-GO",
-    "localTests": 24,
-    "checked": 31,
-    "matched": 11,
-    "partial": 16,
+    "result": "GO",
+    "localTests": 33,
+    "checked": 56,
+    "matched": 37,
+    "partial": 15,
     "missing": 4,
-    "evidenceFile": "premerge-blind-acceptance.md",
-    "checkedSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
-    "reason": "Предыдущая датированная приёмка NO_GO; новые согласования и спецификация требуют повторной проверки, не превращают старый результат в GO.",
+    "evidenceFile": "g4-max-blind-acceptance.md",
+    "checkedSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "checkedAt": "2026-09-25T22:13:41.9934461+03:00",
+    "checker": "/root/g4_max_blind_20260925",
+    "reason": "Pre-release gate GO: exact development7911d30 passed local gates, browser smoke, live three-OS CI and governance safety harness. Overall objective remains incomplete only for ordered post-acceptance release/finalization actions.",
     "mismatches": [
+      "Run-artifacts intentionally excluded from blind evidence, so full/deep chronology, every-iteration memory, subagent execution and Phase3 artifact are independently partial rather than silently claimed.",
+      "Latest host is gpt-5.6-sol/max; historical turn contexts are mixed and no all-history max claim is made.",
+      "Historical pre-commit sequencing cannot be fully reconstructed; current candidate and all local/live CI gates are green.",
+      "Post-acceptance dashboard100, main, PR/merge and AGENTS.md in main are not yet performed and require separate authorization."
+    ],
+    "artifactSupplement": {
+      "analysis": "complete",
+      "pathMap": "complete",
+      "evidenceFile": "g4-max-blind-acceptance.md",
+      "scope": "Independent live supplement confirmed target metadata, exact SHA, native CI logs and governance safety; separate source-aware Phase3 audit remains phase3-artifact-recheck.md"
+    },
+    "historicalMismatches": [
       "R14: workflow работает, но отличается от строго заданного YAML; адаптация не является буквальным выполнением.",
       "R12: Windows/Ubuntu проверены; native macOS и универсальность любой ОС не подтверждены.",
       "R18/R19: глубокий анализ и карта путей не подтверждены независимым checker — плановые материалы исключены из его evidence.",
@@ -681,12 +985,15 @@ window.STATE =
       "Dashboard показывает 79%, а не 100% перед PR; main отсутствует, PR и merge не выполнены.",
       "Память на main после merge отсутствует. Исторические процессные гарантии отмечены частично, а не объявлены выполненными."
     ],
-    "artifactSupplement": {
-      "analysis": "complete",
-      "pathMap": "complete",
-      "evidenceFile": "phase3-artifact-recheck.md",
-      "scope": "separate limited source-aware audit; original NO_GO/31-row matrix unchanged"
-    }
+    "overallObjective": "INCOMPLETE_POST_ACCEPTANCE",
+    "postAcceptanceMissing": [
+      "final dashboard 100%",
+      "create main and PR development -> main",
+      "merge after fresh PR-head CI",
+      "final AGENTS.md memory and post-merge verification in main"
+    ],
+    "isCurrent": true,
+    "currentAcceptance": "GO"
   },
   "discoveries": [
     {
@@ -724,6 +1031,61 @@ window.STATE =
       "quote": "Исправляй хук",
       "decision": "Focused authorized governance-hook repair completed, protection retained in 45 safe decision checks; not full live Codex E2E",
       "evidenceFile": "../../../../verification-tools/governance-hook-repair-20260917-012107/drive-boundary-result.json"
+    },
+    {
+      "id": "G03",
+      "parents": [
+        "R29"
+      ],
+      "status": "done",
+      "date": "2026-09-17",
+      "quote": "да",
+      "question": "Переименовать `Alpha-Oi/skills` в `Alpha-Oi/autopilot-jet`?",
+      "decision": "Rename the same repository to Autopilot JET and update origin/current plan/dashboard. No approval for public payload export, push, main/PR/merge or history rewrite.",
+      "evidenceFile": "repository-rename-verification.json"
+    },
+    {
+      "id": "G04",
+      "parents": [
+        "R24",
+        "R26",
+        "R27",
+        "R31"
+      ],
+      "status": "agreed",
+      "date": "2026-09-27",
+      "quote": "Разрешаю описанный в `release-authorization-scope-20260925.md` финальный Public payload и release-последовательность для `Alpha-Oi/autopilot-jet`",
+      "decision": "Authorize the exact reviewed Public payload and ordered development lease push, main creation at preserved upstream base, fresh-check PR/merge, post-merge memory/dashboard finalization and verification.",
+      "evidenceFile": "release-authorization-approved-20260927.json"
     }
-  ]
-}
+  ],
+  "location": {
+    "workspaceRoot": "D:\\Development\\skills",
+    "worktree": "D:\\Development\\skills\\worktrees\\skills-development",
+    "gitCommonDir": "D:\\Development\\skills\\work\\nick-vels-skills\\.git",
+    "sourceBackup": "C:\\Users\\Crown-Aliy\\Documents\\Codex\\2026-09-10\\engineering-advanced-skills-plugin-engineering-advanced",
+    "relocatedAt": "2026-09-17T16:19:23.0596850+03:00",
+    "globalCodexProfileMoved": false,
+    "codexTaskCwdStillOriginal": true
+  },
+  "blockedAudit": {
+    "consecutiveResumedTurns": 0,
+    "thresholdSatisfied": false,
+    "previousAuditEvidenceFile": "release-authorization-blocked-audit-20260925-2.json",
+    "reason": "External state changed: G04 supplied the exact missing release authorization; fresh revalidation confirmed the original release starting point.",
+    "classification": "progress",
+    "evidenceFile": "release-authorization-approved-20260927.json",
+    "resetAt": "2026-09-27T07:39:12.1492244+03:00"
+  },
+  "resumeObservedAt": "2026-09-27T07:39:12.1492244+03:00",
+  "previousBlockedAt": "2026-09-17T17:33:11.2170302+03:00",
+  "previousBlockedAudit": {
+    "consecutiveResumedTurns": 3,
+    "thresholdSatisfied": true,
+    "previousTurn": "progress: fresh real DOM/browser evidence; same publication approval boundary remained",
+    "currentTurn": "no further meaningful authorized action available",
+    "evidenceFile": "resumed-goal-blocked-audit.json",
+    "noVerifiedCiWait": true,
+    "goalScopeUnchanged": true
+  }
+};

@@ -18,4 +18,4 @@
 
 | Начат | Папка | Статус | Итог |
 |---|---|---|---|
-| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening--wip` | ожидает решения | Runtime и CI проверены; NO_GO и буквальные расхождения требуют решения заказчика до main/PR/merge. |
+| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening--wip` | release разрешён, выполняется | Independent G4 pre-release gate GO; exact payload и ordered main/PR/merge/post-merge sequence разрешены G04, внешние шаги ещё не начаты. |

@@ -1,0 +1,231 @@
+{
+  "checkedAt": "2026-09-17T17:25:24.9514923+03:00",
+  "status": "performance-passed-browser-acceptance-partial",
+  "scope": "Fresh local browser observation and real DOM performance only; not blind acceptance, native Actions, publication or goal completion.",
+  "implementation": {
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "implementationGuardExitCode": 0,
+    "checkedAt": "2026-09-17T17:25:24.9514923+03:00",
+    "activeDashboardEqualsCanonicalTemplateExceptSnapshot": true,
+    "sourceHashes": [
+      {
+        "Path": "D:\\Development\\skills\\worktrees\\skills-development\\skills\\autopilot\\phases\\dashboard-template.html",
+        "Hash": "150383678C2A9A74E72ECC29AEDEDA673B572D512405AA092FC2D3E25FF468E1"
+      },
+      {
+        "Path": "D:\\Development\\skills\\worktrees\\skills-development\\.autopilot\\2026-09-10-autopilot-pathing-hardening--wip\\browser-benchmark.html",
+        "Hash": "0D4BC1DBA3686F4BE9AD7CE593EFD51A8EFE2274BB9215FECFD4E0EA446428F7"
+      }
+    ]
+  },
+  "mainDashboard": {
+    "url": "http://127.0.0.1:8768/.autopilot/dashboard.html",
+    "browser": "Codex In-app Browser",
+    "tabId": "1",
+    "title": "Autopilot JET — кроссплатформенность и быстрый дашборд",
+    "render": "passed-observed-AX-and-screenshot",
+    "testsDisplayed": 33,
+    "ticketsDone": 6,
+    "ticketsTotal": 7,
+    "requirementsDone": 7,
+    "requirementsTotal": 32,
+    "projectPercentDisplayed": 40,
+    "briefCoveragePercentDisplayed": 22,
+    "autoRefreshEnabled": true,
+    "theme": "light",
+    "language": "ru",
+    "logs": [],
+    "logsCapturedAt": "2026-09-17T14:24:06.131Z",
+    "stateUpdatedAtBefore": "2026-09-17T17:17:47.1649340+03:00",
+    "stateBeforeHarnessesUnchanged": true,
+    "eta": "Displayed 1–2min is a computational estimate; excludes publication approval/current-head CI/blind acceptance. Not a promised completion time."
+  },
+  "benchmarkAttempts": [
+    {
+      "capturedAt": "2026-09-17T14:23:29.936Z",
+      "result": {
+        "status": "PASS",
+        "dashboardURL": "http://127.0.0.1:8768/.autopilot/dashboard.html",
+        "baselineRef": "upstream/main",
+        "baselineCommit": "99c7e73678195cac08080bdd442f0e49a7ccb640",
+        "fixture": {
+          "stages": 8,
+          "tickets": 100,
+          "activeTickets": 30,
+          "liveClocks": 94,
+          "idleNotes": 1,
+          "agoClocks": 1,
+          "elements": 2209
+        },
+        "warmupCallsPerImplementation": 100,
+        "rounds": 5,
+        "callsPerRound": 1000,
+        "baselineQueries": 15000,
+        "tickQueries": 0,
+        "baselineQueriesPerCall": 3,
+        "warmupQueries": {
+          "baseline": 300,
+          "tick": 0
+        },
+        "renderQueries": 6,
+        "completedBeforePoll": true,
+        "snapshotUnchanged": true,
+        "polling": "Disabled only in iframe runtime; synchronous measurement prevents interval interference",
+        "finalState": "Isolated fixture remains in iframe; canonical files untouched",
+        "baselineSamplesMs": [
+          693.5,
+          679.0999999996275,
+          674.2999999998137,
+          736,
+          696.0999999996275
+        ],
+        "tickSamplesMs": [
+          624,
+          566.5,
+          527.7000000001863,
+          635,
+          590.2000000001863
+        ],
+        "baselineMs": 693.5,
+        "tickMs": 590.2000000001863,
+        "elapsedMs": 6608.5999999996275
+      },
+      "logs": [
+        {
+          "level": "error",
+          "message": "Uncaught TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.",
+          "timestamp": "2026-09-17T14:23:12.245Z"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-09-17T14:24:47.311Z",
+      "result": {
+        "status": "PASS",
+        "dashboardURL": "http://127.0.0.1:8768/.autopilot/dashboard.html",
+        "baselineRef": "upstream/main",
+        "baselineCommit": "99c7e73678195cac08080bdd442f0e49a7ccb640",
+        "fixture": {
+          "stages": 8,
+          "tickets": 100,
+          "activeTickets": 30,
+          "liveClocks": 94,
+          "idleNotes": 1,
+          "agoClocks": 1,
+          "elements": 2209
+        },
+        "warmupCallsPerImplementation": 100,
+        "rounds": 5,
+        "callsPerRound": 1000,
+        "baselineQueries": 15000,
+        "tickQueries": 0,
+        "baselineQueriesPerCall": 3,
+        "warmupQueries": {
+          "baseline": 300,
+          "tick": 0
+        },
+        "renderQueries": 6,
+        "completedBeforePoll": true,
+        "snapshotUnchanged": true,
+        "polling": "Disabled only in iframe runtime; synchronous measurement prevents interval interference",
+        "finalState": "Isolated fixture remains in iframe; canonical files untouched",
+        "baselineSamplesMs": [
+          1035.800000000745,
+          952,
+          862.5999999996275,
+          836.4000000003725,
+          849.5999999996275
+        ],
+        "tickSamplesMs": [
+          706.1999999992549,
+          917.3000000007451,
+          668.5,
+          613.5999999996275,
+          817.7000000001863
+        ],
+        "baselineMs": 862.5999999996275,
+        "tickMs": 706.1999999992549,
+        "elapsedMs": 8459.299999999814
+      },
+      "logs": [
+        {
+          "level": "error",
+          "message": "Uncaught TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.",
+          "timestamp": "2026-09-17T14:24:33.406Z"
+        }
+      ],
+      "observation": "Initial CDP observation timed out at3000ms; same live tab re-observed terminal PASS, no restart."
+    }
+  ],
+  "consoleFinding": {
+    "status": "UNATTRIBUTED",
+    "context": "benchmark/harness tab",
+    "reproduced": 2,
+    "ownedSourceSearch": {
+      "matches": 0,
+      "pattern": "MutationObserver|\\.observe\\(",
+      "paths": [
+        "skills/autopilot",
+        "tests",
+        ".autopilot/dashboard.html",
+        ".autopilot/2026-09-10-autopilot-pathing-hardening--wip/browser-benchmark.html"
+      ]
+    },
+    "interpretation": "No reference in inspected owned sources and main-page logs clean; injected/browser-tool context is a possibility, not a proven origin. Do not count this as clean-console harness acceptance or patch product code without source attribution."
+  },
+  "cleanup": {
+    "onlyAgentCreatedBenchmarkTabsClosed": [
+      "3",
+      "4"
+    ],
+    "userDashboardTabsPreserved": true,
+    "preferencesUnchanged": true,
+    "serverNotRestarted": true
+  },
+  "unchanged": {
+    "sourceCode": true,
+    "tests": true,
+    "workflow": true,
+    "runtimeHelper": true,
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "publicExportExecuted": false,
+    "goalScopePreserved": true
+  },
+  "postUpdate": {
+    "publicationApprovalStillRequired": true,
+    "localSnapshotEqual": true,
+    "measureCheck": "passed exact check-only this turn",
+    "localServedEqual": true,
+    "requirements": {
+      "total": 32,
+      "done": 7,
+      "inTicket": 25,
+      "inSpec": 0,
+      "placeholder": 0,
+      "deferred": 0,
+      "dropped": 0
+    },
+    "httpState": 200,
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "httpDashboard": 200,
+    "updatedAt": "2026-09-17T17:28:40.9315003+03:00",
+    "sourceGuardExitCode": 0,
+    "diffCheckExitCode": 0,
+    "blindIsCurrent": false,
+    "stagedSetEmpty": true,
+    "checkedAt": "2026-09-17T17:29:24.2570700+03:00",
+    "goalStatus": "active",
+    "projectMemoryOutsideAutopilotMarkersUnchanged": {
+      "AGENTS": true,
+      "CLAUDE": true
+    },
+    "visibleCheckpoint": {
+      "capturedAt": "2026-09-17T14:29:42.955Z",
+      "publicationAndMaxGateVisible": true,
+      "historicalAcceptanceLabelVisible": true,
+      "browserCaveatVisible": true,
+      "mainPageLogs": []
+    },
+    "observationCorrection": "Stage-note amendment reused the prior updatedAt and was not re-rendered after an earlier poll. Bumped updatedAt, ran --no-serve, verified same tab live poll displayed the final note. No runtime code change."
+  }
+}
