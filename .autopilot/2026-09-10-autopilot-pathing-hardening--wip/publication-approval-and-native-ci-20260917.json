@@ -1,0 +1,422 @@
+{
+  "recordedAt": "2026-09-17T21:17:09.3068217+03:00",
+  "status": "approved-published-and-native-ci-passed",
+  "approval": {
+    "reply": "согласен",
+    "question": "Разрешаете отправить `1ab3dad` и `7911d30` в публичный `Alpha-Oi/autopilot-jet`, включая отчёты, локальные пути и метаданные запусков?",
+    "scope": "Exactly the two existing commits to development; reports, local paths and run metadata included",
+    "doesNotWaive": [
+      "Original acceptance requirements and historical proof obligations",
+      "Host model/effort max requirement",
+      "100%/main/PR/merge/post-merge gates",
+      "Review and authorization of materially different future public payloads"
+    ]
+  },
+  "repository": {
+    "id": 1372711955,
+    "fullName": "Alpha-Oi/autopilot-jet",
+    "visibility": "public",
+    "sessionLogin": "Alpha-Oi",
+    "origin": "https://github.com/Alpha-Oi/autopilot-jet.git"
+  },
+  "payload": {
+    "commits": [
+      "1ab3dad097d3653564b8b2bf0e71d40b5baa5a6d",
+      "7911d30636afbf2987274e7c881b8a9977eebc67"
+    ],
+    "changedPaths": 33,
+    "largestBlobBytes": 110417,
+    "suspiciousSecretFilenames": 0,
+    "commonCredentialPatternHits": 0,
+    "scanLimit": "Common credential patterns and filenames only, not a general proof of no sensitive information",
+    "stagedPaths": 0,
+    "uncommittedChangesExcluded": true
+  },
+  "push": {
+    "status": "passed",
+    "leaseExpectedSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+    "sha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "ref": "refs/heads/development",
+    "exitCode": 0,
+    "stdout": "To https://github.com/Alpha-Oi/autopilot-jet.git\n   6265e03..7911d30  7911d30636afbf2987274e7c881b8a9977eebc67 -> development",
+    "apiRefVerified": true,
+    "mainPrMergeTouched": false
+  },
+  "nativeCi": {
+    "checkedAt": "2026-09-17T21:16:41.4472281+03:00",
+    "runId": 35257607290,
+    "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "jobs": [
+      {
+        "jobId": 105325015686,
+        "logLineCount": 265,
+        "logSha256": "D4596410771A2B015B5D81A124CA64BDD15F8BC7624C1BB0E37EE72776B2490E",
+        "testOkLines": 33,
+        "testSkippedLines": 0,
+        "selectedFailureLines": 0,
+        "qualityExcerpts": [
+          "validate (windows-latest)\tLint and Syntax Check (Python)\t2026-09-17T18:14:56.7863905Z 0",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:14:57.5736273Z ##[group]Run python -m unittest discover -s tests -v",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:14:57.5736939Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:14:58.2231905Z test_data_url_stays_snapshot_only (test_dashboard.DashboardRuntimeTests.test_data_url_stays_snapshot_only) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:14:58.2926611Z test_file_url_resolves_state_beside_dashboard (test_dashboard.DashboardRuntimeTests.test_file_url_resolves_state_beside_dashboard) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:14:58.3615561Z test_state_url_is_resolved_from_the_initial_state_script (test_dashboard.DashboardRuntimeTests.test_state_url_is_resolved_from_the_initial_state_script) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.5080302Z test_tick_uses_cached_dom_and_unchanged_state_does_not_render (test_dashboard.DashboardRuntimeTests.test_tick_uses_cached_dom_and_unchanged_state_does_not_render) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6031338Z test_ticket_tests_support_escaped_legacy_strings_and_object_counts (test_dashboard.DashboardRuntimeTests.test_ticket_tests_support_escaped_legacy_strings_and_object_counts) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6063731Z test_empty_jsonl_returns_zeroed_result (test_measure_run.AnalyseTests.test_empty_jsonl_returns_zeroed_result) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6089479Z test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics (test_measure_run.AnalyseTests.test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6671299Z test_check_only_subprocess_is_independent_of_cwd (test_measure_run.CliTests.test_check_only_subprocess_is_independent_of_cwd) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6677408Z test_check_only_succeeds_without_logs (test_measure_run.CliTests.test_check_only_succeeds_without_logs) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6701743Z test_main_session_selection_is_independent_of_glob_order (test_measure_run.CliTests.test_main_session_selection_is_independent_of_glob_order) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6703689Z test_encode_project_path_posix (test_measure_run.PathTests.test_encode_project_path_posix) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6704648Z test_encode_project_path_windows (test_measure_run.PathTests.test_encode_project_path_windows) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6712645Z test_logs_dir_for_default_root_uses_home_independently_of_cwd (test_measure_run.PathTests.test_logs_dir_for_default_root_uses_home_independently_of_cwd) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.6714081Z test_logs_dir_for_uses_explicit_root (test_measure_run.PathTests.test_logs_dir_for_uses_explicit_root) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:02.9336950Z test_cold_measure_cli_reports_controlled_fixture_errors (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_reports_controlled_fixture_errors) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:03.1823093Z test_cold_measure_cli_uses_isolated_home_and_native_project_paths (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_uses_isolated_home_and_native_project_paths) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:03.2851828Z test_relocated_helper_rejects_corrupt_state_without_writes (test_native_runtime.ColdRuntimeTests.test_relocated_helper_rejects_corrupt_state_without_writes) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:03.4834221Z test_relocated_helper_updates_only_its_adjacent_snapshot (test_native_runtime.ColdRuntimeTests.test_relocated_helper_updates_only_its_adjacent_snapshot) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4609245Z test_own_pid_has_native_python_command_line (test_native_runtime.NativeProcessTests.test_own_pid_has_native_python_command_line) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4613306Z test_cmdline_windows_uses_non_shell_system_query (test_sync.ProcessQueryTests.test_cmdline_windows_uses_non_shell_system_query) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4618625Z test_failed_queries_do_not_confirm_partial_stdout (test_sync.ProcessQueryTests.test_failed_queries_do_not_confirm_partial_stdout) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4624066Z test_is_ours_requires_exact_directory_argument (test_sync.ProcessQueryTests.test_is_ours_requires_exact_directory_argument) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4627697Z test_iter_processes_windows_parses_safe_query (test_sync.ProcessQueryTests.test_iter_processes_windows_parses_safe_query) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4631985Z test_posix_queries_and_unavailable_enumeration (test_sync.ProcessQueryTests.test_posix_queries_and_unavailable_enumeration) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4714845Z test_finished_ssh_and_ci_never_query_or_launch_processes (test_sync.ServeTests.test_finished_ssh_and_ci_never_query_or_launch_processes) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4743561Z test_foreign_process_is_never_terminated (test_sync.ServeTests.test_foreign_process_is_never_terminated) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4771952Z test_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4814564Z test_owned_pid_with_http_timeout_is_not_blindly_restarted (test_sync.ServeTests.test_owned_pid_with_http_timeout_is_not_blindly_restarted) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.4858528Z test_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.5257612Z test_recorded_pid_recovery_requires_successful_absence_probe (test_sync.ServeTests.test_recorded_pid_recovery_requires_successful_absence_probe) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.5963958Z test_unknown_recorded_process_never_duplicates_or_rewrites_pid (test_sync.ServeTests.test_unknown_recorded_process_never_duplicates_or_rewrites_pid) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.6005711Z test_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.6046896Z test_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.6050028Z Ran 33 tests in 8.476s",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.6050260Z OK",
+          "validate (windows-latest)\tRun unit tests\t2026-09-17T18:15:06.6050752Z dashboard benchmark: tick=374.82ms baseline=396.10ms, DOM queries=0/15000",
+          "validate (windows-latest)\tValidate Pathing & Run Script\t2026-09-17T18:15:06.7365258Z ##[group]Run python tools/measure-run.py --check-only",
+          "validate (windows-latest)\tValidate Pathing & Run Script\t2026-09-17T18:15:06.7365738Z ^[[36;1mpython tools/measure-run.py --check-only^[[0m",
+          "validate (windows-latest)\tValidate Pathing & Run Script\t2026-09-17T18:15:07.0781764Z measure-run check-only: OK"
+        ]
+      },
+      {
+        "jobId": 105325015890,
+        "logLineCount": 284,
+        "logSha256": "2442F33675CC33D97B7616432F36B290D7BFC9988A8F1F6AC2EDD62D2CE94BDB",
+        "testOkLines": 33,
+        "testSkippedLines": 0,
+        "selectedFailureLines": 0,
+        "qualityExcerpts": [
+          "validate (ubuntu-latest)\tLint and Syntax Check (Python)\t2026-09-17T18:14:40.4746914Z 0",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:40.6194211Z ##[group]Run python -m unittest discover -s tests -v",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:40.6194608Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:40.9156809Z test_data_url_stays_snapshot_only (test_dashboard.DashboardRuntimeTests.test_data_url_stays_snapshot_only) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:40.9561972Z test_file_url_resolves_state_beside_dashboard (test_dashboard.DashboardRuntimeTests.test_file_url_resolves_state_beside_dashboard) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:40.9975076Z test_state_url_is_resolved_from_the_initial_state_script (test_dashboard.DashboardRuntimeTests.test_state_url_is_resolved_from_the_initial_state_script) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.2404504Z test_tick_uses_cached_dom_and_unchanged_state_does_not_render (test_dashboard.DashboardRuntimeTests.test_tick_uses_cached_dom_and_unchanged_state_does_not_render) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3018808Z test_ticket_tests_support_escaped_legacy_strings_and_object_counts (test_dashboard.DashboardRuntimeTests.test_ticket_tests_support_escaped_legacy_strings_and_object_counts) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3043335Z test_empty_jsonl_returns_zeroed_result (test_measure_run.AnalyseTests.test_empty_jsonl_returns_zeroed_result) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3062022Z test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics (test_measure_run.AnalyseTests.test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3428045Z test_check_only_subprocess_is_independent_of_cwd (test_measure_run.CliTests.test_check_only_subprocess_is_independent_of_cwd) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3434836Z test_check_only_succeeds_without_logs (test_measure_run.CliTests.test_check_only_succeeds_without_logs) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3461020Z test_main_session_selection_is_independent_of_glob_order (test_measure_run.CliTests.test_main_session_selection_is_independent_of_glob_order) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3462203Z test_encode_project_path_posix (test_measure_run.PathTests.test_encode_project_path_posix) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3462992Z test_encode_project_path_windows (test_measure_run.PathTests.test_encode_project_path_windows) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3470989Z test_logs_dir_for_default_root_uses_home_independently_of_cwd (test_measure_run.PathTests.test_logs_dir_for_default_root_uses_home_independently_of_cwd) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.3472626Z test_logs_dir_for_uses_explicit_root (test_measure_run.PathTests.test_logs_dir_for_uses_explicit_root) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.4963407Z test_cold_measure_cli_reports_controlled_fixture_errors (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_reports_controlled_fixture_errors) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.6464096Z test_cold_measure_cli_uses_isolated_home_and_native_project_paths (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_uses_isolated_home_and_native_project_paths) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.7097511Z test_relocated_helper_rejects_corrupt_state_without_writes (test_native_runtime.ColdRuntimeTests.test_relocated_helper_rejects_corrupt_state_without_writes) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8337625Z test_relocated_helper_updates_only_its_adjacent_snapshot (test_native_runtime.ColdRuntimeTests.test_relocated_helper_updates_only_its_adjacent_snapshot) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8548913Z test_own_pid_has_native_python_command_line (test_native_runtime.NativeProcessTests.test_own_pid_has_native_python_command_line) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8553077Z test_cmdline_windows_uses_non_shell_system_query (test_sync.ProcessQueryTests.test_cmdline_windows_uses_non_shell_system_query) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8557924Z test_failed_queries_do_not_confirm_partial_stdout (test_sync.ProcessQueryTests.test_failed_queries_do_not_confirm_partial_stdout) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8562041Z test_is_ours_requires_exact_directory_argument (test_sync.ProcessQueryTests.test_is_ours_requires_exact_directory_argument) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8585024Z test_iter_processes_windows_parses_safe_query (test_sync.ProcessQueryTests.test_iter_processes_windows_parses_safe_query) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8586739Z test_posix_queries_and_unavailable_enumeration (test_sync.ProcessQueryTests.test_posix_queries_and_unavailable_enumeration) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8608828Z test_finished_ssh_and_ci_never_query_or_launch_processes (test_sync.ServeTests.test_finished_ssh_and_ci_never_query_or_launch_processes) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8622258Z test_foreign_process_is_never_terminated (test_sync.ServeTests.test_foreign_process_is_never_terminated) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8635427Z test_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8663104Z test_owned_pid_with_http_timeout_is_not_blindly_restarted (test_sync.ServeTests.test_owned_pid_with_http_timeout_is_not_blindly_restarted) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8689015Z test_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.8961169Z test_recorded_pid_recovery_requires_successful_absence_probe (test_sync.ServeTests.test_recorded_pid_recovery_requires_successful_absence_probe) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9438240Z test_unknown_recorded_process_never_duplicates_or_rewrites_pid (test_sync.ServeTests.test_unknown_recorded_process_never_duplicates_or_rewrites_pid) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9465508Z test_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9492172Z test_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9494151Z Ran 33 tests in 4.095s",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9494484Z OK",
+          "validate (ubuntu-latest)\tRun unit tests\t2026-09-17T18:14:44.9495133Z dashboard benchmark: tick=280.58ms baseline=312.81ms, DOM queries=0/15000",
+          "validate (ubuntu-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:44.9743412Z ##[group]Run python tools/measure-run.py --check-only",
+          "validate (ubuntu-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:44.9743849Z ^[[36;1mpython tools/measure-run.py --check-only^[[0m",
+          "validate (ubuntu-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:45.0172245Z measure-run check-only: OK"
+        ]
+      },
+      {
+        "jobId": 105325015897,
+        "logLineCount": 281,
+        "logSha256": "AC680E8B804CFF6AE41754554BE45F6DCFAE8D2F2CF4606006F3B58445D13E74",
+        "testOkLines": 33,
+        "testSkippedLines": 0,
+        "selectedFailureLines": 0,
+        "qualityExcerpts": [
+          "validate (macos-latest)\tLint and Syntax Check (Python)\t2026-09-17T18:14:50.1796550Z 0",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:50.6810590Z ##[group]Run python -m unittest discover -s tests -v",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:50.6811110Z ^[[36;1mpython -m unittest discover -s tests -v^[[0m",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:50.9267950Z test_data_url_stays_snapshot_only (test_dashboard.DashboardRuntimeTests.test_data_url_stays_snapshot_only) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:50.9706970Z test_file_url_resolves_state_beside_dashboard (test_dashboard.DashboardRuntimeTests.test_file_url_resolves_state_beside_dashboard) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:51.0149550Z test_state_url_is_resolved_from_the_initial_state_script (test_dashboard.DashboardRuntimeTests.test_state_url_is_resolved_from_the_initial_state_script) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.8376930Z test_tick_uses_cached_dom_and_unchanged_state_does_not_render (test_dashboard.DashboardRuntimeTests.test_tick_uses_cached_dom_and_unchanged_state_does_not_render) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9146990Z test_ticket_tests_support_escaped_legacy_strings_and_object_counts (test_dashboard.DashboardRuntimeTests.test_ticket_tests_support_escaped_legacy_strings_and_object_counts) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9167610Z test_empty_jsonl_returns_zeroed_result (test_measure_run.AnalyseTests.test_empty_jsonl_returns_zeroed_result) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9178450Z test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics (test_measure_run.AnalyseTests.test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9584640Z test_check_only_subprocess_is_independent_of_cwd (test_measure_run.CliTests.test_check_only_subprocess_is_independent_of_cwd) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9590480Z test_check_only_succeeds_without_logs (test_measure_run.CliTests.test_check_only_succeeds_without_logs) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9605600Z test_main_session_selection_is_independent_of_glob_order (test_measure_run.CliTests.test_main_session_selection_is_independent_of_glob_order) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9606790Z test_encode_project_path_posix (test_measure_run.PathTests.test_encode_project_path_posix) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9607620Z test_encode_project_path_windows (test_measure_run.PathTests.test_encode_project_path_windows) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9610930Z test_logs_dir_for_default_root_uses_home_independently_of_cwd (test_measure_run.PathTests.test_logs_dir_for_default_root_uses_home_independently_of_cwd) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:53.9611990Z test_logs_dir_for_uses_explicit_root (test_measure_run.PathTests.test_logs_dir_for_uses_explicit_root) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.1580380Z test_cold_measure_cli_reports_controlled_fixture_errors (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_reports_controlled_fixture_errors) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.3547450Z test_cold_measure_cli_uses_isolated_home_and_native_project_paths (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_uses_isolated_home_and_native_project_paths) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.4354720Z test_relocated_helper_rejects_corrupt_state_without_writes (test_native_runtime.ColdRuntimeTests.test_relocated_helper_rejects_corrupt_state_without_writes) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5721840Z test_relocated_helper_updates_only_its_adjacent_snapshot (test_native_runtime.ColdRuntimeTests.test_relocated_helper_updates_only_its_adjacent_snapshot) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5779980Z test_own_pid_has_native_python_command_line (test_native_runtime.NativeProcessTests.test_own_pid_has_native_python_command_line) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5782570Z test_cmdline_windows_uses_non_shell_system_query (test_sync.ProcessQueryTests.test_cmdline_windows_uses_non_shell_system_query) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5785680Z test_failed_queries_do_not_confirm_partial_stdout (test_sync.ProcessQueryTests.test_failed_queries_do_not_confirm_partial_stdout) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5788160Z test_is_ours_requires_exact_directory_argument (test_sync.ProcessQueryTests.test_is_ours_requires_exact_directory_argument) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5791080Z test_iter_processes_windows_parses_safe_query (test_sync.ProcessQueryTests.test_iter_processes_windows_parses_safe_query) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5793570Z test_posix_queries_and_unavailable_enumeration (test_sync.ProcessQueryTests.test_posix_queries_and_unavailable_enumeration) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5821550Z test_finished_ssh_and_ci_never_query_or_launch_processes (test_sync.ServeTests.test_finished_ssh_and_ci_never_query_or_launch_processes) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5828160Z test_foreign_process_is_never_terminated (test_sync.ServeTests.test_foreign_process_is_never_terminated) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5835440Z test_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5852550Z test_owned_pid_with_http_timeout_is_not_blindly_restarted (test_sync.ServeTests.test_owned_pid_with_http_timeout_is_not_blindly_restarted) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.5867510Z test_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6029940Z test_recorded_pid_recovery_requires_successful_absence_probe (test_sync.ServeTests.test_recorded_pid_recovery_requires_successful_absence_probe) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6329790Z test_unknown_recorded_process_never_duplicates_or_rewrites_pid (test_sync.ServeTests.test_unknown_recorded_process_never_duplicates_or_rewrites_pid) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6355150Z test_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6380640Z test_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6382810Z dashboard benchmark: tick=244.75ms baseline=267.91ms, DOM queries=0/15000",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6409650Z Ran 33 tests in 3.794s",
+          "validate (macos-latest)\tRun unit tests\t2026-09-17T18:14:54.6410120Z OK",
+          "validate (macos-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:54.6641390Z ##[group]Run python tools/measure-run.py --check-only",
+          "validate (macos-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:54.6641760Z ^[[36;1mpython tools/measure-run.py --check-only^[[0m",
+          "validate (macos-latest)\tValidate Pathing & Run Script\t2026-09-17T18:14:54.8002800Z measure-run check-only: OK"
+        ]
+      }
+    ],
+    "status": "passed",
+    "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290",
+    "workflow": "Autopilot CI/CD Verification",
+    "jobsApi": [
+      {
+        "id": 105325015686,
+        "name": "validate (windows-latest)",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint and Syntax Check (Python)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install npm dependencies when present",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Confirm dependency-free dashboard",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run unit tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Validate Pathing & Run Script",
+            "conclusion": "success"
+          },
+          {
+            "name": "Note dashboard acceptance boundary",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 105325015890,
+        "name": "validate (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint and Syntax Check (Python)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install npm dependencies when present",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Confirm dependency-free dashboard",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run unit tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Validate Pathing & Run Script",
+            "conclusion": "success"
+          },
+          {
+            "name": "Note dashboard acceptance boundary",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 105325015897,
+        "name": "validate (macos-latest)",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint and Syntax Check (Python)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install npm dependencies when present",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Confirm dependency-free dashboard",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run unit tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Validate Pathing & Run Script",
+            "conclusion": "success"
+          },
+          {
+            "name": "Note dashboard acceptance boundary",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Python",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Node.js",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Checkout repository code",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ],
+    "exactLintCommand": "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+    "lintCommandObservedUbuntu": [
+      "validate (ubuntu-latest)\tLint and Syntax Check (Python)\t2026-09-17T18:14:38.2570033Z ^[[36;1mflake8 . --count --select=E9,F63,F7,F82 --show-source --statistics^[[0m"
+    ],
+    "sourceUnchangedSinceLocal33Gate": true,
+    "scope": "Native CI and Node VM performance only; not real-browser/full brief acceptance"
+  },
+  "previousHold": "publication-hold.json (dated rejection before execution retained unchanged)",
+  "goalComplete": false,
+  "hostLatest": {
+    "checkedAt": "2026-09-17T21:21:50.5093059+03:00",
+    "scope": "Latest turn_context model/effort/timestamp only; no prompts or credentials exposed",
+    "latest": {
+      "timestamp": "2026-09-17T18:12:51.538Z",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh"
+    }
+  }
+}

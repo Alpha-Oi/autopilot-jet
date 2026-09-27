@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-09-25T22:30:26.0659804+03:00",
+  "sequence": 1,
+  "classification": "no-progress",
+  "goalBackendStatus": "active",
+  "preReleaseGate": "GO",
+  "pendingDecision": "awaiting-release-authorization",
+  "evidenceFile": "release-authorization-scope-20260925.md",
+  "authoritativeState": {
+    "localStatusEntries": 34,
+    "externalWritesSinceScope": "none",
+    "mainPresent": false,
+    "pullRequestPresent": false
+  },
+  "reason": "The exact materially different Public payload and release sequence require explicit user authorization. No such authorization was present in this continuation, and no safe remaining action can substitute for it.",
+  "next": "Wait for the user's explicit approval phrase; do not commit, push, create main/PR or merge."
+}

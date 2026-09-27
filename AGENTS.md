@@ -1,0 +1,92 @@
+<!-- autopilot:start -->
+# Autopilot JET
+
+Переносимый skill превращает пользовательский бриф в проверенный проект; runtime — Python standard library и dependency-free HTML/JavaScript dashboard.
+Активный worktree — `D:\Development\skills\worktrees\skills-development`, ветка `development`; резерв на C: не развивать, не удалять и не синхронизировать обратно.
+Целевой Public repository — `Alpha-Oi/autopilot-jet` (id `1372711955`, default branch `development`, origin `https://github.com/Alpha-Oi/autopilot-jet.git`); локальное имя папки не обязано совпадать с repository name.
+Канон project memory — `AGENTS.md`; `CLAUDE.md` — компактное зеркало, не второй журнал прогона.
+
+## Ключевые файлы
+
+- `skills/autopilot/SKILL.md` задаёт режимы, глубину и gates G1–G4; инструкции из `skills/autopilot/phases/` читаются только для текущего этапа.
+- `skills/autopilot/prompts/executor.md` и `skills/autopilot/prompts/craft-review.md` — контракты независимых исполнителя и reviewer.
+- `skills/autopilot/tools/sync.py` и `skills/autopilot/phases/dashboard-template.html` — канонические helper и dashboard; продуктовые правки делаются здесь, не в runtime copies.
+- `tools/measure-run.py` — CLI анализа Claude Code JSONL: project path → logs directory → выбранная session и subagents → сравнительные token/time metrics.
+- `.agents/skills/autopilot` → `skills/autopilot/`; `.claude/skills/autopilot` → `.agents/skills/autopilot`; обе привязки — symlinks.
+- `.autopilot/state.js`, `.autopilot/sync.py`, `.autopilot/dashboard.html`, `.autopilot/index.html` — состояние и runtime конкретного прогона, а не канонический исходник skill.
+- `.github/workflows/verify.yml` — native Ubuntu/Windows/macOS matrix для push/PR на `main`, `master`, `development`: Python 3.11, Node 20, exact flake8, full unittest и measure check-only.
+- `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, Node VM render/performance и cold relocated/native subprocess behavior.
+- `docs/adr/0006-preserve-server-registry-on-unknown-process-status.md` закрепляет durable decision: неопределённый статус процесса не разрешает потерю server registry или duplicate launch.
+
+## Архитектура и контракты
+
+- Поток dashboard: соседний `.autopilot/state.js` → `read_state()` → state transitions/audit → атомарный embedded snapshot → optional loopback server; browser стартует со snapshot и при доступном sibling state переходит на live polling.
+- Helper разрешает файлы относительно собственного `__file__`, не `cwd`: прямой запуск канонического исходника не обновляет существующий dashboard, runtime copy должна лежать рядом с состоянием и страницей.
+- `read_state()` принимает JSON или JS assignment; ошибочный JSON останавливает обновление до snapshot и server actions. `write_snapshot(state)` меняет только `/*STATE-BEGIN*/…/*STATE-END*/`, экранирует `</` и публикует через соседний temporary file + `os.replace`.
+- `cmdline(pid) -> str` и `iter_processes() -> list[tuple[int, str]]` используют `powershell.exe`/CIM на Windows и `ps` на POSIX без shell; `process_status(pid) -> str` различает `present`, `absent`, `unknown`.
+- `serve(state)` переиспользует только записанный owned PID с точным `-m http.server --directory` и отвечающим HTTP; owned PID без HTTP и unknown ownership сохраняются без duplicate launch и переписи registry.
+- Чужой или незаписанный server не завершается даже при совпадающем directory; новый server слушает только `127.0.0.1`, Windows launch hidden/detached, POSIX — `start_new_session=True`.
+- Stage IDs: `preflight`, `manifest`, `briefing`, `spec`, `plan`, `build`, `review`, `final`; `close_passed(state)` закрывает только прежние active временем следующего этапа, `review` не закрывает `build`, `audit(state)` только сообщает неполные переходы.
+- Dashboard использует `stateURL()`, `applyState()`, `pollState()`, `render(lang)`, `tick()`: `data:` остаётся snapshot-only, `file:`/`http:` live-poll каждые 10 секунд; секундный clock работает через DOM cache.
+- Render stamp — `updatedAt|finishedAt|tickets.length`: при изменении содержимого состояния двигать `updatedAt`, иначе изменение той же длины не вызывает render.
+- Схема результата разделяет `tests={passed,failed}`, `checks.flake8.status`, закрытые `resolved[]={status,finding,evidence}` и активные `concerns`.
+- `encode_project_path(path) -> str` кодирует colon/slashes; relative input сначала разрешается относительно native cwd. `logs_dir_for(project_path, root=None)` использует профиль Claude Code независимо от cwd для absolute input; `analyse(path,label)` пропускает повреждённые JSONL строки; `main(argv=None)` поддерживает optional session ID и `--check-only`.
+
+## Соглашения кода и окружение
+
+- Production runtime не требует install/build, package manager, обязательных API keys или third-party Python/npm dependencies; Node нужен для dashboard tests.
+- Локальный проверенный toolchain — Python 3.14.3 и Node 25.8.0; CI фиксирует Python 3.11 и Node 20.
+- `CI` и `SSH_CONNECTION` запрещают server query/launch; `finishedAt` также запрещает launch; `--no-serve` пропускает server path, но выполняет state transitions, audit и snapshot.
+- flake8 7.3.0 живёт в изолированном verification environment вне worktree; production dependencies, lockfiles и global config без отдельного решения не менять.
+- `measure-run` понимает layout Claude Code, не логи всех runners; weighted token units — не цены и не доказательство host model/reasoning.
+
+## Тесты и рабочие команды
+
+Все команды запускаются из активного worktree. Переданные результаты ниже уже актуальны; повторный полный прогон для обновления памяти не нужен.
+
+```powershell
+python -B -m unittest discover -s tests -v
+python -B -m unittest discover -s tests -p test_measure_run.py -v
+python -B tools/measure-run.py --check-only
+& 'D:\Development\skills\verification-tools\flake8-7.3.0\Scripts\python.exe' -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+```
+
+Для существующего dashboard обновлять snapshot без вмешательства в lifecycle уже работающего localhost server:
+
+```powershell
+python -X utf8 -B .autopilot/sync.py --no-serve
+```
+
+## Подводные камни
+
+- `WinError 5` на CIM или multiprocessing Pipe может быть sandbox limitation; пустой query не равен dead PID, lint selection/exclusions не ослаблять.
+- Loopback server обслуживает весь runtime directory, включая внутренние артефакты; bind шире `127.0.0.1` запрещён.
+- Node VM проверки не заменяют настоящий browser smoke; `file:`/`http:` polling не переносится на `data:` preview. Реальный Edge smoke остаётся отдельным release evidence.
+- Прямой запуск `skills/autopilot/tools/sync.py` работает рядом с каноническим source path и не обновляет уже созданный `.autopilot/dashboard.html`; для существующего прогона использовать runtime copy.
+
+## Текущий проверенный срез
+
+- Code HEAD — `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d` на `development`; этот payload опубликован в remote `development`.
+- Локальный release gate: 33 tests/`OK` за 9.977s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `495.51ms < 888.63ms`, queries `0/15000`.
+- Реальный Edge smoke предыдущего среза → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`. Для текущего 100% checkpoint реальная browser tab отдельно не подтверждена.
+- GitHub Actions run `36295270998` с exact head SHA `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d` завершился `success` на Windows/Ubuntu/macOS: на каждом native runner 33 tests/`OK`, lint `0`, benchmark pass, measure `OK`.
+- Dashboard release checkpoint: embedded snapshot совпадает с `.autopilot/state.js`, Node VM render → `100%`, `6/7` tickets, `RUNTIME_MATCH=YES`. `liveBrowserRender=NOT_VERIFIED_CURRENT_CHECKPOINT`: записанный localhost server остановлен; безопасный helper сохранил PID при неизвестном ownership, а policy заблокировала ручной запуск процесса и переход на `file:` URL.
+- Frozen governance harness → `45/45`, `dangerousCommandsExecuted=false`.
+- Последние host metadata — `gpt-5.6-sol/max`; история неоднородна (`3 medium / 36 max / 36 xhigh`), поэтому утверждение о `max` для всей истории не делается.
+- Независимый G4 pre-release gate для этого среза дал `GO`; это подтверждает срез до release boundary, но не завершает внешнюю финализацию.
+
+## Открытая release-граница
+
+- Пользователь 2026-09-27 явно разрешил финальный Public payload и согласованную release-последовательность для `Alpha-Oi/autopilot-jet`; повторное разрешение внутри этого scope не требуется.
+- Новый финальный Public payload committed/pushed только в `development` с exact lease от `7911d30636afbf2987274e7c881b8a9977eebc67`; опубликованный HEAD и успешный exact-SHA Actions подтверждены в `release-authorization-approved-20260927.json`.
+- На момент этого checkpoint `main`, PR/merge и post-merge memory/dashboard остаются pending; `6/7` tickets отражают незакрытый T04. Каждый следующий шаг закрывать только его фактическим evidence, а CI logs другого SHA не доказывают текущий код.
+- Текущий blocker: два exact `git add` для семи подготовленных text files завершились `fatal: Unable to create 'D:/Development/skills/work/nick-vels-skills/.git/worktrees/skills-development/index.lock': Permission denied`; `index.lock` отсутствует, разрешение на Git directories выдано, но эффективной записи нет. Staged set пуст, remote `development` остаётся на `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d`, `main`/PR отсутствуют. Для продолжения открыть `D:\Development\skills\worktrees\skills-development` как активный Codex workspace или предоставить эффективный write access к Git metadata, затем продолжить seven-file checkpoint без пересоздания repository.
+
+## Как здесь работает Autopilot
+
+`/autopilot` ведёт бриф через требования, спецификацию, план, разработку, код-ревью и слепую приёмку; требование может снять только пользователь.
+«Сборка» — весь прогон, единица работы — «таск»; пользовательские названия этапов берутся из таблицы skill.
+`.autopilot/` — требования и история конкретных прогонов, не исходник skill и не замена памяти; прогресс показывает `.autopilot/dashboard.html`.
+При продолжении сначала читать эту память, затем `.autopilot/state.js` и только инструкции текущего этапа; глобальная установленная копия skill не обновлялась и может отличаться от checkout.
+
+<!-- autopilot:end -->

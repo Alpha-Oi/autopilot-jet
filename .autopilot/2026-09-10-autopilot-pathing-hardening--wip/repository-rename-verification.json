@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-17T16:54:02.1830664+03:00",
+  "status": "passed",
+  "authorization": {
+    "date": "2026-09-17",
+    "quote": "да",
+    "question": "Переименовать `Alpha-Oi/skills` в `Alpha-Oi/autopilot-jet`?",
+    "amendment": "G03",
+    "scope": "Rename same repository, update origin/current plan/dashboard only"
+  },
+  "rename": {
+    "previousFullName": "Alpha-Oi/skills",
+    "request": "PATCH /repos/Alpha-Oi/skills",
+    "changedFields": [
+      "name"
+    ],
+    "newName": "autopilot-jet",
+    "repositoryIdBefore": 1372711955,
+    "repositoryIdAfter": 1372711955,
+    "repositoryIdPreserved": true,
+    "metadataAfter": {
+      "admin": true,
+      "clone_url": "https://github.com/Alpha-Oi/autopilot-jet.git",
+      "default_branch": "development",
+      "full_name": "Alpha-Oi/autopilot-jet",
+      "html_url": "https://github.com/Alpha-Oi/autopilot-jet",
+      "id": 1372711955,
+      "name": "autopilot-jet",
+      "visibility": "public"
+    },
+    "refsAfter": [
+      {
+        "ref": "refs/heads/development",
+        "sha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39"
+      }
+    ],
+    "remoteDevelopmentBefore": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+    "remoteDevelopmentUnchanged": true,
+    "mainPresent": false
+  },
+  "local": {
+    "workspaceRoot": "D:\\Development\\skills",
+    "worktree": "D:\\Development\\skills\\worktrees\\skills-development",
+    "branch": "development",
+    "head": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "headUnchanged": true,
+    "author": "Alpha-Oi",
+    "committer": "Alpha-Oi",
+    "origin": "https://github.com/Alpha-Oi/autopilot-jet.git",
+    "sharedSourceCheckoutHead": "bd82f46dc87d53595dda5ca2bf106d9d09a0d7b9",
+    "sharedSourceCheckoutBranch": "fix/windows-autopilot-dashboard",
+    "upstream": "https://github.com/nick-vels/skills.git",
+    "backupOriginOnC": "https://github.com/Alpha-Oi/skills.git",
+    "backupOnCModified": false,
+    "folderNamesUnchanged": true,
+    "noCommitsPushHistoryRewriteMainPrMerge": true
+  },
+  "verification": {
+    "dashboard": {
+      "stateUrl": "http://127.0.0.1:8768/.autopilot/state.js",
+      "pageUrl": "http://127.0.0.1:8768/.autopilot/dashboard.html",
+      "stateHttp": 200,
+      "pageHttp": 200,
+      "localServedSnapshotEqual": true,
+      "title": "Autopilot JET — кроссплатформенность и быстрый дашборд",
+      "target": "Alpha-Oi/autopilot-jet",
+      "refreshCommand": "python -X utf8 -B .autopilot/sync.py --no-serve",
+      "serverRestarted": false,
+      "visibleRender": "NOT_RUN"
+    },
+    "measureSmoke": {
+      "command": "python -B tools/measure-run.py --check-only",
+      "result": "measure-run check-only: OK",
+      "exitCode": 0
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "sourceGuard": {
+      "exitCode": 0,
+      "unchangedPaths": [
+        ".github/workflows/verify.yml",
+        "skills/autopilot/tools/sync.py",
+        "tools/measure-run.py",
+        "skills/autopilot/phases/dashboard-template.html",
+        "tests",
+        ".autopilot/sync.py"
+      ]
+    },
+    "originalBriefUnchanged": true,
+    "outsideProjectMemoryMarkersUnchanged": true,
+    "stageStatusesUnchanged": true,
+    "requirementCountsUnchanged": true
+  },
+  "limitations": {
+    "publicPayloadApproval": "awaiting-user",
+    "pendingLocalHead": "7911d30636afbf2987274e7c881b8a9977eebc67",
+    "freshNativeActions": "NOT_RUN",
+    "independentAmendedContractG2": "NOT_RUN",
+    "wholeProjectAcceptance": "incomplete",
+    "fullSuiteNotRepeatedForMetadataOnlyRename": true,
+    "previousRelocationChecks": "33 tests OK; exact flake8 exit0; see relocation-verification.json",
+    "notReleaseGo": true
+  }
+}

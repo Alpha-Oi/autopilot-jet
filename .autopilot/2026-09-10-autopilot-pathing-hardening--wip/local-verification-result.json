@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-09-16T10:50:20.0835684+03:00",
+  "scope": "Local pre-release verification before the documentation/evidence checkpoint; not GitHub Actions, publication, blind GO or merge",
+  "codeCheckpoint": "7571f2724d0d9b4577c3a78715dbe9bbb6bfb22a",
+  "worktree": "worktrees/skills-development",
+  "checks": [
+    {
+      "command": "python -B -m unittest discover -s tests -v",
+      "exitCode": 0,
+      "output": "test_data_url_stays_snapshot_only (test_dashboard.DashboardRuntimeTests.test_data_url_stays_snapshot_only) ... ok\r\ntest_file_url_resolves_state_beside_dashboard (test_dashboard.DashboardRuntimeTests.test_file_url_resolves_state_beside_dashboard) ... ok\r\ntest_state_url_is_resolved_from_the_initial_state_script (test_dashboard.DashboardRuntimeTests.test_state_url_is_resolved_from_the_initial_state_script) ... ok\r\ntest_tick_uses_cached_dom_and_unchanged_state_does_not_render (test_dashboard.DashboardRuntimeTests.test_tick_uses_cached_dom_and_unchanged_state_does_not_render) ... ok\r\ntest_ticket_tests_support_escaped_legacy_strings_and_object_counts (test_dashboard.DashboardRuntimeTests.test_ticket_tests_support_escaped_legacy_strings_and_object_counts) ... ok\r\ntest_empty_jsonl_returns_zeroed_result (test_measure_run.AnalyseTests.test_empty_jsonl_returns_zeroed_result) ... ok\r\ntest_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics (test_measure_run.AnalyseTests.test_utf8_malformed_jsonl_keeps_valid_nonzero_usage_metrics) ... ok\r\ntest_check_only_subprocess_is_independent_of_cwd (test_measure_run.CliTests.test_check_only_subprocess_is_independent_of_cwd) ... ok\r\ntest_check_only_succeeds_without_logs (test_measure_run.CliTests.test_check_only_succeeds_without_logs) ... ok\r\ntest_main_session_selection_is_independent_of_glob_order (test_measure_run.CliTests.test_main_session_selection_is_independent_of_glob_order) ... ok\r\ntest_encode_project_path_posix (test_measure_run.PathTests.test_encode_project_path_posix) ... ok\r\ntest_encode_project_path_windows (test_measure_run.PathTests.test_encode_project_path_windows) ... ok\r\ntest_logs_dir_for_default_root_uses_home_independently_of_cwd (test_measure_run.PathTests.test_logs_dir_for_default_root_uses_home_independently_of_cwd) ... ok\r\ntest_logs_dir_for_uses_explicit_root (test_measure_run.PathTests.test_logs_dir_for_uses_explicit_root) ... ok\r\ntest_cmdline_windows_uses_non_shell_system_query (test_sync.ProcessQueryTests.test_cmdline_windows_uses_non_shell_system_query) ... ok\r\ntest_is_ours_requires_exact_directory_argument (test_sync.ProcessQueryTests.test_is_ours_requires_exact_directory_argument) ... ok\r\ntest_iter_processes_windows_parses_safe_query (test_sync.ProcessQueryTests.test_iter_processes_windows_parses_safe_query) ... ok\r\ntest_posix_queries_and_unavailable_enumeration (test_sync.ProcessQueryTests.test_posix_queries_and_unavailable_enumeration) ... ok\r\ntest_finished_ssh_and_ci_never_query_or_launch_processes (test_sync.ServeTests.test_finished_ssh_and_ci_never_query_or_launch_processes) ... ok\r\ntest_foreign_process_is_never_terminated (test_sync.ServeTests.test_foreign_process_is_never_terminated) ... ok\r\ntest_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok\r\ntest_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok\r\ntest_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok\r\ntest_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 24 tests in 8.650s\r\n\r\nOK\r\ndashboard benchmark: tick=681.85ms baseline=819.52ms, DOM queries=0/15000\r\n"
+    },
+    {
+      "command": "& 'C:\\Users\\Crown-Aliy\\Documents\\Codex\\2026-09-10\\engineering-advanced-skills-plugin-engineering-advanced\\verification-tools\\flake8-7.3.0\\Scripts\\python.exe' -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+      "sandboxPermissions": "require_escalated",
+      "exitCode": 0,
+      "output": "0\r\n"
+    },
+    {
+      "command": "python -B tools/measure-run.py --check-only",
+      "exitCode": 0,
+      "output": "measure-run check-only: OK\r\n"
+    }
+  ],
+  "priorRealBrowserEvidence": "browser-benchmark-result.json",
+  "external": {
+    "profile": "Alpha-Oi",
+    "target": "Alpha-Oi/skills",
+    "targetApiStatus": 404,
+    "cliAuthorization": "sandbox gh auth status reported invalid token; not a direct authorization proof",
+    "lastDeviceFlow": "expired_token",
+    "connectorCreateRepositoryAvailable": false,
+    "actions": "NOT_RUN",
+    "pr": "NOT_CREATED",
+    "merge": "NOT_DONE",
+    "postMerge": "NOT_RUN"
+  },
+  "finishedAt": null
+}

@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-09-17T10:12:52.5236297+03:00",
+  "baselineCommit": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+  "environment": "Windows local; Python3.14.3/Node25.8.0, not external CI",
+  "rootChecks": [
+    {
+      "name": "full suite",
+      "exitCode": 0,
+      "excerpt": "test_main_session_selection_is_independent_of_glob_order (test_measure_run.CliTests.test_main_session_selection_is_independent_of_glob_order) ... ok\r\ntest_encode_project_path_posix (test_measure_run.PathTests.test_encode_project_path_posix) ... ok\r\ntest_encode_project_path_windows (test_measure_run.PathTests.test_encode_project_path_windows) ... ok\r\ntest_logs_dir_for_default_root_uses_home_independently_of_cwd (test_measure_run.PathTests.test_logs_dir_for_default_root_uses_home_independently_of_cwd) ... ok\r\ntest_logs_dir_for_uses_explicit_root (test_measure_run.PathTests.test_logs_dir_for_uses_explicit_root) ... ok\r\ntest_cold_measure_cli_reports_controlled_fixture_errors (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_reports_controlled_fixture_errors) ... ok\r\ntest_cold_measure_cli_uses_isolated_home_and_native_project_paths (test_native_runtime.ColdRuntimeTests.test_cold_measure_cli_uses_isolated_home_and_native_project_paths) ... ok\r\ntest_relocated_helper_rejects_corrupt_state_without_writes (test_native_runtime.ColdRuntimeTests.test_relocated_helper_rejects_corrupt_state_without_writes) ... ok\r\ntest_relocated_helper_updates_only_its_adjacent_snapshot (test_native_runtime.ColdRuntimeTests.test_relocated_helper_updates_only_its_adjacent_snapshot) ... ok\r\ntest_own_pid_has_native_python_command_line (test_native_runtime.NativeProcessTests.test_own_pid_has_native_python_command_line) ... ok\r\ntest_cmdline_windows_uses_non_shell_system_query (test_sync.ProcessQueryTests.test_cmdline_windows_uses_non_shell_system_query) ... ok\r\ntest_failed_queries_do_not_confirm_partial_stdout (test_sync.ProcessQueryTests.test_failed_queries_do_not_confirm_partial_stdout) ... ok\r\ntest_is_ours_requires_exact_directory_argument (test_sync.ProcessQueryTests.test_is_ours_requires_exact_directory_argument) ... ok\r\ntest_iter_processes_windows_parses_safe_query (test_sync.ProcessQueryTests.test_iter_processes_windows_parses_safe_query) ... ok\r\ntest_posix_queries_and_unavailable_enumeration (test_sync.ProcessQueryTests.test_posix_queries_and_unavailable_enumeration) ... ok\r\ntest_finished_ssh_and_ci_never_query_or_launch_processes (test_sync.ServeTests.test_finished_ssh_and_ci_never_query_or_launch_processes) ... ok\r\ntest_foreign_process_is_never_terminated (test_sync.ServeTests.test_foreign_process_is_never_terminated) ... ok\r\ntest_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok\r\ntest_owned_pid_with_http_timeout_is_not_blindly_restarted (test_sync.ServeTests.test_owned_pid_with_http_timeout_is_not_blindly_restarted) ... ok\r\ntest_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok\r\ntest_recorded_pid_recovery_requires_successful_absence_probe (test_sync.ServeTests.test_recorded_pid_recovery_requires_successful_absence_probe) ... ok\r\ntest_unknown_recorded_process_never_duplicates_or_rewrites_pid (test_sync.ServeTests.test_unknown_recorded_process_never_duplicates_or_rewrites_pid) ... ok\r\ntest_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok\r\ntest_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 33 tests in 11.789s\r\n\r\nOK\r\ndashboard benchmark: tick=589.35ms baseline=893.67ms, DOM queries=0/15000\r\n"
+    },
+    {
+      "name": "exact whole-repo flake8",
+      "exitCode": 0,
+      "excerpt": "0\r\n"
+    },
+    {
+      "name": "measure smoke",
+      "exitCode": 0,
+      "excerpt": "measure-run check-only: OK\r\n"
+    }
+  ],
+  "full": {
+    "passed": 33,
+    "failed": 0,
+    "seconds": 11.789,
+    "baselineBeforeWave": 24,
+    "t06Added": 4,
+    "t07Added": 5,
+    "scope": "Working tree includes uncommitted independent T07 tests; not claiming this T06-only commit contains 33 tests"
+  },
+  "canonicalHash": "5A8DCF4F058061D34FD732EAAA1EF1E03CFD2B23F64EA5D6426577F4BE7735C6",
+  "runtimeHash": "5A8DCF4F058061D34FD732EAAA1EF1E03CFD2B23F64EA5D6426577F4BE7735C6",
+  "independentReviews": {
+    "manifestSpec": {
+      "verdict": "clean",
+      "blocking": [],
+      "actor": "/root/wave5_manifest_spec",
+      "focused": 14
+    },
+    "craft": {
+      "verdict": "clean",
+      "blocking": [],
+      "actor": "/root/wave5_craft",
+      "focused": 14,
+      "baselineRedSubtests": 13,
+      "baselineRedErrors": 0
+    }
+  },
+  "limitations": [
+    "No destructive real process operations executed",
+    "Native Linux/macOS external Actions pending",
+    "Full end-to-end goal/release not completed"
+  ]
+}

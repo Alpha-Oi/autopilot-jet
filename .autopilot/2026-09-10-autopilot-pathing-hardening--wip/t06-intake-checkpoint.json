@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-09-16T16:06:07.4289948+03:00",
+  "codeSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+  "classification": "progress: source-artifact gaps corrected and independently verified; source repair remained gated",
+  "sourceChanges": false,
+  "developmentCommitsOrPushesThisTurn": false,
+  "unitTests": {
+    "command": "python -B -m unittest discover -s tests -v",
+    "exitCode": 0,
+    "passed": 24,
+    "failed": 0,
+    "seconds": 7.059,
+    "outputExcerpt": "test_live_owned_server_is_reused (test_sync.ServeTests.test_live_owned_server_is_reused) ... ok\r\ntest_posix_launch_uses_new_session (test_sync.ServeTests.test_posix_launch_uses_new_session) ... ok\r\ntest_unrecorded_same_directory_server_is_left_running (test_sync.ServeTests.test_unrecorded_same_directory_server_is_left_running) ... ok\r\ntest_windows_launch_is_detached_hidden_and_closes_parent_log (test_sync.ServeTests.test_windows_launch_is_detached_hidden_and_closes_parent_log) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 24 tests in 7.059s\r\n\r\nOK\r\ndashboard benchmark: tick=477.42ms baseline=763.31ms, DOM queries=0/15000\r\n"
+  },
+  "measureRun": {
+    "command": "python -B tools/measure-run.py --check-only",
+    "exitCode": 0,
+    "stdout": "measure-run check-only: OK"
+  },
+  "sourceAndRuntimeDiff": {
+    "command": "git diff --exit-code -- canonical sources/tests/workflow/runtime sync",
+    "exitCode": 0
+  },
+  "flake8": {
+    "command": "isolated verification Python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+    "scope": "full repository, no excludes or weakened selection",
+    "environment": "approved exact rerun outside sandbox; isolated existing venv",
+    "exitCode": 0,
+    "stdout": "0"
+  },
+  "executor": {
+    "status": "BLOCKED",
+    "files": [],
+    "baselineFull": 24,
+    "baselineSync": 10,
+    "interfaces": [],
+    "reason": "G2 failed; spec contract amendment stopped by governance hook before execution"
+  },
+  "artifactRecheck": {
+    "analysis": "COMPLETE",
+    "pathMap": "COMPLETE",
+    "evidenceFile": "phase3-artifact-recheck.md",
+    "notGo": true
+  },
+  "github": {
+    "readOnly": true,
+    "development": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+    "main": "absent",
+    "pullRequests": [],
+    "runId": 35094887597,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "server": {
+    "sessionId": 95212,
+    "confirmedLive": true,
+    "primaryUrl": "http://127.0.0.1:8768/.autopilot/dashboard.html",
+    "noRestartOrTermination": true,
+    "snapshotRefreshMode": "--no-serve"
+  },
+  "permissions": {
+    "specContractAmendment": "blocked before execution by PreToolUse hook; not retried indirectly",
+    "mainCreateRef": "prior rejection remains; not retried",
+    "userDecision": "still required"
+  },
+  "goal": "blocked/incomplete; full objective preserved; no completion or final100 claimed"
+}

@@ -1,0 +1,85 @@
+{
+  "checkedAt": "2026-09-17T01:39:33.436+03:00",
+  "scope": "User-requested dashboard refresh and approved-decision record; no project code, Git commit/push, main, PR/merge or global installation changes",
+  "branch": "development",
+  "head": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+  "goalStatus": "active",
+  "finishedAt": null,
+  "approvedChange": {
+    "id": "G01",
+    "parents": [
+      "R03",
+      "R04",
+      "R14"
+    ],
+    "quote": "Продолжай, как предлагаешь",
+    "context": "Accept adapted CI and the existing repo-local Git identity",
+    "briefFile": "2026-09-10-brief.md"
+  },
+  "dashboard": {
+    "stateHttp": 200,
+    "pageHttp": 200,
+    "servedStateMatchesLocal": true,
+    "embeddedSnapshotMatchesState": true,
+    "serverSessionConfirmedLive": true,
+    "serverRestarted": false,
+    "newHelperStarted": false,
+    "refreshCommand": "python -X utf8 -B .autopilot/sync.py --no-serve",
+    "display": "open_in_codex queued; foreground outside Codex, screen capture unavailable; visible browser rendering not verified"
+  },
+  "manifest": {
+    "total": 32,
+    "done": 8,
+    "inTicket": 23,
+    "deferred": 1,
+    "dropped": 0,
+    "countsMatchState": true
+  },
+  "governanceHook": {
+    "sourceHash": "a9489426518688f5ec772b1fc193d7290491d6cef482d4b0e08c71288d30cd63",
+    "safeDecisionChecks": 45,
+    "passed": 45,
+    "failed": 0,
+    "dangerousCommandsExecuted": false,
+    "evidencePath": "../../../../verification-tools/governance-hook-repair-20260917-012107/drive-boundary-result.json",
+    "scope": "Frozen decision unit tests and Python dispatcher simulations, not full live Codex E2E"
+  },
+  "localChecks": {
+    "unitTests": {
+      "command": "python -B -m unittest discover -s tests -v",
+      "passed": 24,
+      "failed": 0,
+      "seconds": 8.293,
+      "exitCode": 0,
+      "excerpt": "Ran 24 tests in 8.293s\nOK\ndashboard benchmark: tick=592.47ms baseline=861.94ms, DOM queries=0/15000",
+      "performanceScope": "Node VM test, not real-browser rendering"
+    },
+    "measureRun": {
+      "command": "python -B tools/measure-run.py --check-only",
+      "exitCode": 0,
+      "output": "measure-run check-only: OK"
+    },
+    "diffCheck": {
+      "exitCode": 0
+    },
+    "projectCodeDiffFromHead": {
+      "paths": [
+        "skills/autopilot",
+        "tools",
+        "tests",
+        ".github/workflows/verify.yml",
+        ".autopilot/sync.py"
+      ],
+      "empty": true
+    }
+  },
+  "installation": {
+    "connectedSkillDir": "C:/Users/Crown-Aliy/.agents/skills/autopilot",
+    "currentDevelopmentCopyInstalled": false,
+    "installedSyncHash": "4213a0aa368132a52b6437966fa3e3be9690688882a1ba3bd72b3c7682b33700",
+    "developmentSyncHash": "89ef8ce6790c8db78791063918055336572d65c9e9cd08dce0292b714665d615",
+    "observation": "Connected sync still calls ps unconditionally and scans/terminates same-directory servers; no global installation was changed"
+  },
+  "nextAction": "Amend specification to retain all original requirements plus agreed G01 and rerun independent G2; only then resume T06 implementation",
+  "acceptance": "Previous independent NO_GO is not superseded; full goal remains unfinished; dashboard readiness not set to 100%"
+}

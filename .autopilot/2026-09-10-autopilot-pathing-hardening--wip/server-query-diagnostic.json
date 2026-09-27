@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-09-16T15:52:18.6020460+03:00",
+  "checkedCodeSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
+  "recordedPort": 56521,
+  "recordedPid": 5716,
+  "ownedCommandConfirmed": true,
+  "helpers": [
+    {
+      "port": 56247,
+      "status": 200,
+      "stateMatches": true
+    },
+    {
+      "port": 56521,
+      "status": 200,
+      "stateMatches": true
+    }
+  ],
+  "dashboardStatus": 200,
+  "method": "approved read-only CIM for recorded PID plus exact loopback HTTP state comparison",
+  "mutation": "none; no process termination or normal sync execution",
+  "limitation": "HTTP identity does not by itself prove ownership of unrecorded helper; only recorded PID command verified",
+  "diagnosis": "cmdline unavailable returns empty string; responding recorded port falls through to free_port/Popen"
+}
