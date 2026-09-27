@@ -4,7 +4,7 @@
 **Blocked by:** 01, 02, 03, 05, 06, 07
 **Зона:** `AGENTS.md`, `CLAUDE.md`, `.autopilot/`, GitHub release boundary
 **Волна:** 6
-**Status:** in-progress — G04 payload commit `d9ea88a` опубликован в `development` с lease на `7911d30`; exact-SHA Actions36295270998 и обязательные logs зелёные на Windows/macOS/Ubuntu. Dashboard checkpoint 100% подтверждён snapshot и Node VM render, текущая живая browser tab не проверена; следующий семифайловый commit блокирован отказом Windows создать Git `index.lock`, staged set пуст. Main/PR/merge/post-merge не выполнены.
+**Status:** done — финальный checkpoint `c23de42` опубликован в `development`; Actions36339995752 и PR-head Actions36340188512 зелёные на Windows/macOS/Ubuntu. PR #1 смержен в `main` как `ca6743b`; post-merge память и dashboard финализированы.
 
 ## Что должно заработать
 
@@ -29,7 +29,7 @@
 - [x] `Alpha-Oi/autopilot-jet` существует как Public с прежним id1372711955 (G03), `origin` точен; с informed approval опубликован development7911d30 с lease6265e03, незакоммиченные изменения исключены; main/PR/merge не затронуты.
 - [x] Новый development payload `d9ea88a` опубликован только в `development` с exact lease; Actions36295270998 terminal-success, все три jobs/logs подтверждают 33 tests, lint0, benchmark pass и measureOK.
 - [x] По spec §9 изучены jobs/steps и логи Actions35257607290 именно опубликованного development7911d30: все три ОС по33 tests/no skips, exact flake8/0, measureOK, benchmark tick<baseline/queries0/15000. Безопасные строки результата и run URL/id/SHA сохранены в publication-approval-and-native-ci-20260917.json; это не закрывает future PR head CI.
-- [ ] Remote `main`, история upstream, финальный `AGENTS.md` и 100% dashboard подтверждены после merge.
+- [x] Remote `main` создан от сохранённого upstream base `99c7e736`, PR #1 прошёл fresh PR-head CI и смержен как `ca6743b`; финальный `AGENTS.md` и 100% dashboard зафиксированы после merge.
 
 ## Локальная приёмка 2026-09-12
 
@@ -41,8 +41,7 @@
 
 ## Pending orchestrator
 
-- Выполнить разрешённую G04 последовательность без перестановки gates: local/staged review, development commit/push с lease, exact-SHA CI logs, dashboard100, main/PR/PR checks/merge, post-merge memory/dashboard/CI verification.
-- Exact file scope, metadata exposure and authorized sequence are fixed in `release-authorization-scope-20260925.md`; дополнительные файлы допустимы только как явно предусмотренные финальные механические status/evidence записи в тех же зонах.
+- Нет. G04 последовательность выполнена без перестановки gates; итоговое evidence — `release-finalization-20260927.json`.
 
 ## Локальный checkpoint 2026-09-16
 

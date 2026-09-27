@@ -18,4 +18,4 @@
 
 | Начат | Папка | Статус | Итог |
 |---|---|---|---|
-| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening--wip` | 100% checkpoint подготовлен; Git index write заблокирован | G4 GO; development d9ea88a и Actions36295270998 зелёные; новый checkpoint не staged/committed, main/PR/merge/post-merge не выполнены. |
+| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening` | завершён | G4 GO; development `c23de42` и Actions `36339995752` зелёные; PR #1 прошёл Actions `36340188512` и смержен в `main` как `ca6743b`; память и dashboard финализированы. |
