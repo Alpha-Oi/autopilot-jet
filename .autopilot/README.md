@@ -18,4 +18,4 @@
 
 | Начат | Папка | Статус | Итог |
 |---|---|---|---|
-| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening--wip` | release разрешён, выполняется | Independent G4 pre-release gate GO; exact payload и ordered main/PR/merge/post-merge sequence разрешены G04, внешние шаги ещё не начаты. |
+| 2026-09-10 | `2026-09-10-autopilot-pathing-hardening--wip` | 100% checkpoint подготовлен; Git index write заблокирован | G4 GO; development d9ea88a и Actions36295270998 зелёные; новый checkpoint не staged/committed, main/PR/merge/post-merge не выполнены. |

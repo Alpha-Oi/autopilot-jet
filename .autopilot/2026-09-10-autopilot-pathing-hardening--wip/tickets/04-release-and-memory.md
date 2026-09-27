@@ -4,7 +4,7 @@
 **Blocked by:** 01, 02, 03, 05, 06, 07
 **Зона:** `AGENTS.md`, `CLAUDE.md`, `.autopilot/`, GitHub release boundary
 **Волна:** 6
-**Status:** in-progress — independent G4 pre-release gate `GO`: development7911d30, current host `gpt-5.6-sol/max`, local gates, browser smoke, governance45/45 и native CI35257607290 подтверждены. G04 разрешил exact новый Public payload и ordered release sequence; pre-release revalidation выполнена, внешние release actions ещё не начинались.
+**Status:** in-progress — G04 payload commit `d9ea88a` опубликован в `development` с lease на `7911d30`; exact-SHA Actions36295270998 и обязательные logs зелёные на Windows/macOS/Ubuntu. Dashboard checkpoint 100% подтверждён snapshot и Node VM render, текущая живая browser tab не проверена; следующий семифайловый commit блокирован отказом Windows создать Git `index.lock`, staged set пуст. Main/PR/merge/post-merge не выполнены.
 
 ## Что должно заработать
 
@@ -27,7 +27,7 @@
 - [x] Полный локальный gate и независимый blind acceptance зелёные; dashboard не переводится в 100% до release finalization.
 - [x] `AGENTS.md` и compact mirror в `CLAUDE.md` обновлены реальными командами/состоянием.
 - [x] `Alpha-Oi/autopilot-jet` существует как Public с прежним id1372711955 (G03), `origin` точен; с informed approval опубликован development7911d30 с lease6265e03, незакоммиченные изменения исключены; main/PR/merge не затронуты.
-- [ ] Новый development payload ещё не опубликован; после него требуется terminal-success Actions, затем PR `development -> main` и merge в разрешённой G04 последовательности.
+- [x] Новый development payload `d9ea88a` опубликован только в `development` с exact lease; Actions36295270998 terminal-success, все три jobs/logs подтверждают 33 tests, lint0, benchmark pass и measureOK.
 - [x] По spec §9 изучены jobs/steps и логи Actions35257607290 именно опубликованного development7911d30: все три ОС по33 tests/no skips, exact flake8/0, measureOK, benchmark tick<baseline/queries0/15000. Безопасные строки результата и run URL/id/SHA сохранены в publication-approval-and-native-ci-20260917.json; это не закрывает future PR head CI.
 - [ ] Remote `main`, история upstream, финальный `AGENTS.md` и 100% dashboard подтверждены после merge.
 

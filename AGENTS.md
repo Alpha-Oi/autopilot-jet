@@ -66,10 +66,11 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 ## Текущий проверенный срез
 
-- Code HEAD — `7911d30636afbf2987274e7c881b8a9977eebc67` на `development`; production source совпадает с опубликованным `development`.
-- Локально: `python -B -m unittest discover -s tests -v` → `Ran 33 tests in 9.084s`, `OK`; exact isolated flake8 7.3.0 → stdout `0`, exit `0`; `python -B tools/measure-run.py --check-only` → `measure-run check-only: OK`.
-- Реальный Edge smoke → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`.
-- GitHub Actions run `35257607290` с exact head SHA `7911d30636afbf2987274e7c881b8a9977eebc67` успешен на Windows/Ubuntu/macOS: на каждом runner 33 tests/`OK`, lint `0`, benchmark pass, measure OK.
+- Code HEAD — `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d` на `development`; этот payload опубликован в remote `development`.
+- Локальный release gate: 33 tests/`OK` за 9.977s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `495.51ms < 888.63ms`, queries `0/15000`.
+- Реальный Edge smoke предыдущего среза → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`. Для текущего 100% checkpoint реальная browser tab отдельно не подтверждена.
+- GitHub Actions run `36295270998` с exact head SHA `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d` завершился `success` на Windows/Ubuntu/macOS: на каждом native runner 33 tests/`OK`, lint `0`, benchmark pass, measure `OK`.
+- Dashboard release checkpoint: embedded snapshot совпадает с `.autopilot/state.js`, Node VM render → `100%`, `6/7` tickets, `RUNTIME_MATCH=YES`. `liveBrowserRender=NOT_VERIFIED_CURRENT_CHECKPOINT`: записанный localhost server остановлен; безопасный helper сохранил PID при неизвестном ownership, а policy заблокировала ручной запуск процесса и переход на `file:` URL.
 - Frozen governance harness → `45/45`, `dangerousCommandsExecuted=false`.
 - Последние host metadata — `gpt-5.6-sol/max`; история неоднородна (`3 medium / 36 max / 36 xhigh`), поэтому утверждение о `max` для всей истории не делается.
 - Независимый G4 pre-release gate для этого среза дал `GO`; это подтверждает срез до release boundary, но не завершает внешнюю финализацию.
@@ -77,8 +78,9 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 ## Открытая release-граница
 
 - Пользователь 2026-09-27 явно разрешил финальный Public payload и согласованную release-последовательность для `Alpha-Oi/autopilot-jet`; повторное разрешение внутри этого scope не требуется.
-- Release-последовательность началась только с authorization и read-only preflight: активная `gh` session — `Alpha-Oi`, target остаётся Public с admin+push, remote `development` через API указывает на `7911d30636afbf2987274e7c881b8a9977eebc67`, remote `main` отвечает 404, PR `development` → `main` отсутствует.
-- Общая цель ещё не завершена: новый payload не committed/pushed, `main`, PR/merge и post-merge memory/dashboard не созданы. Разрешение не является доказательством выполнения; каждый шаг закрывать только его фактическим evidence, а CI logs другого SHA не доказывают текущий код.
+- Новый финальный Public payload committed/pushed только в `development` с exact lease от `7911d30636afbf2987274e7c881b8a9977eebc67`; опубликованный HEAD и успешный exact-SHA Actions подтверждены в `release-authorization-approved-20260927.json`.
+- На момент этого checkpoint `main`, PR/merge и post-merge memory/dashboard остаются pending; `6/7` tickets отражают незакрытый T04. Каждый следующий шаг закрывать только его фактическим evidence, а CI logs другого SHA не доказывают текущий код.
+- Текущий blocker: два exact `git add` для семи подготовленных text files завершились `fatal: Unable to create 'D:/Development/skills/work/nick-vels-skills/.git/worktrees/skills-development/index.lock': Permission denied`; `index.lock` отсутствует, разрешение на Git directories выдано, но эффективной записи нет. Staged set пуст, remote `development` остаётся на `d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d`, `main`/PR отсутствуют. Для продолжения открыть `D:\Development\skills\worktrees\skills-development` как активный Codex workspace или предоставить эффективный write access к Git metadata, затем продолжить seven-file checkpoint без пересоздания repository.
 
 ## Как здесь работает Autopilot
 

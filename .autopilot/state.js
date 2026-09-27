@@ -11,7 +11,7 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "skillDir": "C:\\Users\\Crown-Aliy\\.agents\\skills\\autopilot",
   "startedAt": "2026-09-10T23:25:26.9499987+03:00",
-  "updatedAt": "2026-09-27T07:42:40.2506232+03:00",
+  "updatedAt": "2026-09-27T12:24:10Z",
   "finishedAt": null,
   "stages": [
     {
@@ -75,9 +75,10 @@ window.STATE =
     },
     {
       "id": "final",
-      "status": "active",
+      "status": "done",
       "startedAt": "2026-09-25T22:13:41.9934461+03:00",
-      "note": "G4 GO; G04 разрешил exact Public payload и ordered release sequence. Fresh start revalidation пройдена; commit/push/main/PR/merge ещё не выполнялись."
+      "finishedAt": "2026-09-27T07:48:35.1323064+03:00",
+      "note": "G4 GO и exact development d9ea88a Actions36295270998 зелёные на Windows/macOS/Ubuntu; dashboard release checkpoint 100%. main/PR/merge/post-merge ещё выполняются."
     }
   ],
   "requirements": {
@@ -234,11 +235,11 @@ window.STATE =
       ],
       "status": "in-progress",
       "startedAt": "2026-09-12T09:33:40.0789316+03:00",
-      "tests": "2026-09-25 independent G4: GO pre-release; 33/33 tests in9.084s, measureOK, exact flake80, browser smoke pass, benchmark483.02ms<666.80ms/queries0. Native Actions35257607290 at7911d30 success on Windows/Linux/macOS. Full objective matrix: 37 implemented / 15 partial / 4 post-acceptance missing of56.",
+      "tests": "2026-09-27 release checkpoint: local33/33 in9.977s, measureOK, exact flake80, benchmark495.51ms<888.63ms/queries0; development d9ea88a Actions36295270998 success on Windows/macOS/Ubuntu with33 tests, lint0, measureOK and benchmark pass on each.",
       "retries": 0,
       "repairs": 1,
       "handoffs": 0,
-      "blocker": null,
+      "blocker": "Git index write denied at D:/Development/skills/work/nick-vels-skills/.git/worktrees/skills-development/index.lock; seven-file checkpoint prepared but not staged. Open active D: workspace or grant effective Git metadata write access.",
       "releaseAuthorization": {
         "status": "authorized",
         "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
@@ -445,6 +446,16 @@ window.STATE =
         "undefinedVisible": false,
         "url": "http://127.0.0.1:56521/dashboard.html"
       },
+      "releaseCheckpoint": {
+        "status": "passed-node-vm",
+        "checkedAt": "2026-09-27T12:11:00Z",
+        "renderedPercent": 100,
+        "tickets": "6/7",
+        "runtimeMatchesTestedTemplate": true,
+        "snapshotMatchesState": true,
+        "liveBrowser": "NOT_VERIFIED_CURRENT_CHECKPOINT",
+        "evidenceFile": "release-authorization-approved-20260927.json"
+      },
       "performance": {
         "status": "passed",
         "environment": "real HTTP browser DOM",
@@ -527,22 +538,22 @@ window.STATE =
       "status": "in-progress",
       "target": "Alpha-Oi/autopilot-jet",
       "targetApi": "200",
-      "checkedAt": "2026-09-27T07:39:12.1492244+03:00",
+      "checkedAt": "2026-09-27T07:48:35.1323064+03:00",
       "visibility": "public",
       "repositoryId": 1372711955,
       "authorization": "GET /user with approved network confirmed Alpha-Oi; API repository creation succeeded",
       "evidenceFile": "publication-approval-and-native-ci-20260917.json",
       "publication": {
         "status": "passed",
-        "sha": "7911d30636afbf2987274e7c881b8a9977eebc67"
+        "sha": "d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d"
       },
       "actions": {
         "status": "passed",
-        "runId": 35257607290,
-        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
-        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290",
-        "evidenceFile": "publication-approval-and-native-ci-20260917.json",
-        "scope": "Current published head; three native OS jobs and quality logs verified"
+        "runId": 36295270998,
+        "headSha": "d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d",
+        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36295270998",
+        "evidenceFile": "release-authorization-approved-20260927.json",
+        "scope": "Current published payload head; three native OS jobs and quality logs verified"
       },
       "main": {
         "status": "absent",
@@ -551,37 +562,45 @@ window.STATE =
       "approval": {
         "status": "authorized",
         "action": "publish exact final payload; create absent main at upstream base; open and merge development PR; verify post-merge state",
-        "result": "G04 authorized the exact scope on 2026-09-27; execution in progress, no external write yet",
+        "result": "G04 authorized the exact scope; development payload d9ea88a and exact-SHA Actions are complete, main/PR/merge/post-merge remain",
         "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
         "evidenceFile": "release-authorization-approved-20260927.json"
       },
       "lastReadOnlyCheck": {
-        "checkedAt": "2026-09-25T22:13:41.9934461+03:00",
-        "evidenceFile": "g4-max-blind-acceptance.md",
+        "checkedAt": "2026-09-27T07:48:35.1323064+03:00",
+        "evidenceFile": "release-authorization-approved-20260927.json",
         "repositoryId": 1372711955,
         "fullName": "Alpha-Oi/autopilot-jet",
         "visibility": "public",
         "defaultBranch": "development",
-        "developmentSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "developmentSha": "d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d",
         "mainPresent": false,
         "activeActions": 0
       },
-      "reason": "Development7911d30 passed independent pre-release G4 and native CI. G04 authorized the ordered payload/development/main/PR/merge/post-merge sequence; execution has started with fresh revalidation.",
+      "reason": "G4 GO and development d9ea88a exact-SHA native CI passed. Dashboard 100% checkpoint is prepared and VM-rendered, but next seven-file commit is blocked by Git index write permission; main/PR/merge/post-merge remain pending.",
+      "nextDevelopmentCheckpoint": {
+        "status": "BLOCKED_LOCAL_GIT_INDEX_WRITE",
+        "checkedAt": "2026-09-27T12:24:10Z",
+        "preparedFiles": 7,
+        "stagedFiles": 0,
+        "error": "fatal: Unable to create 'D:/Development/skills/work/nick-vels-skills/.git/worktrees/skills-development/index.lock': Permission denied",
+        "evidenceFile": "release-authorization-approved-20260927.json"
+      },
       "pendingDevelopmentSha": null,
       "actionsHistorical": false,
       "push": {
         "status": "passed",
-        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
-        "leaseExpectedSha": "6265e03aa5a86a5fbc12cfe5dad1519dd062da39",
-        "evidenceFile": "publication-approval-and-native-ci-20260917.json"
+        "headSha": "d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d",
+        "leaseExpectedSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
+        "evidenceFile": "release-authorization-approved-20260927.json"
       },
       "nativeActions": {
         "status": "passed",
-        "runId": 35257607290,
-        "headSha": "7911d30636afbf2987274e7c881b8a9977eebc67",
-        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/35257607290",
-        "evidenceFile": "publication-approval-and-native-ci-20260917.json",
-        "scope": "Current published head; three native OS jobs and quality logs verified",
+        "runId": 36295270998,
+        "headSha": "d9ea88a7d8cc0c8f5aed88f7d092518e0a181f7d",
+        "runUrl": "https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36295270998",
+        "evidenceFile": "release-authorization-approved-20260927.json",
+        "scope": "Current published release payload head; three native OS jobs and quality logs verified",
         "jobs": 3,
         "testsPerOs": 33,
         "skipsPerOs": 0,
@@ -909,20 +928,19 @@ window.STATE =
     }
   },
   "pendingDecision": {
-    "status": "authorized-release-in-progress",
+    "status": "authorized-release-blocked-local-git-write",
     "evidenceFile": "release-authorization-approved-20260927.json",
     "scopeFile": "release-authorization-scope-20260925.md",
     "authorizedAt": "2026-09-27T07:39:12.1492244+03:00",
     "quote": "Разрешаю описанный в `release-authorization-scope-20260925.md` финальный Public payload и release-последовательность для `Alpha-Oi/autopilot-jet`",
     "items": [
-      "Commit and publish the reviewed final payload to development with an explicit lease",
-      "Wait for and inspect exact-SHA development Actions",
-      "Set verified dashboard to 100 percent, create main at the preserved upstream base, and open the pull request",
+      "Publish the prepared and VM-verified dashboard 100 percent checkpoint after effective Git metadata write access is restored",
+      "Create main at the preserved upstream base and open the pull request",
       "Merge only after fresh pull-request checks, then finalize AGENTS.md/dashboard in main and synchronize current memory to development"
     ],
     "remainingOriginalObligations": [
       "Current host Sol/max is confirmed; historical medium/xhigh and phase guarantees remain explicit",
-      "Dashboard100/main/PR/merge/post-merge remain incomplete post-acceptance actions"
+      "Dashboard 100 percent checkpoint is recorded; main/PR/merge/post-merge remain incomplete post-acceptance actions"
     ],
     "resolved": [
       "Adapted CI accepted by the user on 2026-09-17.",
@@ -969,7 +987,7 @@ window.STATE =
       "Run-artifacts intentionally excluded from blind evidence, so full/deep chronology, every-iteration memory, subagent execution and Phase3 artifact are independently partial rather than silently claimed.",
       "Latest host is gpt-5.6-sol/max; historical turn contexts are mixed and no all-history max claim is made.",
       "Historical pre-commit sequencing cannot be fully reconstructed; current candidate and all local/live CI gates are green.",
-      "Post-acceptance dashboard100, main, PR/merge and AGENTS.md in main are not yet performed and require separate authorization."
+      "Dashboard 100 percent checkpoint is now recorded after exact-SHA CI; main, PR/merge and AGENTS.md in main remain incomplete but authorized in G04."
     ],
     "artifactSupplement": {
       "analysis": "complete",
@@ -987,7 +1005,6 @@ window.STATE =
     ],
     "overallObjective": "INCOMPLETE_POST_ACCEPTANCE",
     "postAcceptanceMissing": [
-      "final dashboard 100%",
       "create main and PR development -> main",
       "merge after fresh PR-head CI",
       "final AGENTS.md memory and post-merge verification in main"
