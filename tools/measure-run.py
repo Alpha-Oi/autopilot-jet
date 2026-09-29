@@ -76,12 +76,63 @@ def load(path):
     return rows
 
 
+# Виды шагов для разбивки расхода (--steps). Порядок = приоритет, если в одном сообщении несколько действий.
+CATS = ("субагент", "правка state.js", "sync.py", "тесты/сборка", "git/gh", "правка кода",
+        "правка тестов", "чтение (Read/Grep/Glob)", "другой Bash", "задачи (TaskCreate/Update)",
+        "прочий инструмент", "ответ без действий")
+TEST_WORDS = ("pytest", "npm test", "npm run test", "go test", "cargo test", "unittest", "vitest", "jest",
+              "tsc", "npm run build", "npm run lint", "flake8", "ruff", "eslint", "mypy", "pnpm test", "yarn test")
+
+
+def classify(name, inp):
+    """Вид одного действия модели. Только по имени инструмента и его входу, без чтения результата."""
+    inp = inp or {}
+    if name in ("Agent", "Task"):
+        return "субагент"
+    if name == "Bash":
+        cmd = str(inp.get("command", ""))
+        if "sync.py" in cmd:
+            return "sync.py"
+        if "state.js" in cmd:
+            return "правка state.js"
+        if any(k in cmd for k in TEST_WORDS):
+            return "тесты/сборка"
+        if cmd.lstrip().startswith(("git ", "gh ")) or " git " in cmd[:20]:
+            return "git/gh"
+        return "другой Bash"
+    if name in ("Edit", "Write", "NotebookEdit"):
+        fp = str(inp.get("file_path", ""))
+        base = os.path.basename(fp.replace("\\", "/"))
+        if base == "state.js":
+            return "правка state.js"
+        norm = fp.replace("\\", "/")
+        if "/tests/" in norm or "/test/" in norm or base.startswith("test_") or ".test." in base:
+            return "правка тестов"
+        return "правка кода"
+    if name in ("Read", "Grep", "Glob"):
+        return "чтение (Read/Grep/Glob)"
+    if name in ("TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "TodoWrite"):
+        return "задачи (TaskCreate/Update)"
+    return "прочий инструмент"
+
+
+def step_category(blocks):
+    """Вид шага по приоритету CATS; шаг без tool_use — «ответ без действий»."""
+    found = {classify(b.get("name"), b.get("input")) for b in blocks
+             if isinstance(b, dict) and b.get("type") == "tool_use"}
+    for cat in CATS:
+        if cat in found:
+            return cat
+    return "ответ без действий"
+
+
 def analyse(path, label):
     rows = load(path)
     ctx, tools = [], Counter()
     out = win = rin = cold = 0
     test_edits = code_edits = test_runs = 0
     stamps = []
+    cats = {c: [0, 0.0] for c in CATS}
 
     for r in rows:
         m = r.get("message") or {}
@@ -102,6 +153,9 @@ def analyse(path, label):
                 cold += 1
             if cr + cw + ip:
                 ctx.append(cr + cw + ip)
+                cat = step_category(m.get("content") or [])
+                cats[cat][0] += 1
+                cats[cat][1] += (u.get("output_tokens", 0) or 0) * W_OUT + cw * W_WRITE + cr * W_READ
         for c in m.get("content") or []:
             if not isinstance(c, dict) or c.get("type") != "tool_use":
                 continue
@@ -137,7 +191,31 @@ def analyse(path, label):
         "norm": out * W_OUT + win * W_WRITE + rin * W_READ,
         "active": active, "idle": idle,
         "test_edits": test_edits, "code_edits": code_edits, "test_runs": test_runs,
+        "cats": cats,
     }
+
+
+def print_steps(results):
+    """Куда уходят шаги: оркестратор отдельно, остальные контексты вместе."""
+    orch = [r for r in results if r["label"] == "Оркестратор"]
+    others = [r for r in results if r["label"] != "Оркестратор"]
+    for title, group in (("Оркестратор", orch), ("Остальные контексты вместе", others)):
+        agg = {c: [0, 0.0] for c in CATS}
+        for r in group:
+            for c, (n, cost) in r["cats"].items():
+                agg[c][0] += n
+                agg[c][1] += cost
+        steps = sum(v[0] for v in agg.values())
+        cost = sum(v[1] for v in agg.values())
+        if not steps:
+            continue
+        print(f"\n{title}: разбивка шагов по видам (шаг = одно сообщение модели)")
+        print(f"{'вид шага':<32}{'шагов':>7}{'доля шагов':>12}{'норм.ед':>10}{'доля':>7}")
+        print("-" * 68)
+        for c, (n, cst) in sorted(agg.items(), key=lambda kv: -kv[1][1]):
+            if n:
+                print(f"{c:<32}{n:>7}{n/steps*100:>11.0f}%{cst/1e6:>9.2f}M{cst/cost*100:>6.0f}%")
+        print("-" * 68)
 
 
 def _check_only():
@@ -155,6 +233,8 @@ def _check_only():
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check-only", action="store_true")
+    parser.add_argument("--steps", action="store_true",
+                        help="добавить разбивку шагов по видам действий (state.js, тесты, чтение и т. д.)")
     parser.add_argument("project", nargs="?")
     parser.add_argument("session_id", nargs="?")
     args = parser.parse_args(argv)
@@ -246,6 +326,8 @@ def main(argv=None):
     idl = sum(r["idle"] for r in results)
     print(f"\nВремя по всем контекстам: активно {act/60:.0f} мин · простой {idl/60:.0f} мин"
           f" ({act/(act+idl)*100:.0f}% активного)" if act + idl else "")
+    if args.steps:
+        print_steps(results)
     return 0
 
 
