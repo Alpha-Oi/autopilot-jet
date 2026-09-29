@@ -126,6 +126,26 @@ class StepBreakdownTests(unittest.TestCase):
         total = sum(v[1] for v in result["cats"].values())
         self.assertAlmostEqual(total, result["norm"])
 
+    def test_rows_of_one_message_are_counted_once(self):
+        def row(mid, content, out):
+            return ('{"timestamp":"2026-01-01T00:00:00Z","message":{"id":"%s","role":"assistant",'
+                    '"content":%s,"usage":{"input_tokens":1,"output_tokens":%d,'
+                    '"cache_creation_input_tokens":100,"cache_read_input_tokens":1000}}}\n'
+                    % (mid, content, out))
+        payload = (
+            row("m1", '[{"type":"thinking","thinking":"..."}]', 3)
+            + row("m1", '[{"type":"text","text":"иду читать"}]', 5)
+            + row("m1", '[{"type":"tool_use","name":"Read","input":{}}]', 9)
+            + row("m2", '[{"type":"text","text":"готово"}]', 4)
+        )
+        with mock.patch("builtins.open", mock.mock_open(read_data=payload)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual(result["steps"], 2)
+        self.assertEqual(result["out"], 9 + 4)
+        self.assertEqual(result["write"], 200)
+        self.assertEqual(result["cats"]["чтение (Read/Grep/Glob)"][0], 1)
+        self.assertEqual(result["cats"]["ответ без действий"][0], 1)
+
     def test_print_steps_outputs_table(self):
         cats = {c: [0, 0.0] for c in measure_run.CATS}
         cats["sync.py"] = [2, 500000.0]
