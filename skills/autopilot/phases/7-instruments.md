@@ -38,7 +38,7 @@ window.STATE =
     { "id": "final",     "status": "pending" }
   ],
   "requirements": {
-    "total": 23, "done": 9, "inTicket": 8, "inSpec": 0,
+    "total": 23, "done": 8, "partial": 1, "inTicket": 8, "inSpec": 0,
     "placeholder": 2, "deferred": 1, "dropped": 3
   },
   "tickets": [

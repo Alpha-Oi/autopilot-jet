@@ -92,6 +92,7 @@ Every requirement is a row, and every row carries the **exact words it came from
 | `in-spec` | landed in the spec, section noted | you |
 | `in-ticket` | a ticket exists that delivers it | you |
 | `done` | built and reviewed, commit noted | you |
+| `partial` | the requirement is implemented or evidenced only in part; the basis notes exactly what is and is not proven | agent, with the basis recorded |
 | `placeholder` | in the build, but with a stub where a user fact belongs | you |
 | `deferred` | consciously postponed, listed in the spec's Out of Scope with a reason | you |
 | `dropped` | **cancelled by the user** | **the user, never you** |
@@ -155,7 +156,7 @@ The manifest is updated at exactly six moments, never continuously:
 | after each briefing answer | `open` → `dropped` / clarified / confirmed |
 | after the spec is written | `open` → `in-spec` / `deferred`, section noted |
 | after tickets are cut | `in-spec` → `in-ticket`, ticket number noted |
-| after each ticket lands | `in-ticket` → `done` / `placeholder`, commit noted |
+| after each ticket lands | `in-ticket` → `done` / `partial` / `placeholder`, commit noted |
 | when the build contradicts the plan | a new `D##` row, and the affected rows re-pointed at the amended spec section |
 | when the user changes something mid-flight | the affected row moves — `dropped` with the quote, or a new `G##` — **and the same words go into the brief's `## Дополнения`** |
 

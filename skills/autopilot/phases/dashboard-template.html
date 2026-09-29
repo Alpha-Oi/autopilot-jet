@@ -306,7 +306,9 @@ const plural = (n, one, few, many) => {
 };
 
 const I18N = {
-  ru:{lang:"ru",coverage:"Покрытие брифа",ofReq:(a,b)=>`${a} из ${b} требований`,
+  ru:{lang:"ru",coverage:"Покрытие брифа",ofReq:(a,b,p)=>p
+      ? `${a} готово · ${p} частично из ${b} требований`
+      : `${a} из ${b} требований`,
     overall:"Прогресс проекта",overallStages:(a,b)=>`${a} из ${b} этапов пройдено`,
     overallTickets:(a,b)=>`${a} из ${b} тасков`,
     tickets:"Таски",ticketsDone:p=>`${p}% готово`,retries:n=>` · ${n} повтор.`,
@@ -326,7 +328,7 @@ const I18N = {
     debt:"Долг",debtSub:(a,b,c)=>`заглушки ${a} · допущения ${b} · переменные ${c}`,
     tests:"Тесты",testsSub:"после последнего таска",testsSubOne:"последний полный прогон",failed:n=>`${n} упало`,
     buildTook:d=>`разработка заняла ${d}`,
-    reqs:"Требования",reqsSub:(d,f,p)=>`снято ${d} · отложено ${f} · заглушки ${p}`,
+    reqs:"Требования",reqsSub:(d,f,p,x)=>`снято ${d} · отложено ${f} · заглушки ${p} · частично ${x}`,
     progress:"Ход сборки",
     wave:(n,c)=>c>1?`Волна ${n} — ${c} ${plural(c,'таск','таска','тасков')} параллельно`:`Волна ${n}`,
     chipDone:n=>`готово ${n}`,chipRun:n=>`пишутся ${n}`,chipWait:n=>`ждут ${n}`,chipFailed:n=>`упало ${n}`,
@@ -346,7 +348,9 @@ const I18N = {
     depths:{strict:"строго по брифу",normal:"обычная глубина",deep:"максимальная глубина"},
     tier:t=>`ярус ${t}`,finished:"завершено",min:"мин",hr:"ч",m:"м",
     langLabel:"Язык",themeLabel:"Тема",themeLight:"Светлая тема",themeDark:"Тёмная тема"},
-  en:{lang:"en",coverage:"Brief coverage",ofReq:(a,b)=>`${a} of ${b} requirements`,
+  en:{lang:"en",coverage:"Brief coverage",ofReq:(a,b,p)=>p
+      ? `${a} done · ${p} partial of ${b} requirements`
+      : `${a} of ${b} requirements`,
     overall:"Project progress",overallStages:(a,b)=>`${a} of ${b} stages done`,
     overallTickets:(a,b)=>`${a} of ${b} tickets`,
     tickets:"Tickets",ticketsDone:p=>`${p}% done`,retries:n=>` · ${n} retries`,
@@ -365,7 +369,7 @@ const I18N = {
     debt:"Debt",debtSub:(a,b,c)=>`placeholders ${a} · assumptions ${b} · env vars ${c}`,
     tests:"Tests",testsSub:"after the last ticket",testsSubOne:"last full run",failed:n=>`${n} failed`,
     buildTook:d=>`development took ${d}`,
-    reqs:"Requirements",reqsSub:(d,f,p)=>`dropped ${d} · deferred ${f} · placeholders ${p}`,
+    reqs:"Requirements",reqsSub:(d,f,p,x)=>`dropped ${d} · deferred ${f} · placeholders ${p} · partial ${x}`,
     progress:"Build progress",
     wave:(n,c)=>c>1?`Wave ${n} — ${c} tickets in parallel`:`Wave ${n}`,
     chipDone:n=>`${n} done`,chipRun:n=>`${n} writing`,chipWait:n=>`${n} waiting`,chipFailed:n=>`${n} failed`,
@@ -827,7 +831,7 @@ function render(lang){
     <div class="card"><div class="k">${L.coverage}</div>
       <div class="hero">${ring(coverage)}
         <div><div class="v">${coverage}<small>%</small></div>
-        <div class="sub">${L.ofReq(R.done||0, live)}</div></div></div>
+        <div class="sub">${L.ofReq(R.done||0, live, R.partial||0)}</div></div></div>
     </div>
     <div class="card"><div class="k">${L.stage}</div>
       <div class="v stage">${esc(curStage ? stName(curStage) : L.allDone)}</div>
@@ -868,7 +872,7 @@ function render(lang){
     </div>
     <div class="card"><div class="k">${L.reqs}</div>
       <div class="v">${R.total||0}</div>
-      <div class="sub">${L.reqsSub(R.dropped||0, R.deferred||0, R.placeholder||0)}</div>
+      <div class="sub">${L.reqsSub(R.dropped||0, R.deferred||0, R.placeholder||0, R.partial||0)}</div>
     </div>
   </div>
 

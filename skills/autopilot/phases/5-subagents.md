@@ -127,7 +127,7 @@ FILES: созданные и изменённые
 TESTS: команда → результат и сколько было до тебя (`npm test` → 34 passed, было 21)
 INTERFACES: публичные сигнатуры, схемы, форматы событий, которые ты выставил
             — то, чем будут пользоваться следующие таски
-REQUIREMENTS: R01 done | R01.1 placeholder — <чего не хватило>
+REQUIREMENTS: R01 done | R01.1 placeholder — <чего не хватило> | R01.2 partial — <что доказано, а что нет>
 CONCERNS: что сделано с оговоркой и почему
 BLOCKERS: чего не хватило (зависимость, решение, доступ)
 ```
@@ -180,7 +180,7 @@ In this order, every time:
 1. **Read the contract block.** No block → the ticket is not finished; ask the subagent for it. A block longer than the limit it was given is not read either: ask for it again in one line, because an essay you skim once you then re-read on every remaining turn of the run.
    **`HANDOFF` takes a different path — steps 5, 1 and 2 only:** run the full suite yourself (step 5) to confirm the tree really is green, append whatever interfaces were declared, bump `handoffs` in `state.js`, and launch the successor with the handoff paths. No review, no commit, no user line, and the ticket stays `in-progress`. The ticket is mid-flight: a third of a ticket has nothing a reviewer can judge against acceptance criteria, and its review happens once, on the whole diff, when the last context returns `DONE`.
 2. **Append to `interfaces.md`.**
-3. **Update the manifest** — `in-ticket` → `done` or `placeholder`, commit noted.
+3. **Update the manifest** — `in-ticket` → `done`, `partial` or `placeholder`, commit noted.
 4. **Send the diff to review** — the ticket goes to `review` in `state.js` first, then the Phase 6 checklist runs, by someone who did not write the code (`phases/6-review.md`). What comes back to you is a verdict and a list of findings. The diff itself does not.
 5. **Run the full test suite**, not just the ticket's own tests — and truncate the output: `<тестовая команда> 2>&1 | tail -30`. You need two things from it, green-or-red and the names of what failed, and both survive the truncation; the other two hundred lines are pure leak. A regression introduced now costs minutes; found eight tickets later it costs the evening.
    **Read the count, not just the colour.** The contract block reports what the suite ran and what it ran before this ticket, and the two numbers are the only floor there is: a `DONE` that added acceptance criteria and no tests is a дозапрос, and a suite reporting zero tests is red however it exits. A green run proves nothing about tests that were never written.

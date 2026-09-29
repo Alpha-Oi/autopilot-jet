@@ -70,7 +70,7 @@ window.STATE =
     { "id": "final",     "status": "pending" }
   ],
   "requirements": {
-    "total": 0, "done": 0, "inTicket": 0, "inSpec": 0,
+    "total": 0, "done": 0, "partial": 0, "inTicket": 0, "inSpec": 0,
     "placeholder": 0, "deferred": 0, "dropped": 0
   },
   "tickets": [],
