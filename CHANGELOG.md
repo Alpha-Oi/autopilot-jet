@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 ### Изменено
-- README: логотип с «-JET» (`assets/autopilot-jet-logo-*.png`).
+- README и дашборд: логотип с «-JET», вместо иконки самолёта — силуэт Су-57 (`assets/autopilot-jet-logo-*.png`).
 
 ## [1.2.0] — 2026-09-29
 
