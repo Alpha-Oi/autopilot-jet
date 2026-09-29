@@ -5,7 +5,7 @@ Everything Phase 0 needs to know about the dashboard, and nothing else. **The re
 Two files, and the split matters:
 
 - **`.autopilot/state.js`** — the truth, and the only thing you ever write. You read it on resume; the user never opens it.
-- **`.autopilot/dashboard.html`** — the only human view. Copied from the template once and **never touched again**. No build step, no dependencies, nothing to generate: in a real browser it opens by double-click, and in an in-app pane it needs one static file server and no more (§3).
+- **`.autopilot/dashboard.html`** — the only human view. Refreshed from the skill's template at the start of **every** flight (§1: new run, next feature, resume), and **never edited by hand** in between. No build step, no dependencies, nothing to generate: in a real browser it opens by double-click, and in an in-app pane it needs one static file server and no more (§3).
 
 **The page carries a snapshot of the state inside itself, and reads `state.js` from beside it on top of that.** The snapshot is what makes the dashboard show data when it is opened with no address at all — double-clicked, handed to a pane as `data:`, opened a month after the run, opened while the server is dead. The file beside it is what makes the clocks run: the page re-loads it every ten seconds without reloading itself, and it is what *you* read on a resume — two kilobytes, not eighty.
 
@@ -35,7 +35,7 @@ Empty output means the skill lives somewhere none of those five roots cover: wid
 
 **`sync.py` is the whole of the run's plumbing, and it lives beside the run, not in your head.** One call — `python3 .autopilot/sync.py` — mirrors `state.js` into the page, checks that it parses, and raises the server if it is not up. It replaced forty lines of bash that used to be executed by hand every flight, which is where the variation came from: the rule was written correctly and performed slightly differently each time. It finds its own directory from `__file__`, so a relative call works from the git root and an absolute path works from anywhere.
 
-**This block runs on every flight that opens the dashboard — new repo, new feature, resume alike.** «Copied once» is about the flight, not the folder: every command here is idempotent, the copy picks up what the skill has learned since, and a `.autopilot/` from before 2026-08-19 has no `index.html` until this line puts one there. The resume that skipped it is exactly how a returning user landed on a directory listing.
+**This block runs on every flight that opens the dashboard — new repo, new feature, resume alike — and it overwrites `dashboard.html` and `sync.py` each time, even when `.autopilot/` already exists.** An old copy is the failure to avoid: a project that kept an older `dashboard.html` showed the previous logo and layout through a whole run (measured 2026-09-29, noticed only by eye). Do not skip the block because the folder is there. It resets the snapshot inside the page, which is why §3's `sync.py` call follows it on a resume. «Copied once» is about the flight, not the folder: every command here is idempotent, the copy picks up what the skill has learned since, and a `.autopilot/` from before 2026-08-19 has no `index.html` until this line puts one there. The resume that skipped it is exactly how a returning user landed on a directory listing.
 
 ## 2. Write `.autopilot/state.js`
 
