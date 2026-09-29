@@ -2,6 +2,11 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
 
+## [Unreleased]
+
+### Изменено
+- README: логотип с «-JET» (`assets/autopilot-jet-logo-*.png`).
+
 ## [1.2.0] — 2026-09-29
 
 ### Изменено
