@@ -4,12 +4,17 @@
   Отправляет текущую ветку на GitHub, ждёт проверки, сливает PR (squash) и приводит локальную папку в порядок.
 
 .DESCRIPTION
-  Запускать из репозитория на ветке с готовой работой (всё закоммичено):
-      .\tools\ship.ps1
+  Запускать из папки репозитория:
+      .\tools\ship.ps1                       # ветка, на которой вы стоите (всё закоммичено)
+      .\tools\ship.ps1 -Branch feat/имя      # готовая ветка, на которую переключаться не нужно
   Шаги: проверка ветки -> push -> PR в development (или существующий) -> ожидание проверок ->
-  squash-слияние с удалением ветки -> локальный checkout development + pull -> удаление локальной ветки ->
-  переустановка навыка.
+  squash-слияние с удалением ветки -> обновление локальной development (в том числе в отдельном рабочем
+  дереве) -> удаление локальной ветки -> переустановка навыка.
   Не использует force, не трогает main, не делает релиз. Красные проверки останавливают скрипт до слияния.
+
+.PARAMETER Branch
+  Ветка для отправки. По умолчанию — текущая. С -Branch чистота рабочего дерева не проверяется:
+  уходят только коммиты этой ветки.
 
 .PARAMETER Auto
   Не ждать проверки в терминале: включить автослияние GitHub (нужно разрешить auto-merge в настройках репозитория).
@@ -20,6 +25,7 @@
 #>
 [CmdletBinding()]
 param(
+    [string]$Branch,
     [switch]$Auto,
     [switch]$NoInstall,
     [string]$Repo = 'Alpha-Oi/autopilot-jet',
@@ -53,12 +59,20 @@ function Get-Native {
 Step 'Проверка ветки'
 $root = Get-Native git @('rev-parse', '--show-toplevel')
 Set-Location $root
-$branch = Get-Native git @('branch', '--show-current')
-if (-not $branch) { throw 'Отделённый HEAD: перейдите на ветку с работой.' }
-if ($branch -in @('main', $Base)) { throw "Вы на '$branch'. Работа должна быть в отдельной ветке." }
-if (Get-Native git @('status', '--porcelain')) {
-    throw 'Есть незакоммиченные изменения. Закоммитьте их или уберите, затем запустите снова.'
+$current = Get-Native git @('branch', '--show-current')
+if ($Branch) {
+    $branch = $Branch
+    & git rev-parse --verify --quiet "refs/heads/$branch" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Локальной ветки '$branch' нет." }
 }
+else {
+    $branch = $current
+    if (-not $branch) { throw 'Отделённый HEAD: перейдите на ветку с работой или укажите -Branch.' }
+    if (Get-Native git @('status', '--porcelain')) {
+        throw 'Есть незакоммиченные изменения. Закоммитьте их или уберите, затем запустите снова.'
+    }
+}
+if ($branch -in @('main', $Base)) { throw "Ветка '$branch' не подходит: работа должна быть в отдельной ветке." }
 Invoke-Native gh @('auth', 'status')
 Write-Host "Ветка: $branch"
 
@@ -98,20 +112,35 @@ if (-not $registered) { throw 'Проверки не появились за м�
 if ($LASTEXITCODE -ne 0) { throw "Проверки PR #$number не прошли. Слияния не будет." }
 
 Step 'Слияние'
+# gh при --delete-branch сам пытается переключиться с текущей ветки; уходим с неё заранее, без смены файлов.
+if ($current -eq $branch) { Invoke-Native git @('switch', '--detach'); $current = '' }
 Invoke-Native gh @('pr', 'merge', $number, '--repo', $Repo, '--squash', '--delete-branch')
 $state = Get-Native gh @('pr', 'view', $number, '--repo', $Repo, '--json', 'state', '--jq', '.state')
 if ($state -ne 'MERGED') { throw "PR #$number не в состоянии MERGED (сейчас: $state). Локальную ветку не удаляю." }
 
 Step 'Локальная папка'
-Invoke-Native git @('checkout', $Base)
-Invoke-Native git @('pull', '--ff-only', 'origin', $Base)
+Invoke-Native git @('fetch', 'origin', '--prune')
 # squash не считается слиянием для git, поэтому -D; безопасно: PR подтверждённо MERGED.
 & git branch -D $branch
-& git remote prune origin | Out-Null
+# Обновляем локальную development: там, где она выбрана (своё или отдельное рабочее дерево), либо без checkout.
+$wt = $null
+$path = $null
+foreach ($line in (& git worktree list --porcelain)) {
+    if ($line -like 'worktree *') { $path = $line.Substring(9) }
+    elseif ($line -eq "branch refs/heads/$Base") { $wt = $path }
+}
+if ($wt) {
+    Write-Host "Обновляю $Base в $wt"
+    Invoke-Native git @('-C', $wt, 'pull', '--ff-only', 'origin', $Base)
+}
+else {
+    & git fetch origin "${Base}:${Base}"
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Локальную $Base не удалось обновить автоматически." }
+}
 
 if (-not $NoInstall) {
     Step 'Переустановка навыка'
     Invoke-Native npx @('skills', 'add', $Repo, '--skill', $Skill, '-g', '-y', '-a', 'claude-code')
 }
 
-Write-Host "`nГотово: PR #$number слит, локальная папка на '$Base' и обновлена." -ForegroundColor Green
+Write-Host "`nГотово: PR #$number слит, локальная $Base обновлена." -ForegroundColor Green
