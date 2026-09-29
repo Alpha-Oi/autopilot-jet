@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>autopilot</title>
+<title>autopilot-jet</title>
 <style>
   :root, :root[data-theme="light"]{
     --bg:#fbfbfa; --panel:#fff; --ink:#16150f; --dim:#6b6a63; --line:#e4e3dd;
@@ -33,7 +33,10 @@
   .wrap{max-width:1040px;margin:0 auto;min-width:0}
   /* wrap на .top: в узкой панели переключатели уходят на вторую строку, а не за край */
   .top{display:flex;align-items:flex-start;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:2px;min-width:0}
   .logo{height:clamp(44px,7vw,72px);width:auto;max-width:64vw}
+  .jet{font-weight:800;letter-spacing:.04em;line-height:1;color:var(--ink);
+    font-size:clamp(26px,4.4vw,46px);margin-left:calc(clamp(44px,7vw,72px)*-.42)}
   .logo.l{display:var(--logo-light)} .logo.d{display:var(--logo-dark)}
   .segs{margin-left:auto;display:flex;gap:8px;flex:0 0 auto}
   .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
@@ -790,8 +793,11 @@ function render(lang){
   document.documentElement.lang = L.lang;
   document.getElementById('app').innerHTML = `
   <div class="top">
-    <img class="logo l" src="${LOGO_LIGHT}" alt="autopilot">
-    <img class="logo d" src="${LOGO_DARK}" alt="autopilot">
+    <div class="brand" role="img" aria-label="autopilot-jet">
+      <img class="logo l" src="${LOGO_LIGHT}" alt="">
+      <img class="logo d" src="${LOGO_DARK}" alt="">
+      <span class="jet" aria-hidden="true">-JET</span>
+    </div>
     <div class="segs">
       ${S.finishedAt || !STATE_URL ? '' : `<div class="seg" role="group" aria-label="${L.auto}">
         <button type="button" data-auto title="${autoOn ? L.autoOn : L.autoOff}"
@@ -901,7 +907,7 @@ function render(lang){
   // Вкладка и карточка предпросмотра подписаны проектом, а не словом «autopilot»:
   // когда репозиторий дорабатывают второй раз, это единственное место, где с одного
   // взгляда видно, что на экране прошлый прогон, а не начавшийся.
-  document.title = S.title ? `${S.title} — autopilot` : 'autopilot';
+  document.title = S.title ? `${S.title} — autopilot-jet` : 'autopilot-jet';
 
   document.querySelectorAll('.seg button[data-lang]').forEach(b =>
     b.addEventListener('click', () => {
