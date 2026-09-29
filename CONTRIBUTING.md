@@ -5,8 +5,8 @@
 ## Перед началом
 
 - Нужны Python 3.11+ и Node.js 20+. Устанавливать пакеты не требуется: проект использует только стандартную библиотеку и HTML/JavaScript без зависимостей.
-- Единственный исходник навыка — [`skills/autopilot/`](skills/autopilot). Папки `.agents/skills/autopilot` и `.claude/skills/autopilot` — ссылки на него, править их не нужно.
-- Дашборд собирается из шаблона `skills/autopilot/phases/dashboard-template.html`. Правьте шаблон, а не копию в `.autopilot/`.
+- Единственный исходник навыка — [`skills/autopilot-jet/`](skills/autopilot-jet). Папки `.agents/skills/autopilot-jet` и `.claude/skills/autopilot-jet` — ссылки на него, править их не нужно.
+- Дашборд собирается из шаблона `skills/autopilot-jet/phases/dashboard-template.html`. Правьте шаблон, а не копию в `.autopilot/`.
 
 ## Проверка
 

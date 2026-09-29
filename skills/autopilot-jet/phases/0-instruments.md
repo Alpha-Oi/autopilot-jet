@@ -18,7 +18,7 @@ They cannot drift apart in opposite directions, because they are not equals: `st
 ```bash
 A=$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)/.autopilot
 TPL=$(find -L ~/.claude/skills ~/.agents/skills ~/.claude/plugins .claude/skills .agents/skills \
-        -maxdepth 6 -name dashboard-template.html 2>/dev/null | head -1)
+        -maxdepth 6 -path '*/autopilot-jet/phases/dashboard-template.html' 2>/dev/null | head -1)
 [ -n "$TPL" ] && TPL=$(cd "$(dirname "$TPL")" && pwd -P)/dashboard-template.html
 echo "skillDir = ${TPL%/phases/*}"
 mkdir -p "$A" && cp "$TPL" "$A/dashboard.html" && ln -sfn dashboard.html "$A/index.html"
@@ -27,7 +27,7 @@ cp "${TPL%/phases/*}/tools/sync.py" "$A/sync.py"
 
 **Every path here is absolute, and the `echo` runs before the copy.** Four ways this used to fail, all measured on 2026-08-19 and all silent: a chained `cp && ln && echo` drops `skillDir` when `ln` refuses; `find` returns a *relative* path when the skill is installed inside the project (`.claude/skills/`), and a relative `skillDir` is one no subagent can open; a run started from a subdirectory built `.autopilot/` in the wrong place; and `cp` onto a directory Phase 0 step 3 had not created yet failed outright. Hence `$A` from the git root, `pwd -P` (which also resolves the symlink skills are installed through), and `mkdir -p`. `ln -sfn`, not `-sf`: on a symlink pointing at a directory BSD `ln` without `-n` writes *inside* it and reports success.
 
-**`find -L`, and no `*` anywhere in it** — both measured on 2026-08-17. Skills are installed as symlinks (`~/.claude/skills/autopilot` → `~/.agents/skills/autopilot`) and a plain `find` will not follow one, so it reports nothing while the file sits right there; a `plugins/*/` glob is worse still, because in zsh an unmatched glob aborts the command before it runs — and the same line works in bash, which is what makes it hard to notice.
+**`find -L`, and no `*` anywhere in it** — both measured on 2026-08-17. Skills are installed as symlinks (`~/.claude/skills/autopilot-jet` → `~/.agents/skills/autopilot-jet`) and a plain `find` will not follow one, so it reports nothing while the file sits right there; a `plugins/*/` glob is worse still, because in zsh an unmatched glob aborts the command before it runs — and the same line works in bash, which is what makes it hard to notice.
 
 Empty output means the skill lives somewhere none of those five roots cover: widen the search once, by hand, and carry on. Never regenerate the template, never read it into context, never edit it after the copy.
 
@@ -55,7 +55,7 @@ window.STATE =
   "tier": null,
   "briefFile": "2026-08-07-brief.md",
   "memoryFile": "AGENTS.md",
-  "skillDir": "/Users/x/.claude/skills/autopilot",
+  "skillDir": "/Users/x/.claude/skills/autopilot-jet",
   "startedAt": "2026-08-07T14:02:06+03:00",
   "updatedAt": "2026-08-07T14:02:06+03:00",
   "finishedAt": null,

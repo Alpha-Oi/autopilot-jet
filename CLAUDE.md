@@ -7,7 +7,7 @@
 Активный worktree — ветка `development` (локальная копия автора — отдельный worktree).
 Целевой Public repository — `Alpha-Oi/autopilot-jet` (id `1372711955`, default `development`); runtime — Python standard library + dependency-free HTML/JavaScript.
 
-- Канонические исходники: `skills/autopilot/SKILL.md`, `skills/autopilot/tools/sync.py`, `skills/autopilot/phases/dashboard-template.html`, `tools/measure-run.py`; `.agents/skills/autopilot` и `.claude/skills/autopilot` — symlink-chain на skill.
+- Канонические исходники: `skills/autopilot-jet/SKILL.md`, `skills/autopilot-jet/tools/sync.py`, `skills/autopilot-jet/phases/dashboard-template.html`, `tools/measure-run.py`; `.agents/skills/autopilot-jet` и `.claude/skills/autopilot-jet` — symlink-chain на skill.
 - `.autopilot/state.js` → runtime helper → embedded snapshot/loopback server → live dashboard; helper читает соседние файлы относительно собственного пути, не cwd.
 - Для существующего dashboard: `python -X utf8 -B .autopilot/sync.py --no-serve`; прямой запуск canonical helper его не обновляет, source/template правки не делать в runtime copy.
 - Invalid JSON не обновляет snapshot; unknown recorded PID сохраняется без duplicate launch/registry rewrite; durable decision — `docs/adr/0006-preserve-server-registry-on-unknown-process-status.md`.
@@ -19,7 +19,7 @@
 - Governance harness `45/45`, `dangerousCommandsExecuted=false`; независимый G4 pre-release gate — `GO`.
 - Последние host metadata — `gpt-5.6-sol/max`; история mixed (`3 medium / 36 max / 36 xhigh`), не all-history `max`.
 - Разрешённая Public release-последовательность завершена: lease-защищённый `development`, exact-SHA CI, `main` от `99c7e736`, PR #1, fresh PR-head CI, merge и post-merge memory/dashboard. Незавершённых release-обязательств нет.
-- `/autopilot`: требования → спецификация → план → разработка → код-ревью → слепая приёмка; «сборка» — весь прогон, единица — «таск», инструкции этапов не читать заранее.
+- `/autopilot-jet`: требования → спецификация → план → разработка → код-ревью → слепая приёмка; «сборка» — весь прогон, единица — «таск», инструкции этапов не читать заранее.
 - `.autopilot/` хранит запись прогона, не исходники skill; глобальный skill не обновлялся и может отличаться от checkout.
 
 <!-- autopilot:end -->

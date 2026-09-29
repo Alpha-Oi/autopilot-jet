@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 
 
-SCRIPT = Path(__file__).parents[1] / "skills" / "autopilot" / "tools" / "sync.py"
+SCRIPT = Path(__file__).parents[1] / "skills" / "autopilot-jet" / "tools" / "sync.py"
 SPEC = importlib.util.spec_from_file_location("autopilot_sync", SCRIPT)
 sync = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(sync)
