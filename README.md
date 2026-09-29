@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/autopilot-logo-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/autopilot-logo-light.png">
-    <img src="assets/autopilot-logo-light.png" alt="autopilot" width="420">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/autopilot-jet-logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/autopilot-jet-logo-light.png">
+    <img src="assets/autopilot-jet-logo-light.png" alt="autopilot-jet" width="520">
   </picture>
 </p>
 
