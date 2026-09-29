@@ -79,7 +79,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 - Пользователь 2026-09-27 явно разрешил exact Public payload и последовательность; она выполнена: lease-защищённый `development`, exact-SHA CI, `main` от upstream base `99c7e736`, PR #1, fresh PR-head CI, merge и post-merge memory/dashboard.
 - Public repository остаётся `Alpha-Oi/autopilot-jet`, id `1372711955`, default branch `development`; `main` содержит полный release через merge commit `ca6743b`.
-- Финальное evidence: `.autopilot/2026-09-10-autopilot-pathing-hardening/release-finalization-20260927.json`. Незавершённых release-обязательств нет.
+- Финальное evidence (`release-finalization-20260927.json`) хранится локально у автора в `.autopilot/` и в репозиторий не входит. Незавершённых release-обязательств нет.
 
 ## Как здесь работает Autopilot
 
