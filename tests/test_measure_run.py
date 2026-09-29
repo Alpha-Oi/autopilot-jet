@@ -146,6 +146,24 @@ class StepBreakdownTests(unittest.TestCase):
         self.assertEqual(result["cats"]["чтение (Read/Grep/Glob)"][0], 1)
         self.assertEqual(result["cats"]["ответ без действий"][0], 1)
 
+    def test_samples_describe_expensive_actions(self):
+        payload = (
+            '{"timestamp":"2026-01-01T00:00:00Z","message":{"id":"a","role":"assistant","content":'
+            '[{"type":"tool_use","name":"Bash","input":{"command":"ls   -la  /tmp"}}],'
+            '"usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":10,'
+            '"cache_read_input_tokens":100}}}\n'
+        )
+        with mock.patch("builtins.open", mock.mock_open(read_data=payload)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual(len(result["samples"]), 1)
+        cat, desc, cost = result["samples"][0]
+        self.assertEqual((cat, desc), ("другой Bash", "ls -la /tmp"))
+        self.assertGreater(cost, 0)
+        output = io.StringIO()
+        with mock.patch("sys.stdout", output):
+            measure_run.print_steps([dict(result, label="Оркестратор")])
+        self.assertIn("ls -la /tmp", output.getvalue())
+
     def test_print_steps_outputs_table(self):
         cats = {c: [0, 0.0] for c in measure_run.CATS}
         cats["sync.py"] = [2, 500000.0]
