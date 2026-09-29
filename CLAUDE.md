@@ -4,7 +4,7 @@
 # Autopilot JET
 
 Канон памяти, контрактов и команд — `AGENTS.md`; здесь только компактное зеркало.
-Активный worktree — `D:\Development\skills\worktrees\skills-development`, ветка `development`; резерв на C: не развивать и не синхронизировать обратно.
+Активный worktree — ветка `development` (локальная копия автора — отдельный worktree).
 Целевой Public repository — `Alpha-Oi/autopilot-jet` (id `1372711955`, default `development`); runtime — Python standard library + dependency-free HTML/JavaScript.
 
 - Канонические исходники: `skills/autopilot/SKILL.md`, `skills/autopilot/tools/sync.py`, `skills/autopilot/phases/dashboard-template.html`, `tools/measure-run.py`; `.agents/skills/autopilot` и `.claude/skills/autopilot` — symlink-chain на skill.
