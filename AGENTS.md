@@ -8,11 +8,11 @@
 
 ## Ключевые файлы
 
-- `skills/autopilot/SKILL.md` задаёт режимы, глубину и gates G1–G4; инструкции из `skills/autopilot/phases/` читаются только для текущего этапа.
-- `skills/autopilot/prompts/executor.md` и `skills/autopilot/prompts/craft-review.md` — контракты независимых исполнителя и reviewer.
-- `skills/autopilot/tools/sync.py` и `skills/autopilot/phases/dashboard-template.html` — канонические helper и dashboard; продуктовые правки делаются здесь, не в runtime copies.
+- `skills/autopilot-jet/SKILL.md` задаёт режимы, глубину и gates G1–G4; инструкции из `skills/autopilot-jet/phases/` читаются только для текущего этапа.
+- `skills/autopilot-jet/prompts/executor.md` и `skills/autopilot-jet/prompts/craft-review.md` — контракты независимых исполнителя и reviewer.
+- `skills/autopilot-jet/tools/sync.py` и `skills/autopilot-jet/phases/dashboard-template.html` — канонические helper и dashboard; продуктовые правки делаются здесь, не в runtime copies.
 - `tools/measure-run.py` — CLI анализа Claude Code JSONL: project path → logs directory → выбранная session и subagents → сравнительные token/time metrics.
-- `.agents/skills/autopilot` → `skills/autopilot/`; `.claude/skills/autopilot` → `.agents/skills/autopilot`; обе привязки — symlinks.
+- `.agents/skills/autopilot-jet` → `skills/autopilot-jet/`; `.claude/skills/autopilot-jet` → `.agents/skills/autopilot-jet`; обе привязки — symlinks.
 - `.autopilot/state.js`, `.autopilot/sync.py`, `.autopilot/dashboard.html`, `.autopilot/index.html` — состояние и runtime конкретного прогона, а не канонический исходник skill.
 - `.github/workflows/verify.yml` — native Ubuntu/Windows/macOS matrix для push/PR на `main`, `master`, `development`: Python 3.11, Node 20, exact flake8, full unittest и measure check-only.
 - `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, Node VM render/performance и cold relocated/native subprocess behavior.
@@ -62,7 +62,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 - `WinError 5` на CIM или multiprocessing Pipe может быть sandbox limitation; пустой query не равен dead PID, lint selection/exclusions не ослаблять.
 - Loopback server обслуживает весь runtime directory, включая внутренние артефакты; bind шире `127.0.0.1` запрещён.
 - Node VM проверки не заменяют настоящий browser smoke; `file:`/`http:` polling не переносится на `data:` preview. Реальный Edge smoke остаётся отдельным release evidence.
-- Прямой запуск `skills/autopilot/tools/sync.py` работает рядом с каноническим source path и не обновляет уже созданный `.autopilot/dashboard.html`; для существующего прогона использовать runtime copy.
+- Прямой запуск `skills/autopilot-jet/tools/sync.py` работает рядом с каноническим source path и не обновляет уже созданный `.autopilot/dashboard.html`; для существующего прогона использовать runtime copy.
 
 ## Текущий проверенный срез
 
@@ -83,7 +83,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 ## Как здесь работает Autopilot
 
-`/autopilot` ведёт бриф через требования, спецификацию, план, разработку, код-ревью и слепую приёмку; требование может снять только пользователь.
+`/autopilot-jet` ведёт бриф через требования, спецификацию, план, разработку, код-ревью и слепую приёмку; требование может снять только пользователь.
 «Сборка» — весь прогон, единица работы — «таск»; пользовательские названия этапов берутся из таблицы skill.
 `.autopilot/` — требования и история конкретных прогонов, не исходник skill и не замена памяти; прогресс показывает `.autopilot/dashboard.html`.
 При продолжении сначала читать эту память, затем `.autopilot/state.js` и только инструкции текущего этапа; глобальная установленная копия skill не обновлялась и может отличаться от checkout.
