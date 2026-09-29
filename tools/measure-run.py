@@ -134,14 +134,27 @@ def analyse(path, label):
     stamps = []
     cats = {c: [0, 0.0] for c in CATS}
 
-    for r in rows:
+    # Claude Code пишет каждый блок одного ответа модели (размышление, текст, вызов инструмента)
+    # отдельной строкой лога с одним и тем же message.id и одним и тем же usage. Считать каждую
+    # строку значило бы считать один вызов несколько раз, поэтому строки склеиваются по id.
+    # Если id нет, каждая строка — отдельный шаг (как было раньше).
+    steps = {}
+    for i, r in enumerate(rows):
         m = r.get("message") or {}
         ts = parse_ts(r.get("timestamp"))
         if ts:
             stamps.append(ts)
         if (m.get("role") or r.get("type")) != "assistant":
             continue
-        u = m.get("usage") or {}
+        st = steps.setdefault(m.get("id") or ("row", i), {"u": {}, "content": []})
+        for k, v in (m.get("usage") or {}).items():
+            if isinstance(v, (int, float)):
+                st["u"][k] = max(st["u"].get(k, 0), v)
+        st["content"].extend(c for c in (m.get("content") or []) if isinstance(c, dict))
+
+    for st in steps.values():
+        u = st["u"]
+        m = {"content": st["content"]}
         if u:
             cr = u.get("cache_read_input_tokens", 0) or 0
             cw = u.get("cache_creation_input_tokens", 0) or 0
@@ -153,7 +166,7 @@ def analyse(path, label):
                 cold += 1
             if cr + cw + ip:
                 ctx.append(cr + cw + ip)
-                cat = step_category(m.get("content") or [])
+                cat = step_category(st["content"])
                 cats[cat][0] += 1
                 cats[cat][1] += (u.get("output_tokens", 0) or 0) * W_OUT + cw * W_WRITE + cr * W_READ
         for c in m.get("content") or []:
