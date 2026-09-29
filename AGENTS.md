@@ -2,7 +2,7 @@
 # Autopilot JET
 
 Переносимый skill превращает пользовательский бриф в проверенный проект; runtime — Python standard library и dependency-free HTML/JavaScript dashboard.
-Активный worktree — `D:\Development\skills\worktrees\skills-development`, ветка `development`; резерв на C: не развивать, не удалять и не синхронизировать обратно.
+Активный worktree — ветка `development` (локальная копия автора — отдельный worktree).
 Целевой Public repository — `Alpha-Oi/autopilot-jet` (id `1372711955`, default branch `development`, origin `https://github.com/Alpha-Oi/autopilot-jet.git`); локальное имя папки не обязано совпадать с repository name.
 Канон project memory — `AGENTS.md`; `CLAUDE.md` — компактное зеркало, не второй журнал прогона.
 
@@ -48,7 +48,7 @@
 python -B -m unittest discover -s tests -v
 python -B -m unittest discover -s tests -p test_measure_run.py -v
 python -B tools/measure-run.py --check-only
-& 'D:\Development\skills\verification-tools\flake8-7.3.0\Scripts\python.exe' -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 ```
 
 Для существующего dashboard обновлять snapshot без вмешательства в lifecycle уже работающего localhost server:
@@ -79,7 +79,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 - Пользователь 2026-09-27 явно разрешил exact Public payload и последовательность; она выполнена: lease-защищённый `development`, exact-SHA CI, `main` от upstream base `99c7e736`, PR #1, fresh PR-head CI, merge и post-merge memory/dashboard.
 - Public repository остаётся `Alpha-Oi/autopilot-jet`, id `1372711955`, default branch `development`; `main` содержит полный release через merge commit `ca6743b`.
-- Финальное evidence: `.autopilot/2026-09-10-autopilot-pathing-hardening/release-finalization-20260927.json`. Незавершённых release-обязательств нет.
+- Финальное evidence (`release-finalization-20260927.json`) хранится локально у автора в `.autopilot/` и в репозиторий не входит. Незавершённых release-обязательств нет.
 
 ## Как здесь работает Autopilot
 
