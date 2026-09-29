@@ -6,16 +6,16 @@
 
 ## Modes
 
-Everything typed after `/autopilot` splits into four parts: **the mode** (optional bare word — `full`, `semi`, `interview`, `manual`), **the depth** (optional bare word — `strict`, `deep`), **the finish** (optional bare word — `polish`), and **the brief** (everything else). No dashes on any parameter. Text that is not a recognised parameter is always brief.
+Everything typed after `/autopilot-jet` splits into four parts: **the mode** (optional bare word — `full`, `semi`, `interview`, `manual`), **the depth** (optional bare word — `strict`, `deep`), **the finish** (optional bare word — `polish`), and **the brief** (everything else). No dashes on any parameter. Text that is not a recognised parameter is always brief.
 
-`/autopilot full deep интернет-магазин керамики` — full mode, deep elaboration. Order does not matter; all three parameters are optional and independent.
+`/autopilot-jet full deep интернет-магазин керамики` — full mode, deep elaboration. Order does not matter; all three parameters are optional and independent.
 
 | Mode | Triggers | Human gates |
 |---|---|---|
-| **full** — полный автомат | `/autopilot full`, «полный автомат», «полностью сам», «ничего не спрашивай», "fully automatic", "don't ask me anything" | none |
-| **semi** — полуавтомат **(default)** | `/autopilot semi`, «полуавтомат», nothing specified | questions, on genuine forks only |
-| **interview** — режим интервью | `/autopilot interview`, «режим интервью», «погриль меня», «допроси», «задай все вопросы», «разбери задачу со мной», "grill me", "interview me", "ask me everything" | questions, all of them |
-| **manual** — ручной | `/autopilot manual`, «ручной режим», «согласовывай каждый шаг», "approve every step" | the same questions + spec + tickets |
+| **full** — полный автомат | `/autopilot-jet full`, «полный автомат», «полностью сам», «ничего не спрашивай», "fully automatic", "don't ask me anything" | none |
+| **semi** — полуавтомат **(default)** | `/autopilot-jet semi`, «полуавтомат», nothing specified | questions, on genuine forks only |
+| **interview** — режим интервью | `/autopilot-jet interview`, «режим интервью», «погриль меня», «допроси», «задай все вопросы», «разбери задачу со мной», "grill me", "interview me", "ask me everything" | questions, all of them |
+| **manual** — ручной | `/autopilot-jet manual`, «ручной режим», «согласовывай каждый шаг», "approve every step" | the same questions + spec + tickets |
 
 A mode decides two separate things — how much the user is asked about the *product*, and how much of the *process* they approve — and wanting one without the other is the ordinary case. `interview` is that case; `manual` is `interview` plus the two artifact gates, and nothing else.
 
@@ -50,9 +50,9 @@ How far past the brief's own words the spec is allowed to go. The mode decides *
 
 | Depth | Triggers | Deepening a requirement (`R##.n`) | New capabilities (`A##`) |
 |---|---|---|---|
-| **strict** | `/autopilot strict`, «строго по брифу», «только то, что сказал», «ничего не добавляй», "strictly as written", "nothing extra" | only what the requirement cannot work without | **not allowed** |
+| **strict** | `/autopilot-jet strict`, «строго по брифу», «только то, что сказал», «ничего не добавляй», "strictly as written", "nothing extra" | only what the requirement cannot work without | **not allowed** |
 | **normal** **(default)** | nothing specified | freely, by judgement — as much as the feature warrants | allowed, with a parent, within proportion |
-| **deep** | `/autopilot deep`, «проработай глубоко», «максимальная глубина», «продумай за меня», "go deep", "think it through" | the full depth pass, every dimension, every requirement | actively encouraged, same two limits |
+| **deep** | `/autopilot-jet deep`, «проработай глубоко», «максимальная глубина», «продумай за меня», "go deep", "think it through" | the full depth pass, every dimension, every requirement | actively encouraged, same two limits |
 
 - **Default is normal, and normal means permitted.** The agent elaborates where elaboration obviously helps and does not chase every edge of every requirement. This is the setting most briefs should run on.
 - **`strict` does not mean careless.** Errors and empty states are still handled — a build that crashes on bad input does not satisfy the requirement it was written for. What `strict` removes is anything the user did not ask for: no extra capabilities, no anticipating needs, no "пока я тут, добавлю".
@@ -69,7 +69,7 @@ The rules for each level live in `phases/3-spec.md`.
 
 | | Triggers | What it adds |
 |---|---|---|
-| **polish** | `/autopilot polish`, «вылижи», «доведи до идеала», «сравни с эталоном», «не останавливайся, пока не будет как надо», «бюджет не важен, важен результат» | after the blind acceptance, up to three rounds of comparing the running build against the user's own reference and fixing the differences |
+| **polish** | `/autopilot-jet polish`, «вылижи», «доведи до идеала», «сравни с эталоном», «не останавливайся, пока не будет как надо», «бюджет не важен, важен результат» | after the blind acceptance, up to three rounds of comparing the running build against the user's own reference and fixing the differences |
 
 It is a separate dial because depth decides how much is worked out *before* the code exists and polish how much is corrected *after*: a `strict` brief can deserve a flawless finish, and a `deep` spec can be right the first time.
 

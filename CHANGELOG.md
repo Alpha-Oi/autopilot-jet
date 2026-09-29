@@ -2,6 +2,13 @@
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
 
+## [Unreleased]
+
+### Изменено
+- Навык переименован: `autopilot` → `autopilot-jet` (папка `skills/autopilot-jet`, команда `/autopilot-jet`), чтобы не пересекаться с оригинальным навыком. Установка: `npx skills add Alpha-Oi/autopilot-jet --skill autopilot-jet -g -y -a claude-code`.
+- Поиск шаблона дашборда ищет только внутри `autopilot-jet`, поэтому установленный рядом оригинальный навык не подменяет его.
+- Убран `skills-lock.json`: он указывал на оригинальный репозиторий и его хеш.
+
 ## [1.1.0] — 2026-09-29
 
 ### Добавлено

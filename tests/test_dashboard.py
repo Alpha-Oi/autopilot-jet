@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TEMPLATE = ROOT / "skills" / "autopilot" / "phases" / "dashboard-template.html"
+TEMPLATE = ROOT / "skills" / "autopilot-jet" / "phases" / "dashboard-template.html"
 
 
 def runtime_source():

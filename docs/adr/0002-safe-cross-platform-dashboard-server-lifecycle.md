@@ -2,7 +2,7 @@
 
 ## Context
 
-`skills/autopilot/tools/sync.py` управляет локальным сервером дашборда, но Unix-команда `ps` недоступна на Windows. Ошибка определения процесса не должна приводить ни к `WinError 2`, ни к завершению чужого процесса, ни к потере file/snapshot fallback.
+`skills/autopilot-jet/tools/sync.py` управляет локальным сервером дашборда, но Unix-команда `ps` недоступна на Windows. Ошибка определения процесса не должна приводить ни к `WinError 2`, ни к завершению чужого процесса, ни к потере file/snapshot fallback.
 
 ## Decision
 

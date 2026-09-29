@@ -47,7 +47,7 @@ Cheap, written before anything is built, and it is what survives an interrupted 
 
 ## Как здесь работает Autopilot
 
-Сборка ведётся навыком `/autopilot`. Требования, спецификация и таски — в `.autopilot/`.
+Сборка ведётся навыком `/autopilot-jet`. Требования, спецификация и таски — в `.autopilot/`.
 Прогресс — `.autopilot/dashboard.html`. Правило: требование из `manifest.md`
 может снять только пользователь.
 

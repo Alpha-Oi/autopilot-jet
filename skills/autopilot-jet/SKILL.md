@@ -1,6 +1,6 @@
 ---
-name: autopilot
-description: Use when the user dictates an app, site, bot, or feature to build end-to-end and expects a finished result without reviewing specs, tickets, or code — vibecoding sessions, non-technical users, "собери под ключ", "build it for me", "не задавай лишних вопросов" requests. Also use when the user invokes /autopilot, or asks for a build in a named mode, depth or finish — «полный автомат», «режим интервью», «погриль меня», «ручной режим», «строго по брифу», «проработай глубоко», «вылижи до эталона».
+name: autopilot-jet
+description: Use when the user dictates an app, site, bot, or feature to build end-to-end and expects a finished result without reviewing specs, tickets, or code — vibecoding sessions, non-technical users, "собери под ключ", "build it for me", "не задавай лишних вопросов" requests. Also use when the user invokes /autopilot-jet, or asks for a build in a named mode, depth or finish — «полный автомат», «режим интервью», «погриль меня», «ручной режим», «строго по брифу», «проработай глубоко», «вылижи до эталона».
 argument-hint: "[full|semi|interview|manual] [strict|deep] [polish] что нужно построить или путь к brief.md"
 ---
 
@@ -70,7 +70,7 @@ Phases 7 and 9 are not sequential, and each is split in two along the line where
 
 ## The three dials
 
-Everything typed after `/autopilot` splits into four parts: **the mode** (`full`, `semi`, `interview`, `manual` — default `semi`), **the depth** (`strict`, `deep` — default normal), **the finish** (`polish` — off by default), and **the brief** (everything else). Bare words, no dashes; anything unrecognised is brief.
+Everything typed after `/autopilot-jet` splits into four parts: **the mode** (`full`, `semi`, `interview`, `manual` — default `semi`), **the depth** (`strict`, `deep` — default normal), **the finish** (`polish` — off by default), and **the brief** (everything else). Bare words, no dashes; anything unrecognised is brief.
 
 **The rules for all three are in `phases/0-modes.md`, read in Phase 0 with `phases/0-preflight.md`** — the triggers in both languages, the opening block that announces the resolved settings, what each depth permits, and what happens when the user switches mid-run. They are decided once, before Phase 1, and every phase after that only applies them; carrying the argument for why there are four modes instead of three through nine phases is what that file exists to prevent.
 
