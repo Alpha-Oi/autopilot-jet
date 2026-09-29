@@ -7,7 +7,8 @@
 </p>
 
 <p align="center">
-  <a href="https://skills.sh/nick-vels/skills"><img src="https://skills.sh/b/nick-vels/skills" alt="skills.sh"></a>
+  <a href="https://github.com/Alpha-Oi/autopilot-jet/actions/workflows/verify.yml"><img src="https://github.com/Alpha-Oi/autopilot-jet/actions/workflows/verify.yml/badge.svg?branch=development" alt="CI: Windows, Linux, macOS"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT"></a>
 </p>
 
 <p align="center"><strong>Расскажи словами, что нужно построить — получи готовый проект.</strong></p>
@@ -15,6 +16,8 @@
 Autopilot — фреймворк разработки, skill, который берёт вашу идею, задаёт вопросы ровно там, где в ней есть развилки, а дальше сам пишет спецификацию, продумывает то, о чём вы не думали, разбивает работу на таски и собирает проект целиком. Вам не нужно читать спецификацию, оценивать таски или разбираться в коде.
 
 Работает сам по себе: ставить что-то ещё не нужно.
+
+> **О репозитории.** Это форк [nick-vels/skills](https://github.com/nick-vels/skills) — автор оригинального Autopilot Nick Vels. В этой версии: работает одинаково на Windows, Linux и macOS, дашборд обновляется быстрее (без лишних обращений к DOM), не запускает второй сервер, если не удаётся проверить процесс, а каждое изменение проверяется в CI на трёх системах. Решения и их причины записаны в [docs/adr](docs/adr).
 
 <p align="center">
   <a href="assets/autopilot-dashboard.png"><img src="assets/dash-metrics.png" width="380" alt="Показатели: прогресс проекта, покрытие брифа, время, долг"></a>
@@ -37,7 +40,7 @@ Autopilot — фреймворк разработки, skill, который б�
 ```
 Установи мне навык Autopilot. Выполни в терминале:
 
-npx skills add nick-vels/skills --skill autopilot -g -y -a <подставь себя: claude-code, cursor, codex>
+npx skills add Alpha-Oi/autopilot-jet --skill autopilot -g -y -a <подставь себя: claude-code, cursor, codex>
 
 Если npx не найдётся — дай мне ссылку, где скачать Node.js, и подожди.
 Больше ничего не устанавливай.
@@ -53,7 +56,7 @@ npx skills add nick-vels/skills --skill autopilot -g -y -a <подставь с�
 Скопируйте строку:
 
 ```bash
-npx skills add nick-vels/skills
+npx skills add Alpha-Oi/autopilot-jet
 ```
 
 Установщик спросит, какие навыки поставить и для каких агентов — просто подтвердите.
@@ -62,7 +65,7 @@ npx skills add nick-vels/skills
 <summary>Установка одной командой, без вопросов</summary>
 
 ```bash
-npx skills add nick-vels/skills --skill autopilot -a claude-code -g -y
+npx skills add Alpha-Oi/autopilot-jet --skill autopilot -a claude-code -g -y
 ```
 
 | Флаг | Что делает |
@@ -365,7 +368,7 @@ npx skills update autopilot -g
 npx skills update autopilot -g
 
 Если он ответит, что всё уже обновлено, а версия при этом старая — переустанови:
-npx skills remove autopilot -g -y && npx skills add nick-vels/skills --skill autopilot -g -y -a <подставь себя: claude-code, cursor, codex>
+npx skills remove autopilot -g -y && npx skills add Alpha-Oi/autopilot-jet --skill autopilot -g -y -a <подставь себя: claude-code, cursor, codex>
 
 Когда закончишь — напиши одной строкой, что обновилось, и напомни перезапустить сессию.
 ```
@@ -383,7 +386,7 @@ npx skills remove autopilot -g
 **Если навык ведёт себя как старая версия.** `update` сверяет версию источника, а не файлы на диске: если локальную копию правили или она побилась, он ответит «всё уже обновлено» и ничего не сделает. Лечится переустановкой:
 
 ```bash
-npx skills remove autopilot -g -y && npx skills add nick-vels/skills --skill autopilot -g -y -a claude-code
+npx skills remove autopilot -g -y && npx skills add Alpha-Oi/autopilot-jet --skill autopilot -g -y -a claude-code
 ```
 
 Чтобы агент увидел новую версию, **перезапустите сессию** — навыки читаются при старте.
@@ -424,6 +427,20 @@ assets/                         ← логотип
 
 ---
 
+## Разработка и проверка
+
+Нужны Python 3.11+ и Node.js 20+ (для проверки дашборда). Зависимостей ставить не надо — только стандартная библиотека.
+
+```bash
+python -m unittest discover -s tests -v          # тесты
+python tools/measure-run.py --check-only         # проверка путей и скрипта замера
+pip install flake8 && flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+```
+
+То же самое запускает [CI](.github/workflows/verify.yml) на Windows, Ubuntu и macOS при каждом push и pull request. Как предлагать правки — в [CONTRIBUTING.md](CONTRIBUTING.md), что менялось — в [CHANGELOG.md](CHANGELOG.md).
+
+---
+
 ## Лицензия
 
-[MIT](LICENSE) © Nick Vels — можно использовать, изменять и распространять, в том числе в коммерческих проектах.
+[MIT](LICENSE) © Nick Vels, © Alpha-Oi — можно использовать, изменять и распространять, в том числе в коммерческих проектах.
