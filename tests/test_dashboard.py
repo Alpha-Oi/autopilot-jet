@@ -224,6 +224,47 @@ console.log(JSON.stringify({state: stateURL(), constant: STATE_URL,
         self.assertIn("3 ✓", html)
         self.assertIn("2 ✗", html)
 
+    def test_partial_requirements_are_visible_but_do_not_inflate_coverage(self):
+        state = {
+            "title": "Partial coverage",
+            "mode": "semi",
+            "depth": "normal",
+            "tier": "T1",
+            "startedAt": "2026-09-10T00:00:00Z",
+            "updatedAt": "2026-09-10T01:00:00Z",
+            "requirements": {
+                "total": 10,
+                "done": 5,
+                "partial": 2,
+                "dropped": 0,
+                "deferred": 0,
+                "placeholder": 0,
+            },
+            "stages": [],
+            "tickets": [],
+            "debt": {"placeholders": [], "assumptions": [], "emptyEnv": []},
+        }
+        probe = """
+render('ru');
+const ru = app.innerHTML;
+render('en');
+const en = app.innerHTML;
+window.STATE.requirements.partial = 0;
+render('ru');
+const zero = app.innerHTML;
+console.log(JSON.stringify({ru, en, zero}));
+"""
+        result = run_runtime(probe, initial_state=state)
+
+        self.assertIn('<div class="v">50<small>%</small></div>', result["ru"])
+        self.assertIn("5 готово · 2 частично из 10 требований", result["ru"])
+        self.assertIn("частично 2", result["ru"])
+        self.assertIn("5 done · 2 partial of 10 requirements", result["en"])
+        self.assertIn("partial 2", result["en"])
+        self.assertIn("5 из 10 требований", result["zero"])
+        self.assertNotIn("5 готово · 0 частично", result["zero"])
+        self.assertIn("частично 0", result["zero"])
+
     def test_tick_uses_cached_dom_and_unchanged_state_does_not_render(self):
         probe = r"""
 const ids = ['preflight','manifest','briefing','spec','plan','build','review','final'];
