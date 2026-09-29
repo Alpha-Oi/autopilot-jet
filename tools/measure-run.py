@@ -126,6 +126,24 @@ def step_category(blocks):
     return "ответ без действий"
 
 
+SAMPLE_CATS = ("другой Bash", "прочий инструмент", "правка кода", "чтение (Read/Grep/Glob)")
+
+
+def describe(blocks, cat):
+    """Короткое описание действия, определившего вид шага: команда Bash, файл или имя инструмента."""
+    for b in blocks:
+        if not isinstance(b, dict) or b.get("type") != "tool_use":
+            continue
+        if classify(b.get("name"), b.get("input")) != cat:
+            continue
+        inp = b.get("input") or {}
+        if b.get("name") == "Bash":
+            return " ".join(str(inp.get("command", "")).split())[:90]
+        target = inp.get("file_path") or inp.get("pattern") or inp.get("path") or ""
+        return ("%s %s" % (b.get("name"), os.path.basename(str(target).replace("\\", "/")))).strip()[:90]
+    return ""
+
+
 def analyse(path, label):
     rows = load(path)
     ctx, tools = [], Counter()
@@ -133,6 +151,7 @@ def analyse(path, label):
     test_edits = code_edits = test_runs = 0
     stamps = []
     cats = {c: [0, 0.0] for c in CATS}
+    samples = []   # (вид, описание, стоимость) для видов из SAMPLE_CATS
 
     # Claude Code пишет каждый блок одного ответа модели (размышление, текст, вызов инструмента)
     # отдельной строкой лога с одним и тем же message.id и одним и тем же usage. Считать каждую
@@ -167,8 +186,11 @@ def analyse(path, label):
             if cr + cw + ip:
                 ctx.append(cr + cw + ip)
                 cat = step_category(st["content"])
+                cost = (u.get("output_tokens", 0) or 0) * W_OUT + cw * W_WRITE + cr * W_READ
                 cats[cat][0] += 1
-                cats[cat][1] += (u.get("output_tokens", 0) or 0) * W_OUT + cw * W_WRITE + cr * W_READ
+                cats[cat][1] += cost
+                if cat in SAMPLE_CATS:
+                    samples.append((cat, describe(st["content"], cat), cost))
         for c in m.get("content") or []:
             if not isinstance(c, dict) or c.get("type") != "tool_use":
                 continue
@@ -204,7 +226,7 @@ def analyse(path, label):
         "norm": out * W_OUT + win * W_WRITE + rin * W_READ,
         "active": active, "idle": idle,
         "test_edits": test_edits, "code_edits": code_edits, "test_runs": test_runs,
-        "cats": cats,
+        "cats": cats, "samples": samples,
     }
 
 
@@ -229,6 +251,16 @@ def print_steps(results):
             if n:
                 print(f"{c:<32}{n:>7}{n/steps*100:>11.0f}%{cst/1e6:>9.2f}M{cst/cost*100:>6.0f}%")
         print("-" * 68)
+        rows = Counter()
+        counts = Counter()
+        for r in group:
+            for cat, desc, cst in r.get("samples", []):
+                rows[(cat, desc)] += cst
+                counts[(cat, desc)] += 1
+        if rows:
+            print(f"  самые дорогие действия ({title.lower()}):")
+            for (cat, desc), cst in rows.most_common(12):
+                print(f"    {cst/1e6:>5.2f}M ×{counts[(cat, desc)]:<3} [{cat}] {desc}")
 
 
 def _check_only():
