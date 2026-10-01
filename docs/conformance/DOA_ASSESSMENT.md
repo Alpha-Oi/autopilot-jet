@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#40; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then six requirements moved from `DESIGNED` to `PARTIAL` on new tests)
-**Subject:** autopilot-jet on `development` at `f30a42a28c72b2c17d61aa38ea05a5d7ac7f7673`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#41; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then seven requirements moved from `DESIGNED` to `PARTIAL` on new tests)
+**Subject:** autopilot-jet on `development` at `6c6ad9e257327e8510e5509991e7dfe50d8dd958`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,14 +14,14 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this refresh (Linux, Python 3.11, commit `f30a42a`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `6c6ad9e`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests` | 130 tests, OK (first pass: 40) |
+| `python -B -m unittest discover -s tests` | 141 tests, OK (first pass: 40) |
 | `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 92](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36921452296)) | success on ubuntu, windows and macos |
+| CI run for the same commit ([run 94](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36922952100)) | success on ubuntu, windows and macos |
 | Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
 | Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
@@ -32,13 +32,13 @@ No change in the status counts: the refresh closed gaps inside requirements, but
 | Status | Count |
 |---|---|
 | PASS | 1 |
-| PARTIAL | 15 |
-| DESIGNED | 9 |
+| PARTIAL | 16 |
+| DESIGNED | 8 |
 | FAIL | 3 |
 | EXCLUDED | 1 |
 | Total (Core 26 + Conditional 3) | 29 |
 
-The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fifteen have part of the mechanism built and tested, nine are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
+The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, sixteen have part of the mechanism built and tested, eight are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
 
 **How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`.
 
@@ -48,7 +48,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fifteen
 
 **One more moved after PR #40.** `REQ-CORE-04` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names a recorded `mode`, `depth`, `tier` or `polish` outside its allowed values (9 tests, `tests/test_sync_dials.py`). It is a small step: it checks that the dials are recorded as valid values, not that the decision was right or unchanged.
 
-**Failure classes.** [`DOA_FAILURE_CLASSES.md`](DOA_FAILURE_CLASSES.md) assesses the 25 classes of DOA `v1.1.0` one by one (11 `PARTIAL`, 8 `DESIGNED`, 4 `EXCLUDED`, 2 `FAIL`, 0 `PASS`) and the claim carries the same statuses in its `failure_classes` list. `tests/test_failure_classes.py` keeps the table, the named tests and the claim in step. `REQ-CORE-23` itself stays `DESIGNED` in this change; it moves to `PARTIAL` once the table is merged and the claim can cite it at an immutable commit. Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
+**Failure classes.** [`DOA_FAILURE_CLASSES.md`](DOA_FAILURE_CLASSES.md) assesses the 25 classes of DOA `v1.1.0` one by one (11 `PARTIAL`, 8 `DESIGNED`, 4 `EXCLUDED`, 2 `FAIL`, 0 `PASS`) and the claim carries the same statuses in its `failure_classes` list. `tests/test_failure_classes.py` keeps the table, the named tests and the claim in step. `REQ-CORE-23` moved from `DESIGNED` to `PARTIAL` once the table was merged and the claim could cite it at an immutable commit (`6c6ad9e`). It stays `PARTIAL`, not `PASS`: no class is `PASS`, two classes (`F-06`, `F-22`) have no mechanism at all, and every row's «what happens» is the designed behaviour, confirmed only by the tests named in the table. Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
 
 **Strongest areas:** truthful uncertainty (unknown process status is never treated as absent or healthy, with tests), desired/observed separation (manifest versus blind acceptance), bounded loops (ticket, repair, handoff and polish caps), role separation (executor, reviewer, blind checker), and honest provenance of decisions (ADRs, one commit per ticket).
 
@@ -78,7 +78,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fifteen
 | REQ-CORE-20 | Recovery taxonomy | DESIGNED | Recovery paths exist and differ: resume from files, repair in the same context, rebuild in a fresh context, whole-round rollback, dashboard regenerated from the template each flight. | Permitted recovery modes are not declared per component; the rule against cloning corrupted state is implicit. | Add a short recovery table (mode, when, verification) to AGENTS.md. |
 | REQ-CORE-21 | Aging and senescence | FAIL | The skill notes that an installed global copy may differ from the checkout, and README documents an update command. | No aging or version-skew mechanism: no skill-version stamp in runs, no staleness check of installed vs source skill, no deprecation path for old runs. | Stamp skill version into state.js and warn when the installed skill differs from the repository version. |
 | REQ-CORE-22 | Identity continuity and anti-resurrection | FAIL | Closest: finishedAt closes a run and the helper refuses to relaunch a server for it. | No identity continuity record, tombstone or fencing: a finished or abandoned run directory can be resumed without any check that it is still valid. | Mark closed runs with a terminal marker that resume refuses without explicit user action. |
-| REQ-CORE-23 | Failure-class coverage | DESIGNED | Failure kinds are named (nedodelka vs otkaz), the audit lists known gaps, ADR 0006 documents the unknown-process case. | No per-class table with detection, containment, recovery and verification for the failure classes of the standard. | Map the existing failure kinds to the DOA failure-class list in one table. |
+| REQ-CORE-23 | Failure-class coverage | PARTIAL | Failure kinds are named (nedodelka vs otkaz), the audit lists known gaps, ADR 0006 documents the unknown-process case. [`DOA_FAILURE_CLASSES.md`](DOA_FAILURE_CLASSES.md) assesses all 25 classes one by one (detection, containment, recovery, tests or gap) and the claim carries the same statuses; `tests/test_failure_classes.py` keeps table, named tests and claim in step (PR #41). | No class is `PASS`; 8 are `DESIGNED`, 2 have no mechanism (`F-06` poisoning, `F-22` prompt injection). Recovery paths are mostly instructions for the host LLM. | Close `F-06` and `F-22` (the largest real gap: the skill acts on text from the user's repository, brief and memory file); raise `DESIGNED` classes to tested ones one at a time. |
 | REQ-CORE-24 | Audit and secret hygiene | PARTIAL | Secrets are redacted before writing and referred to by name; `tools/redact.py` implements the pattern table deterministically (`--check`, `--write`, `--stdin`, tested); .env is gitignored first; GitHub secret scanning and push protection are enabled. | The pattern table now exists as `tools/redact.py` with 21 tests (PR #26) and is referenced from `1-manifest.md`, `SKILL.md` and `9-memory.md`, but running it is still an instruction to the orchestrator, not an enforced gate. The audit trail (.autopilot) is not tamper-evident. | Make the check run without relying on the LLM (a hook or a CI step over `.autopilot/`); add content hashes for the audit trail. |
 | REQ-CORE-25 | Microbiome (guest) governance | EXCLUDED | The skill neither loads nor admits third-party plugins, tools or agents: it is dependency-free (no package.json in the repository; the CI step 'Confirm dependency-free dashboard' only echoes a line and would not fail if one appeared) and its subagents are instances of the host agent configured by the host. Guest governance belongs to the host. Revisit if the skill ever bundles an external tool. | — | Revisit if the skill ever bundles an external tool. |
 | REQ-CORE-26 | Separation of cognition and authority | DESIGNED | Roles are separated: executor writes, an independent reviewer judges, a blind checker verifies against the brief; the orchestrator does not write code. | Policy authority is the same LLM family following prose; there is no deterministic policy enforcement point. | Move the few hard rules (secrets, commit-on-red, zone) into deterministic checks run by the orchestrator. |
