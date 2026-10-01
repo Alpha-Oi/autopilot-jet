@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#33; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0)
-**Subject:** autopilot-jet on `development` at `e6363802d0dd3c79e30c02cece572cd96a944384`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#35; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then two requirements moved from `DESIGNED` to `PARTIAL` on new tests)
+**Subject:** autopilot-jet on `development` at `f941ca386a28baa416c33a37886380d9d126da8a`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,14 +14,14 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this refresh (Linux, Python 3.11, commit `e636380`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `f941ca3`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests` | 88 tests, OK (first pass: 40) |
+| `python -B -m unittest discover -s tests` | 100 tests, OK (first pass: 40) |
 | `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 78](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36897477853)) | success on ubuntu, windows and macos |
+| CI run for the same commit ([run 82](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36907965537)) | success on ubuntu, windows and macos |
 | Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
 | Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
@@ -32,15 +32,17 @@ No change in the status counts: the refresh closed gaps inside requirements, but
 | Status | Count |
 |---|---|
 | PASS | 1 |
-| PARTIAL | 9 |
-| DESIGNED | 15 |
+| PARTIAL | 11 |
+| DESIGNED | 13 |
 | FAIL | 3 |
 | EXCLUDED | 1 |
 | Total (Core 26 + Conditional 3) | 29 |
 
-The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, nine have part of the mechanism built and tested, fifteen are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
+The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, eleven have part of the mechanism built and tested, thirteen are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
 
-**How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`. Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
+**How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`.
+
+**Two requirements then moved on real evidence.** `REQ-COND-03` and `REQ-CORE-19` went from `DESIGNED` to `PARTIAL` after PR #35 added tests for part of each mechanism (`tests/test_dependency_free.py`, `tests/test_memory_freshness.py`, 12 tests; each was shown to turn red on a planted violation). Both stay `PARTIAL`, not `PASS`: the rest of each mechanism (a technical gate for artifact imports into a run; retention, decay and erasure of memory) is still missing. Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
 
 **Strongest areas:** truthful uncertainty (unknown process status is never treated as absent or healthy, with tests), desired/observed separation (manifest versus blind acceptance), bounded loops (ticket, repair, handoff and polish caps), role separation (executor, reviewer, blind checker), and honest provenance of decisions (ADRs, one commit per ticket).
 
@@ -66,7 +68,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, nine ha
 | REQ-CORE-16 | Uncontrolled failure containment (necrosis) | PARTIAL | Interrupted runs resume from files; ownership checks refuse to kill foreign processes (tested); a second window on a live run is detected. | No fencing of a lost subagent: a crashed executor's partial edits are handled by the orchestrator by instruction, not by a revocation mechanism. | Document and test the partial-edit recovery path (git status before re-dispatch). |
 | REQ-CORE-17 | Growth control | DESIGNED | Tickets capped at 16 per run, 3 in flight, 2 repairs/retries/handoffs per ticket, 3 polish rounds; the orchestrator does not grant itself authority. | Caps are prose numbers; no enforcement and no orphan detection; spawn depth (subagents spawning subagents) is not bounded explicitly. | State a maximum subagent nesting depth and check it in state.js. |
 | REQ-CORE-18 | Resource accounting | PARTIAL | Token and time metrics per context (tested); the ceiling is justified with measured numbers. | Measurement is after the fact and Claude-Code-log specific; there is no budget reserved or enforced per run and no scarcity gate. | Add an optional per-run token budget to state.js and a warning in sync.py when exceeded. |
-| REQ-CORE-19 | Memory governance | DESIGNED | Project memory is written from the finished code, inside autopilot markers, user text untouched; run record kept in .autopilot; decisions as ADRs. | No retention, decay or erasure policy; memory records carry no confidence or provenance fields; stale memory is possible: AGENTS.md test counts lagged the code twice (fixed by hand in #27, #32). | Add a freshness check for AGENTS.md facts that can be verified (test count, commands). |
+| REQ-CORE-19 | Memory governance | PARTIAL | Project memory is written from the finished code, inside autopilot markers, user text untouched; run record kept in .autopilot; decisions as ADRs. `tests/test_memory_freshness.py` (PR #35) fails CI when the test count in AGENTS.md differs from the suite or when a repository path named in AGENTS.md or CLAUDE.md does not exist. | No retention, decay or erasure policy; memory records carry no confidence or provenance fields. The freshness check covers only the test count and paths; dates, environment versions and manual results in memory are still unchecked. | Extend the check to commands named in memory; define retention and erasure for the memory block. |
 | REQ-CORE-20 | Recovery taxonomy | DESIGNED | Recovery paths exist and differ: resume from files, repair in the same context, rebuild in a fresh context, whole-round rollback, dashboard regenerated from the template each flight. | Permitted recovery modes are not declared per component; the rule against cloning corrupted state is implicit. | Add a short recovery table (mode, when, verification) to AGENTS.md. |
 | REQ-CORE-21 | Aging and senescence | FAIL | The skill notes that an installed global copy may differ from the checkout, and README documents an update command. | No aging or version-skew mechanism: no skill-version stamp in runs, no staleness check of installed vs source skill, no deprecation path for old runs. | Stamp skill version into state.js and warn when the installed skill differs from the repository version. |
 | REQ-CORE-22 | Identity continuity and anti-resurrection | FAIL | Closest: finishedAt closes a run and the helper refuses to relaunch a server for it. | No identity continuity record, tombstone or fencing: a finished or abandoned run directory can be resumed without any check that it is still valid. | Mark closed runs with a terminal marker that resume refuses without explicit user action. |
@@ -76,7 +78,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, nine ha
 | REQ-CORE-26 | Separation of cognition and authority | DESIGNED | Roles are separated: executor writes, an independent reviewer judges, a blind checker verifies against the brief; the orchestrator does not write code. | Policy authority is the same LLM family following prose; there is no deterministic policy enforcement point. | Move the few hard rules (secrets, commit-on-red, zone) into deterministic checks run by the orchestrator. |
 | REQ-COND-01 | Reproduction control | DESIGNED | The skill does not create other Autopilot instances; a second run on a live .autopilot is detected and stops for the user. | No explicit declaration that reproduction is forbidden and no enforcement test. | State 'no nested or parallel Autopilot runs' as a rule and test the concurrent-run detection. |
 | REQ-COND-02 | Federation and treaties | FAIL | No federation capability exists in the repository. | No declared prohibition (federation: none) and no enforcement; the standard asks for it explicitly. | Add the declaration to AGENTS.md; nothing to build. |
-| REQ-COND-03 | Horizontal transfer isolation | DESIGNED | The skill is dependency-free (no package.json at this commit; CI does not assert it) and is documented not to install or download anything without the user's knowledge. | Prose only; no technical gate for importing artifacts from other sources into a run. | Keep dependency-free; make the CI step an assertion that fails when a package manifest appears (today it only echoes). |
+| REQ-COND-03 | Horizontal transfer isolation | PARTIAL | The skill is dependency-free (no package.json at this commit; CI does not assert it) and is documented not to install or download anything without the user's knowledge. `tests/test_dependency_free.py` (PR #35) fails CI when a package manifest appears, when skill or tool scripts import outside the standard library, or when they call a package manager. | No technical gate for importing artifacts into a run (the test covers the skill's own code, not what a run builds or fetches); the CI step 'Confirm dependency-free dashboard' still only echoes. | Keep dependency-free; make the CI step an assertion or rely on the test; define what a run may fetch. |
 
 ## 4. Principal findings
 
