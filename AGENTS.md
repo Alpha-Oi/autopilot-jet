@@ -11,6 +11,7 @@
 - `skills/autopilot-jet/SKILL.md` задаёт режимы, глубину и gates G1–G4; инструкции из `skills/autopilot-jet/phases/` читаются только для текущего этапа.
 - `skills/autopilot-jet/prompts/executor.md` и `skills/autopilot-jet/prompts/craft-review.md` — контракты независимых исполнителя и reviewer.
 - `skills/autopilot-jet/tools/sync.py` и `skills/autopilot-jet/phases/dashboard-template.html` — канонические helper и dashboard; продуктовые правки делаются здесь, не в runtime copies.
+- `skills/autopilot-jet/tools/redact.py` — детерминированный фильтр секретов (формы из `phases/1-manifest.md`): `--check [--write] PATH`, `--stdin`; печатает имена переменных, не значения; покрыт `tests/test_redact.py`.
 - `tools/measure-run.py` — CLI анализа Claude Code JSONL: project path → logs directory → выбранная session и subagents → сравнительные token/time metrics.
 - `.agents/skills/autopilot-jet` → `skills/autopilot-jet/`; `.claude/skills/autopilot-jet` → `.agents/skills/autopilot-jet`; обе привязки — symlinks.
 - `.autopilot/state.js`, `.autopilot/sync.py`, `.autopilot/dashboard.html`, `.autopilot/index.html` — состояние и runtime конкретного прогона, а не канонический исходник skill.
