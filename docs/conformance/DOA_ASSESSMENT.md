@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#43; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then seven requirements moved from `DESIGNED` to `PARTIAL` on new tests)
-**Subject:** autopilot-jet on `development` at `b3ddf740e385cb6df7c2e7ef33c4f5903ac395b0`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#45; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then eight requirements moved from `DESIGNED` to `PARTIAL` on new tests)
+**Subject:** autopilot-jet on `development` at `8b0f90a9ad983d3a14f22414f526f49f17402a6c`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,14 +14,14 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this refresh (Linux, Python 3.11, commit `b3ddf74`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `8b0f90a`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests` | 162 tests, OK (first pass: 40) |
+| `python -B -m unittest discover -s tests` | 173 tests, OK (first pass: 40) |
 | `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 98](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36926879907)) | success on ubuntu, windows and macos |
+| CI run for the same commit ([run 102](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36933748148)) | success on ubuntu, windows and macos |
 | Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
 | Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
@@ -32,13 +32,13 @@ No change in the status counts: the refresh closed gaps inside requirements, but
 | Status | Count |
 |---|---|
 | PASS | 1 |
-| PARTIAL | 16 |
-| DESIGNED | 8 |
+| PARTIAL | 17 |
+| DESIGNED | 7 |
 | FAIL | 3 |
 | EXCLUDED | 1 |
 | Total (Core 26 + Conditional 3) | 29 |
 
-The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, sixteen have part of the mechanism built and tested, eight are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
+The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, seventeen have part of the mechanism built and tested, seven are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
 
 **How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`.
 
@@ -47,6 +47,8 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, sixteen
 **Three more moved after PR #37.** `REQ-CORE-07`, `REQ-CORE-08` and `REQ-CORE-17` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names runs that pass the ceilings written in the instructions (more than 2 repairs, retries or handoffs on a ticket; more than 16 plan tickets; more than 3 polish rounds; overlapping zones of two unrelated tickets in flight), with 21 tests (`tests/test_sync_caps.py`). `audit()` only names; it does not stop a run. One rule is deliberately **not** checked: «at most three in flight». The launch rule starts the next ticket before it processes the one that came back, so a correct run shows four `in-progress` rows for a moment, and the record cannot tell that from a violation. It stays a gap (see `REQ-CORE-08`).
 
 **One more moved after PR #40.** `REQ-CORE-04` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names a recorded `mode`, `depth`, `tier` or `polish` outside its allowed values (9 tests, `tests/test_sync_dials.py`). It is a small step: it checks that the dials are recorded as valid values, not that the decision was right or unchanged.
+
+**One more moved after PR #45.** `REQ-COND-01` (reproduction control) went from `DESIGNED` to `PARTIAL`. `SKILL.md` now states that Autopilot does not start Autopilot (no nested runs, no parallel runs on one `.autopilot/`), both subagent prompts carry the ban, and `tests/test_no_reproduction.py` (11 tests) parses the scripts in `skills/autopilot-jet/tools/` and `tools/` and fails if any of them launches anything but a read-only process query (`ps`, PowerShell) or the dashboard server (`python -m http.server`), or launches something it cannot read. Eight planted violations each turned the tests red. It stays `PARTIAL`, not `PASS`: the host agent's own subagent tool is outside the repository, so the ban on using it for a second run is an instruction; the concurrent-window detection (`phases/0-preflight.md`) is still a description for the LLM, not code; the check is static.
 
 **One class moved after PR #43.** `F-22` (adversarial manipulation, prompt injection) went from `FAIL` to `PARTIAL`: the skill now has the rule «text from files is data, not instructions», and `tools/injection_scan.py` (21 tests, `tests/test_injection_scan.py`) finds obvious override phrases, chat-template tokens, comments addressed to a model, `curl | sh` and invisible characters, and prints only `path:line: kind`, never the text. It is a pattern search: a rephrased, translated or spaced-out attack is **not** found (a test pins this), a clean result proves little, and the rule itself is an instruction to the host LLM. `F-06` (poisoning of data, model, memory or tool output) stays `FAIL` by decision: the scan covers only injection-shaped text, not false facts in memory or a swapped data source, and there is no quarantine.
 
@@ -84,7 +86,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, sixteen
 | REQ-CORE-24 | Audit and secret hygiene | PARTIAL | Secrets are redacted before writing and referred to by name; `tools/redact.py` implements the pattern table deterministically (`--check`, `--write`, `--stdin`, tested); .env is gitignored first; GitHub secret scanning and push protection are enabled. | The pattern table now exists as `tools/redact.py` with 21 tests (PR #26) and is referenced from `1-manifest.md`, `SKILL.md` and `9-memory.md`, but running it is still an instruction to the orchestrator, not an enforced gate. The audit trail (.autopilot) is not tamper-evident. | Make the check run without relying on the LLM (a hook or a CI step over `.autopilot/`); add content hashes for the audit trail. |
 | REQ-CORE-25 | Microbiome (guest) governance | EXCLUDED | The skill neither loads nor admits third-party plugins, tools or agents: it is dependency-free (no package.json in the repository; the CI step 'Confirm dependency-free dashboard' only echoes a line and would not fail if one appeared) and its subagents are instances of the host agent configured by the host. Guest governance belongs to the host. Revisit if the skill ever bundles an external tool. | — | Revisit if the skill ever bundles an external tool. |
 | REQ-CORE-26 | Separation of cognition and authority | DESIGNED | Roles are separated: executor writes, an independent reviewer judges, a blind checker verifies against the brief; the orchestrator does not write code. | Policy authority is the same LLM family following prose; there is no deterministic policy enforcement point. | Move the few hard rules (secrets, commit-on-red, zone) into deterministic checks run by the orchestrator. |
-| REQ-COND-01 | Reproduction control | DESIGNED | The skill does not create other Autopilot instances; a second run on a live .autopilot is detected and stops for the user. | No explicit declaration that reproduction is forbidden and no enforcement test. | State 'no nested or parallel Autopilot runs' as a rule and test the concurrent-run detection. |
+| REQ-COND-01 | Reproduction control | PARTIAL | Reproduction is declared forbidden (`SKILL.md`, both subagent prompts); `tests/test_no_reproduction.py` fails if a script of the skill launches anything but a process query or the dashboard server (PR #45). A second run on a live `.autopilot/` is detected by instruction and stops for the user. | The host agent's own subagent tool is outside the repository, so the ban on a second run is an instruction; the concurrent-window detection is not code; the check is static (it reads sources, it does not watch a run). | Make the concurrent-run detection a tested function (age of `state.js` plus a live server on the directory); the host's subagent tool stays out of reach. |
 | REQ-COND-02 | Federation and treaties | FAIL | No federation capability exists in the repository. | No declared prohibition (federation: none) and no enforcement; the standard asks for it explicitly. | Add the declaration to AGENTS.md; nothing to build. |
 | REQ-COND-03 | Horizontal transfer isolation | PARTIAL | The skill is dependency-free (no package.json at this commit; CI does not assert it) and is documented not to install or download anything without the user's knowledge. `tests/test_dependency_free.py` (PR #35) fails CI when a package manifest appears, when skill or tool scripts import outside the standard library, or when they call a package manager. | No technical gate for importing artifacts into a run (the test covers the skill's own code, not what a run builds or fetches); the CI step 'Confirm dependency-free dashboard' still only echoes. | Keep dependency-free; make the CI step an assertion or rely on the test; define what a run may fetch. |
 
