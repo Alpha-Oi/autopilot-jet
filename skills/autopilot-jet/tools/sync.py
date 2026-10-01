@@ -87,6 +87,11 @@ def http_ok(port, path="/dashboard.html"):
         return False
 
 
+def _query_timeout(seconds):
+    """Холодный запуск powershell.exe + CIM на Windows занимает секунды: лимит шире, чем у ``ps``."""
+    return seconds * 4 if os.name == "nt" else seconds
+
+
 def cmdline(pid):
     if os.name == "nt":
         command = (
@@ -98,7 +103,7 @@ def cmdline(pid):
         argv = ["ps", "-p", str(pid), "-o", "command="]
     try:
         result = subprocess.run(argv, capture_output=True, text=True,
-                                timeout=5, check=False)
+                                timeout=_query_timeout(5), check=False)
         return result.stdout.strip() if result.returncode == 0 else ""
     except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         return ""
@@ -120,8 +125,8 @@ def process_status(pid):
             argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
         else:
             argv = ["ps", "-Ao", "pid="]
-        result = subprocess.run(argv, capture_output=True, text=True, timeout=5,
-                                check=False)
+        result = subprocess.run(argv, capture_output=True, text=True,
+                                timeout=_query_timeout(5), check=False)
         if result.returncode != 0 or result.stderr.strip():
             return "unknown"
         output = result.stdout.strip()
@@ -146,8 +151,8 @@ def iter_processes():
     else:
         argv = ["ps", "-Ao", "pid=,command="]
     try:
-        result = subprocess.run(argv, capture_output=True, text=True, timeout=10,
-                                check=False)
+        result = subprocess.run(argv, capture_output=True, text=True,
+                                timeout=_query_timeout(10), check=False)
         if result.returncode != 0:
             return []
         output = result.stdout
