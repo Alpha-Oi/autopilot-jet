@@ -45,6 +45,14 @@ TICKET_CEILING = 16       # таски плана; P-таски доводки �
 POLISH_ROUNDS_CEILING = 3
 COUNTERS = ("repairs", "retries", "handoffs")
 
+# Допустимые значения «ручек» прогона (phases/0-modes.md, 4-plan.md). Ручки решаются один раз
+# в начале и записываются в state.js: по записи восстанавливается политика прогона.
+DIAL_VALUES = {
+    "mode": ("full", "semi", "interview", "manual"),
+    "depth": ("strict", "normal", "deep"),
+    "tier": ("T0", "T1", "T2", "T3"),
+}
+
 
 def fail(msg):
     print(msg)
@@ -357,6 +365,7 @@ def audit(state):
         if t.get("status") == "done" and not t.get("finishedAt"):
             out.append("таск %s закрыт без finishedAt" % t.get("id"))
     out.extend(audit_caps(state))
+    out.extend(audit_dials(state))
     return out
 
 
@@ -428,6 +437,27 @@ def audit_caps(state):
                 clashes.append("%s и %s" % (first["id"], second["id"]))
     if clashes:
         out.append("таски в работе с пересекающимися зонами: %s — одни и те же файлы идут по очереди" % ", ".join(clashes))
+    return out
+
+
+def audit_dials(state):
+    """Записанные «ручки» прогона — из допустимых значений. Не заданное поле молчит (старый state.js).
+
+    mode и depth решаются один раз в начале (0-modes.md) и пишутся в state.js; tier ставит план;
+    polish — null или объект доводки. Значение вне списка значит, что политику прогона по записи
+    уже не восстановить. Что именно было задумано, знает только агент: audit называет, не правит.
+    """
+    out = []
+    for key, allowed in DIAL_VALUES.items():
+        if key not in state or state.get(key) is None:
+            continue
+        value = state[key]
+        if not isinstance(value, str) or value not in allowed:
+            out.append("%s %r не из допустимых (%s) — политику прогона по записи не восстановить"
+                       % (key, value, ", ".join(allowed)))
+    polish = state.get("polish")
+    if polish is not None and not isinstance(polish, dict):
+        out.append("polish %r: ожидался null или объект доводки" % (polish,))
     return out
 
 
