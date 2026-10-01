@@ -34,6 +34,15 @@ On a hit:
 
 Before the first commit, run this gate over everything under `.autopilot/`. A secret that got in through some path nobody predicted still must not reach git history.
 
+**The table above is also code: `tools/redact.py`** (standard library, tested in `tests/test_redact.py`), at `<skillDir>/tools/redact.py` — `skillDir` is in `state.js`. Redact by judgement as the gate says, then **verify mechanically**; judgement alone is the one control here that nothing checks.
+
+```bash
+python3 "<skillDir>/tools/redact.py" --check .autopilot          # path:line: VAR_NAME — never the value; exit 1 on a hit
+python3 "<skillDir>/tools/redact.py" --check --write .autopilot  # rewrites hits in place as [REDACTED:VAR_NAME]
+```
+
+Run `--check` after the brief file is written and once more before the first commit. A hit is a leak that already happened: apply step 3 above (tell the user, rotate), then `--write`. The tool also takes `--stdin` for text that is already in a file or pipe; it prints only variable names, never values. It covers exactly the shapes in the table and nothing wider, so the judgement above stays.
+
 ## 2. Write the brief file
 
 The redacted brief, **word for word**, into `.autopilot/<dir>/<YYYY-MM-DD>-brief.md` — today's date, then `-brief.md`: `2026-08-07-brief.md`. The date is part of the name because a slug directory outlives one sitting; a month later «доделай ещё вот это» arrives, and the files have to say which brief came when. Record the chosen name in `state.js` as `briefFile`, so nothing downstream has to guess it.
