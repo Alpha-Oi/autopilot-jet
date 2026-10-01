@@ -19,6 +19,15 @@
      скопировал, продолжала работать.
 
 Ничего не печатает в чат сама по себе: одна строка на stdout, её видит агент.
+
+Отдельный режим, который ничего не пишет и сервер не трогает:
+
+    python3 <каталог навыка>/tools/sync.py --other-window [КАТАЛОГ]
+
+Отвечает на вопрос четвёртого случая из phases/0-preflight.md: идёт ли этот прогон в другом окне.
+Коды выхода: 0 — нет (обычное возобновление или нет прогона), 1 — да, 3 — не удалось определить.
+Запускать нужно из каталога навыка, а не из .autopilot/sync.py: копия в .autopilot/ может быть старой
+и тогда выполнит обычную синхронизацию.
 """
 
 import json
@@ -29,6 +38,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 
 A = os.path.dirname(os.path.abspath(__file__))          # .autopilot этого прогона
 STATE = os.path.join(A, "state.js")
@@ -43,6 +53,7 @@ PROCESS_DELIMITER = "\x1f"
 COUNTER_CEILING = 2       # repairs, retries, handoffs на один таск
 TICKET_CEILING = 16       # таски плана; P-таски доводки считаются отдельно
 POLISH_ROUNDS_CEILING = 3
+OTHER_WINDOW_SECONDS = 300   # «меньше пяти минут» из четвёртого случая phases/0-preflight.md
 COUNTERS = ("repairs", "retries", "handoffs")
 
 # Допустимые значения «ручек» прогона (phases/0-modes.md, 4-plan.md). Ручки решаются один раз
@@ -59,14 +70,19 @@ def fail(msg):
     sys.exit(1)
 
 
+def _state_body(raw):
+    """JSON из state.js: после `window.STATE =` в первой строке, без хвостового `;`."""
+    body = raw.split("=", 1)[1] if "=" in raw.split("\n", 1)[0] else raw
+    return body.strip().rstrip(";")
+
+
 def read_state():
     try:
         raw = open(STATE, encoding="utf-8").read()
     except FileNotFoundError:
         fail("state.js ещё нет — снимок не вписан, сервер не тронут")
-    body = raw.split("=", 1)[1] if "=" in raw.split("\n", 1)[0] else raw
     try:
-        return json.loads(body.strip().rstrip(";"))
+        return json.loads(_state_body(raw))
     except json.JSONDecodeError as e:
         # Здесь и был режим отказа «файл помялся»: раньше он был виден только по
         # пустой странице, теперь — строкой с номером строки, сразу после записи.
@@ -184,8 +200,10 @@ def iter_processes():
     return processes
 
 
-def is_ours(cmd):
-    """Наш ли это процесс. Узкая проверка намеренно: широкая уже убивала чужое."""
+def is_ours(cmd, directory=None):
+    """Наш ли это процесс. Узкая проверка намеренно: широкая уже убивала чужое.
+
+    ``directory`` — каталог прогона; по умолчанию тот, где лежит этот скрипт."""
     if not re.search(r"(?:^|\s)-m\s+http\.server(?:\s|$)", cmd):
         return False
     match = re.search(
@@ -194,13 +212,14 @@ def is_ours(cmd):
     )
     if not match:
         return False
-    directory = next(value for value in match.groups() if value is not None)
-    return os.path.normcase(os.path.normpath(directory)) == os.path.normcase(os.path.normpath(A))
+    served = next(value for value in match.groups() if value is not None)
+    return os.path.normcase(os.path.normpath(served)) == os.path.normcase(os.path.normpath(directory or A))
 
 
-def recorded():
+def recorded(pidfile=None):
     try:
-        port, pid = open(PIDF, encoding="utf-8").read().split()
+        with open(pidfile or PIDF, encoding="utf-8") as handle:
+            port, pid = handle.read().split()
         return int(port), int(pid)
     except (OSError, ValueError):
         return None, None
@@ -278,6 +297,93 @@ def serve(state):
             continue
     srv.terminate()
     return "сервер не ответил — дашборд открывается файлом: %s" % PAGE
+
+
+def parse_time(text):
+    """ISO 8601 со смещением или `Z` -> aware datetime; None, если не разбирается или без часового пояса.
+
+    Шаблон state.js всегда пишет смещение. Время без пояса не угадываем: местное оно или UTC,
+    неизвестно, а от этого зависит, моложе ли оно пяти минут."""
+    if not isinstance(text, str):
+        return None
+    try:
+        moment = datetime.fromisoformat(text.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return moment if moment.tzinfo is not None else None
+
+
+def launched_for(command, directory):
+    """Запущен ли сервер этим скриптом для каталога: `--directory <каталог>` стоит в строке последним.
+
+    `ps` не сохраняет кавычки, поэтому каталог с пробелом is_ours() режет по первому пробелу и
+    не узнаёт собственный сервер. Здесь сверка идёт с концом строки: префикс чужого каталога
+    (`/x/a b` при искомом `/x/a`) не совпадёт."""
+    if not re.search(r"(?:^|\s)-m\s+http\.server(?:\s|$)", command):
+        return False
+    line = os.path.normcase(command.rstrip())
+    tail = os.path.normcase("--directory " + directory)
+    return line.endswith(tail) and (len(line) == len(tail) or line[-len(tail) - 1].isspace())
+
+
+def server_serving(directory):
+    """Отвечает ли за этот каталог живой сервер дашборда: True, False или None (не удалось определить).
+
+    Тот же принцип, что в serve(): записанный в serve.pid процесс считается нашим только по
+    `--directory`; неизвестное состояние не выдаётся ни за «жив», ни за «нет»."""
+    port, pid = recorded(os.path.join(directory, "serve.pid"))
+    if not (port and pid):
+        return False
+    command = cmdline(pid)
+    if command:
+        if not (is_ours(command, directory) or launched_for(command, directory)):
+            return False                     # PID достался другому процессу
+        return True if http_ok(port) else None
+    return False if process_status(pid) == "absent" else None
+
+
+def other_window(state, now, serving):
+    """Идёт ли прогон в другом окне. Четвёртый случай phases/0-preflight.md.
+
+    Нужны обе метки сразу: `updatedAt` моложе пяти минут и живой сервер на этом каталоге. Одна без
+    другой — обычное прерывание, то есть возобновление. ``serving`` — результат server_serving().
+    Возвращает (вердикт, пояснение); вердикт: "other-window", "resume" или "unknown".
+    `finishedAt` не учитывается: инструкция называет две метки, и он не одна из них.
+    """
+    moment = parse_time((state or {}).get("updatedAt"))
+    recent = None if moment is None else (now - moment).total_seconds() < OTHER_WINDOW_SECONDS
+    if recent is False:
+        return "resume", "state.js старше пяти минут"
+    if serving is False:
+        return "resume", "сервера на этом каталоге нет"
+    if recent and serving:
+        return "other-window", "state.js моложе пяти минут и сервер отвечает"
+    unknown = []
+    if recent is None:
+        unknown.append("не прочитана метка updatedAt")
+    if serving is None:
+        unknown.append("не подтверждено, жив ли сервер")
+    return "unknown", "; ".join(unknown)
+
+
+def check_other_window(directory):
+    """Режим --other-window: ничего не пишет, сервер не трогает. Возвращает код выхода."""
+    try:
+        raw = open(os.path.join(directory, "state.js"), encoding="utf-8").read()
+    except FileNotFoundError:
+        print("resume · state.js нет — прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    verdict, why = other_window(state, datetime.now(timezone.utc), server_serving(directory))
+    print("%s · %s" % (verdict, why))
+    return {"resume": 0, "other-window": 1}.get(verdict, 3)
 
 
 ORDER = ["preflight", "manifest", "briefing", "spec", "plan", "build", "review", "final"]
@@ -462,6 +568,12 @@ def audit_dials(state):
 
 
 def main():
+    if "--other-window" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--other-window"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --other-window [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_other_window(os.path.abspath(rest[0]) if rest else A))
     state = read_state()
     passed = close_passed(state)
     if passed:
