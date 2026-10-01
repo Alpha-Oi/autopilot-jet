@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01
-**Subject:** autopilot-jet on `development` at `8c8cb33353df35c2831d977ad5d81922191738d9`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#32)
+**Subject:** autopilot-jet on `development` at `4f4813824e817bc4addd888271ed710a6d3aa1f6`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.0.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,17 +14,18 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this assessment (Linux, Python 3.11.15, Node 22.22.0, commit `8c8cb33`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `4f48138`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests -v` | 40 tests, OK |
-| `flake8 . --select=E9,F63,F7,F82` (7.4.1) | 0 findings |
+| `python -B -m unittest discover -s tests` | 88 tests, OK (first pass: 40) |
+| `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 58](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36579354199)) | success on ubuntu, windows and macos |
-| Repository settings (public API) | secret scanning and push protection enabled; **no branch rules on `development` or `main`** |
+| CI run for the same commit ([run 76](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36895126566)) | success on ubuntu, windows and macos |
+| Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
+| Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
-An end-to-end run of the skill was not executed. The author's local governance harness (45/45) and release-finalization evidence are not in the repository and were not used.
+No change in the status counts: the refresh closed gaps inside requirements, but no requirement moved to PASS. An end-to-end run of the skill was not executed. The author's local governance harness (45/45) and release-finalization evidence are not in the repository and were not used.
 
 ## 2. Result
 
@@ -54,27 +55,40 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, most ha
 | REQ-CORE-08 | Compartmentalization | PARTIAL | One executor context per ticket, never two tickets in one context; at most three in flight; same-file tickets are serialised. | Isolation and the three-in-flight cap are prose; no test or runtime check; a failing subagent's blast radius is not measured. | Record in state.js how many tickets were in flight at once; assert the cap in a unit test of the planner output if one is added. |
 | REQ-CORE-09 | Provenance | PARTIAL | Dated redacted brief, manifest rows with stated basis, one commit per ticket, run record committed, decisions as ADRs. | Source and time exist; integrity (hash) and classification do not. Provenance of agent output (model, version) is not recorded in repo. | Add content hashes for brief and manifest and the host/model metadata to state.js. |
 | REQ-CORE-10 | Reversibility | PARTIAL | Commit per ticket gives rollback points; a polish round that breaks the suite is reverted whole; ship.ps1 stops on red checks and never forces or touches main. | Rollback is a documented procedure, not tested; no automated restore drill. | Add a test or fixture for the polish-round revert command sequence. |
-| REQ-CORE-11 | Observable lifecycle | PARTIAL | Stage and ticket transitions are recorded; sync.py enforces the 'one active stage' invariant and reports half-written transitions. | No formal state machine with guards, authority and timeouts; close_passed() and audit() have no unit tests (tests cover server lifecycle, dashboard render, measure-run). | Add unit tests for close_passed() and audit(); publish stage/ticket state machines as a table. |
+| REQ-CORE-11 | Observable lifecycle | PARTIAL | Stage and ticket transitions are recorded; sync.py enforces the 'one active stage' invariant and reports half-written transitions; the closing and audit invariants are unit-tested. | No formal state machine with guards, authority and timeouts published. `close_passed()` and `audit()` are now covered by 26 tests in `tests/test_sync_state.py` (PR #30). | Publish stage/ticket state machines as a table. |
 | REQ-CORE-12 | Human authority | PARTIAL | Only the user removes a requirement; irreversible or outward-facing actions (deploy, publish, pay, message, delete, rewrite history) are questions in every mode. | Enforced by instruction to the LLM; no technical approval gate; no time-bounded break-glass concept. | Keep as policy but add an explicit list of actions that require confirmation to a testable config. |
-| REQ-CORE-13 | Truthful uncertainty | PASS | Unknown is never reported as healthy or absent: process_status() returns present/absent/unknown; unknown ownership never triggers a duplicate launch or registry rewrite; corrupt state.js is rejected without writes; partial requirements do not inflate coverage. Tests pass locally (40) and in CI on three OSes. | Scope of the PASS: the deterministic helper, dashboard and measure-run. Truthfulness of the orchestrator's own reports rests on blind acceptance (prose, not unit-tested). | Keep; extend the same discipline to reports (a test that 'done' without blind confirmation is not shown as complete). |
+| REQ-CORE-13 | Truthful uncertainty | PASS | Unknown is never reported as healthy or absent: process_status() returns present/absent/unknown; unknown ownership never triggers a duplicate launch or registry rewrite; corrupt state.js is rejected without writes; partial requirements do not inflate coverage. Tests pass locally (88) and in CI on three OSes. | Scope of the PASS: the deterministic helper, dashboard and measure-run. Truthfulness of the orchestrator's own reports rests on blind acceptance (prose, not unit-tested). | Keep; extend the same discipline to reports (a test that 'done' without blind confirmation is not shown as complete). |
 | REQ-CORE-14 | Immune response lifecycle | PARTIAL | A leaked secret is a stop condition with a user warning and rotation advice; three-axis review per ticket; GitHub secret scanning and push protection are enabled on the repository. | No incident lifecycle (identify, contain, quarantine, neutralize, learn, update defences) for a run; quarantine of a bad artifact is not defined. | Define a minimal incident path for a leaked secret: stop, scrub history guidance, record in state.js. |
 | REQ-CORE-15 | Bounded termination (apoptosis) | PARTIAL | On finish the run is closed (finishedAt), the helper never relaunches a server for a finished run (tested), and only the run's own server is killed after the report. | Termination of subagents and release of all run resources is not a bounded, verified protocol; no terminal record beyond state.js. | Write the terminal checklist as a verification step in sync.py (no live server, finishedAt set). |
 | REQ-CORE-16 | Uncontrolled failure containment (necrosis) | PARTIAL | Interrupted runs resume from files; ownership checks refuse to kill foreign processes (tested); a second window on a live run is detected. | No fencing of a lost subagent: a crashed executor's partial edits are handled by the orchestrator by instruction, not by a revocation mechanism. | Document and test the partial-edit recovery path (git status before re-dispatch). |
 | REQ-CORE-17 | Growth control | PARTIAL | Tickets capped at 16 per run, 3 in flight, 2 repairs/retries/handoffs per ticket, 3 polish rounds; the orchestrator does not grant itself authority. | Caps are prose numbers; no enforcement and no orphan detection; spawn depth (subagents spawning subagents) is not bounded explicitly. | State a maximum subagent nesting depth and check it in state.js. |
 | REQ-CORE-18 | Resource accounting | PARTIAL | Token and time metrics per context (tested); the ceiling is justified with measured numbers. | Measurement is after the fact and Claude-Code-log specific; there is no budget reserved or enforced per run and no scarcity gate. | Add an optional per-run token budget to state.js and a warning in sync.py when exceeded. |
-| REQ-CORE-19 | Memory governance | PARTIAL | Project memory is written from the finished code, inside autopilot markers, user text untouched; run record kept in .autopilot; decisions as ADRs. | No retention, decay or erasure policy; memory records carry no confidence or provenance fields; stale memory is possible (AGENTS.md test counts lag the code). | Add a freshness check for AGENTS.md facts that can be verified (test count, commands). |
+| REQ-CORE-19 | Memory governance | PARTIAL | Project memory is written from the finished code, inside autopilot markers, user text untouched; run record kept in .autopilot; decisions as ADRs. | No retention, decay or erasure policy; memory records carry no confidence or provenance fields; stale memory is possible: AGENTS.md test counts lagged the code twice (fixed by hand in #27, #32). | Add a freshness check for AGENTS.md facts that can be verified (test count, commands). |
 | REQ-CORE-20 | Recovery taxonomy | PARTIAL | Recovery paths exist and differ: resume from files, repair in the same context, rebuild in a fresh context, whole-round rollback, dashboard regenerated from the template each flight. | Permitted recovery modes are not declared per component; the rule against cloning corrupted state is implicit. | Add a short recovery table (mode, when, verification) to AGENTS.md. |
 | REQ-CORE-21 | Aging and senescence | FAIL | The skill notes that an installed global copy may differ from the checkout, and README documents an update command. | No aging or version-skew mechanism: no skill-version stamp in runs, no staleness check of installed vs source skill, no deprecation path for old runs. | Stamp skill version into state.js and warn when the installed skill differs from the repository version. |
 | REQ-CORE-22 | Identity continuity and anti-resurrection | FAIL | Closest: finishedAt closes a run and the helper refuses to relaunch a server for it. | No identity continuity record, tombstone or fencing: a finished or abandoned run directory can be resumed without any check that it is still valid. | Mark closed runs with a terminal marker that resume refuses without explicit user action. |
 | REQ-CORE-23 | Failure-class coverage | PARTIAL | Failure kinds are named (nedodelka vs otkaz), the audit lists known gaps, ADR 0006 documents the unknown-process case. | No per-class table with detection, containment, recovery and verification for the failure classes of the standard. | Map the existing failure kinds to the DOA failure-class list in one table. |
-| REQ-CORE-24 | Audit and secret hygiene | PARTIAL | Secrets are redacted before writing and referred to by name; .env is gitignored first; GitHub secret scanning and push protection are enabled. | The redaction gate is an instruction to the orchestrating agent; the repository contains no deterministic implementation or test of it, although the README describes it as a filter. The audit trail (.autopilot) is not tamper-evident. | Implement the pattern table of 1-manifest.md as a stdlib script with tests and run it over .autopilot/ before commit. |
-| REQ-CORE-25 | Microbiome (guest) governance | EXCLUDED | The skill neither loads nor admits third-party plugins, tools or agents: it is dependency-free (CI step 'Confirm dependency-free dashboard' passes; no package.json) and its subagents are instances of the host agent configured by the host. Guest governance belongs to the host. Revisit if the skill ever bundles an external tool. | — | Revisit if the skill ever bundles an external tool. |
+| REQ-CORE-24 | Audit and secret hygiene | PARTIAL | Secrets are redacted before writing and referred to by name; `tools/redact.py` implements the pattern table deterministically (`--check`, `--write`, `--stdin`, tested); .env is gitignored first; GitHub secret scanning and push protection are enabled. | The pattern table now exists as `tools/redact.py` with 21 tests (PR #26) and is referenced from `1-manifest.md`, `SKILL.md` and `9-memory.md`, but running it is still an instruction to the orchestrator, not an enforced gate. The audit trail (.autopilot) is not tamper-evident. | Make the check run without relying on the LLM (a hook or a CI step over `.autopilot/`); add content hashes for the audit trail. |
+| REQ-CORE-25 | Microbiome (guest) governance | EXCLUDED | The skill neither loads nor admits third-party plugins, tools or agents: it is dependency-free (no package.json in the repository; the CI step 'Confirm dependency-free dashboard' only echoes a line and would not fail if one appeared) and its subagents are instances of the host agent configured by the host. Guest governance belongs to the host. Revisit if the skill ever bundles an external tool. | — | Revisit if the skill ever bundles an external tool. |
 | REQ-CORE-26 | Separation of cognition and authority | PARTIAL | Roles are separated: executor writes, an independent reviewer judges, a blind checker verifies against the brief; the orchestrator does not write code. | Policy authority is the same LLM family following prose; there is no deterministic policy enforcement point. | Move the few hard rules (secrets, commit-on-red, zone) into deterministic checks run by the orchestrator. |
 | REQ-COND-01 | Reproduction control | PARTIAL | The skill does not create other Autopilot instances; a second run on a live .autopilot is detected and stops for the user. | No explicit declaration that reproduction is forbidden and no enforcement test. | State 'no nested or parallel Autopilot runs' as a rule and test the concurrent-run detection. |
 | REQ-COND-02 | Federation and treaties | FAIL | No federation capability exists in the repository. | No declared prohibition (federation: none) and no enforcement; the standard asks for it explicitly. | Add the declaration to AGENTS.md; nothing to build. |
-| REQ-COND-03 | Horizontal transfer isolation | PARTIAL | The skill is dependency-free (CI confirms no package.json) and is documented not to install or download anything without the user's knowledge. | Prose only; no technical gate for importing artifacts from other sources into a run. | Keep dependency-free; add a CI assertion that no package manifests exist. |
+| REQ-COND-03 | Horizontal transfer isolation | PARTIAL | The skill is dependency-free (no package.json at this commit; CI does not assert it) and is documented not to install or download anything without the user's knowledge. | Prose only; no technical gate for importing artifacts from other sources into a run. | Keep dependency-free; make the CI step an assertion that fails when a package manifest appears (today it only echoes). |
 
 ## 4. Principal findings
+
+Status of each finding after PRs #26–#32 (2026-10-01). The original text is kept below the table.
+
+| # | Finding | Status | Evidence |
+|---|---|---|---|
+| 1 | Hard rules are instructions, not code | **Partly closed.** Redaction is now code and tested; zone check and commit-on-red are still prose | `tools/redact.py`, `tests/test_redact.py` (#26) |
+| 2 | `close_passed()` and `audit()` untested | **Closed** | `tests/test_sync_state.py`, 26 tests; five deliberate breakages each turned tests red (#30) |
+| 3 | No server-side branch rules | **Open.** Needs repository settings (owner action) | `/rules/branches/development` and `/main` return empty lists |
+| 4 | CI without `permissions:`, tag-pinned actions | **Closed** | `verify.yml` (#27); Dependabot keeps the pins fresh (#28, first PR #29) |
+| 5 | Memory drift | **Partly closed.** Numbers corrected by hand; no automatic freshness check | `AGENTS.md` (#27, #32) |
+| 6 | No aging or version-skew handling, no terminal marker | **Open** | REQ-CORE-21, REQ-CORE-22 remain FAIL |
+
+Original findings:
 
 1. **Hard rules are instructions, not code.** Secret redaction, 'nothing committed on red', 'the orchestrator does not write project code', ticket zones and the irreversible-action rule are enforced by prose for an LLM. The README describes redaction as a filter; the repository has no implementation or test of it. This is the largest gap against DOA (REQ-CORE-24, 05, 06, 26). *Action:* implement the pattern table from `phases/1-manifest.md` as a stdlib script with tests; add a zone check on `git diff --name-only`.
 2. **Process invariants in `sync.py` are untested.** `close_passed()` and `audit()` carry the lifecycle invariants (REQ-CORE-11) but no test exercises them. *Action:* add unit tests.
@@ -91,7 +105,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, most ha
 
 ## 6. Reassessment
 
-Reassess after the actions above or by 2026-12-01. From the DOA repository:
+Reassess after the open and partly closed findings above are done, or by 2026-12-01. From the DOA repository:
 
 ```bash
 python scripts/check_conformance_claim.py docs/conformance/DOA_CONFORMANCE_CLAIM.yaml
