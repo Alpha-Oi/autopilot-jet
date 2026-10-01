@@ -16,7 +16,7 @@
 - `.agents/skills/autopilot-jet` → `skills/autopilot-jet/`; `.claude/skills/autopilot-jet` → `.agents/skills/autopilot-jet`; обе привязки — symlinks.
 - `.autopilot/state.js`, `.autopilot/sync.py`, `.autopilot/dashboard.html`, `.autopilot/index.html` — состояние и runtime конкретного прогона, а не канонический исходник skill.
 - `.github/workflows/verify.yml` — native Ubuntu/Windows/macOS matrix для push/PR на `main`, `master`, `development`: Python 3.11, Node 20, exact flake8, full unittest и measure check-only.
-- `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, Node VM render/performance и cold relocated/native subprocess behavior.
+- `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_sync_state.py`, `tests/test_redact.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, инварианты жизненного цикла `close_passed()`/`audit()`, фильтр секретов, Node VM render/performance и cold relocated/native subprocess behavior.
 - `docs/adr/0006-preserve-server-registry-on-unknown-process-status.md` закрепляет durable decision: неопределённый статус процесса не разрешает потерю server registry или duplicate launch.
 
 ## Архитектура и контракты
@@ -69,7 +69,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 - Финальный release payload — `c23de4263454dae03faa5341bceb7d5d24360230` в `development`; PR #1 смержен в `main` merge commit `ca6743bb0b2453c79325fe30f6b9680b911ef4ed`.
 - Локальный release gate на момент release payload: 33 tests/`OK` за 9.587s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `457.34ms < 712.29ms`, queries `0/15000`.
-- Актуально на `development` `d6156e0` (2026-10-01): 61 test/`OK` (40 прежних + 21 `tests/test_redact.py`), flake8 `0`, `measure-run --check-only` → `OK`; CI [run 62](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36890026019) — `success` на Windows/Ubuntu/macOS. Строки про 33 теста выше — исторический release gate, не текущее состояние.
+- Актуально на `development` после PR #30 (2026-10-01): 87 tests/`OK` (40 прежних + 21 `tests/test_redact.py` + 26 `tests/test_sync_state.py`), flake8 `0`, `measure-run --check-only` → `OK`; CI подтверждается Actions на соответствующем коммите. Строки про 33 теста выше — исторический release gate, не текущее состояние.
 - Реальный Edge smoke предыдущего среза → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`. Для текущего 100% checkpoint реальная browser tab отдельно не подтверждена.
 - GitHub Actions run `36339995752` для exact development SHA и PR-head run `36340188512` завершились `success` на Windows/Ubuntu/macOS (на момент release payload): 33 tests/`OK`, lint `0`, benchmark pass и measure `OK` на каждом native runner.
 - Финальный dashboard: embedded snapshot совпадает с `.autopilot/state.js`, `100%`, `7/7` тасков, run завершён. Реальный Edge smoke относится к предыдущему source-identical срезу; финальный metadata-only snapshot отдельно в живой browser tab не проверялся.
