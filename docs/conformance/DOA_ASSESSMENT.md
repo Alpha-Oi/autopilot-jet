@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#37; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then five requirements moved from `DESIGNED` to `PARTIAL` on new tests)
-**Subject:** autopilot-jet on `development` at `3a4cc534fddf843004c711deb1bf7e039772b189`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#40; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then six requirements moved from `DESIGNED` to `PARTIAL` on new tests)
+**Subject:** autopilot-jet on `development` at `f30a42a28c72b2c17d61aa38ea05a5d7ac7f7673`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,14 +14,14 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this refresh (Linux, Python 3.11, commit `3a4cc53`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `f30a42a`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests` | 121 tests, OK (first pass: 40) |
+| `python -B -m unittest discover -s tests` | 130 tests, OK (first pass: 40) |
 | `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 86](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36914467049)) | success on ubuntu, windows and macos |
+| CI run for the same commit ([run 92](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36921452296)) | success on ubuntu, windows and macos |
 | Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
 | Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
@@ -32,19 +32,23 @@ No change in the status counts: the refresh closed gaps inside requirements, but
 | Status | Count |
 |---|---|
 | PASS | 1 |
-| PARTIAL | 14 |
-| DESIGNED | 10 |
+| PARTIAL | 15 |
+| DESIGNED | 9 |
 | FAIL | 3 |
 | EXCLUDED | 1 |
 | Total (Core 26 + Conditional 3) | 29 |
 
-The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fourteen have part of the mechanism built and tested, ten are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
+The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fifteen have part of the mechanism built and tested, nine are `DESIGNED` (described by instructions or by code without tests), and three have no mechanism.
 
 **How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`.
 
 **Two requirements then moved on real evidence.** `REQ-COND-03` and `REQ-CORE-19` went from `DESIGNED` to `PARTIAL` after PR #35 added tests for part of each mechanism (`tests/test_dependency_free.py`, `tests/test_memory_freshness.py`, 12 tests; each was shown to turn red on a planted violation). Both stay `PARTIAL`, not `PASS`: the rest of each mechanism (a technical gate for artifact imports into a run; retention, decay and erasure of memory) is still missing.
 
-**Three more moved after PR #37.** `REQ-CORE-07`, `REQ-CORE-08` and `REQ-CORE-17` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names runs that pass the ceilings written in the instructions (more than 2 repairs, retries or handoffs on a ticket; more than 16 plan tickets; more than 3 polish rounds; overlapping zones of two unrelated tickets in flight), with 21 tests (`tests/test_sync_caps.py`). `audit()` only names; it does not stop a run. One rule is deliberately **not** checked: «at most three in flight». The launch rule starts the next ticket before it processes the one that came back, so a correct run shows four `in-progress` rows for a moment, and the record cannot tell that from a violation. It stays a gap (see `REQ-CORE-08`). Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
+**Three more moved after PR #37.** `REQ-CORE-07`, `REQ-CORE-08` and `REQ-CORE-17` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names runs that pass the ceilings written in the instructions (more than 2 repairs, retries or handoffs on a ticket; more than 16 plan tickets; more than 3 polish rounds; overlapping zones of two unrelated tickets in flight), with 21 tests (`tests/test_sync_caps.py`). `audit()` only names; it does not stop a run. One rule is deliberately **not** checked: «at most three in flight». The launch rule starts the next ticket before it processes the one that came back, so a correct run shows four `in-progress` rows for a moment, and the record cannot tell that from a violation. It stays a gap (see `REQ-CORE-08`).
+
+**One more moved after PR #40.** `REQ-CORE-04` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names a recorded `mode`, `depth`, `tier` or `polish` outside its allowed values (9 tests, `tests/test_sync_dials.py`). It is a small step: it checks that the dials are recorded as valid values, not that the decision was right or unchanged.
+
+**Failure classes.** [`DOA_FAILURE_CLASSES.md`](DOA_FAILURE_CLASSES.md) assesses the 25 classes of DOA `v1.1.0` one by one (11 `PARTIAL`, 8 `DESIGNED`, 4 `EXCLUDED`, 2 `FAIL`, 0 `PASS`) and the claim carries the same statuses in its `failure_classes` list. `tests/test_failure_classes.py` keeps the table, the named tests and the claim in step. `REQ-CORE-23` itself stays `DESIGNED` in this change; it moves to `PARTIAL` once the table is merged and the claim can cite it at an immutable commit. Untested code counts as `DESIGNED`: `tools/ship.ps1` has no tests, so `REQ-CORE-10` is `DESIGNED`. A `DESIGNED` requirement is not an accepted gap; moving it to `PARTIAL` needs a test or another reproducible check.
 
 **Strongest areas:** truthful uncertainty (unknown process status is never treated as absent or healthy, with tests), desired/observed separation (manifest versus blind acceptance), bounded loops (ticket, repair, handoff and polish caps), role separation (executor, reviewer, blind checker), and honest provenance of decisions (ADRs, one commit per ticket).
 
@@ -55,7 +59,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, fourtee
 | REQ-CORE-01 | Identity of every action | PARTIAL | Commits per ticket; ticket/stage records in state.js; measure-run attributes tokens to orchestrator and subagent contexts from host logs. | No record binds each action to a subject (which subagent, which host/model, which skill version). Skill version is not stamped into the run. | Stamp skill version, host and agent role into state.js tickets; low effort. |
 | REQ-CORE-02 | Declared organism boundary | PARTIAL | Dashboard server binds only 127.0.0.1 (code and test); user input passes a redaction gate; irreversible/outward actions are questions (rule 4). | No declared boundary or external-dependency register (host agent, LLM provider, git remote, npx installer). Ingress and egress are described in prose only. | Add a short boundary table to AGENTS.md: what is inside the skill, what is the host, what crosses the boundary. |
 | REQ-CORE-03 | Desired/observed separation | DESIGNED | Requirements manifest is the desired state; blind acceptance against the brief is the observed state; disagreements are reported as drift. Strong design. | Desired state is not integrity-protected (no hash or signature); the reconcile step is executed by the LLM following prose, with no deterministic check or test. | Record a content hash of brief.md and manifest.md in state.js; verify it in sync.py audit(). |
-| REQ-CORE-04 | Genome/epigenome separation | DESIGNED | Run-level overlays (mode/depth/polish) are resolved once, recorded, and cannot remove the manifest and safety gates. | Overlays do not expire, are not signed, and the effective policy of a run is not reconstructable from a record. | Persist resolved dials in state.js (done for some) and document that they may not widen authority. |
+| REQ-CORE-04 | Genome/epigenome separation | PARTIAL | Run-level overlays (mode/depth/polish) are resolved once, recorded, and cannot remove the manifest and safety gates. `sync.py` `audit()` names a recorded `mode`, `depth`, `tier` or `polish` outside its allowed values (PR #40, `tests/test_sync_dials.py`). | Dials do not expire, are not signed, and the audit checks only that the recorded value is allowed. «Cannot remove the manifest and safety gates» rests on instructions. | Persist resolved dials in state.js (done for some) and document that they may not widen authority. |
 | REQ-CORE-05 | Least capability and attenuation | DESIGNED | Executors get a ticket zone and an explicit 'must not touch' list; zones in a wave are disjoint; secrets travel as variable names only. | Capabilities are instructions, not grants: nothing technically stops a subagent from touching files outside its zone; permissions are whatever the host gives. | Add a post-ticket deterministic check that changed files stay inside the ticket zone (git diff --name-only vs zone). |
 | REQ-CORE-06 | No unilateral self-modification | PARTIAL | The orchestrator may write only .autopilot/, the memory file and git; the helper updates only its adjacent snapshot (tested); runtime copies of sync.py/dashboard are re-copied from the skill, not edited. | The rule that the orchestrator does not write project code is a prose rule for an LLM; there is no technical guard and no test of the rule itself. | Consider a host-level hook or a post-hoc diff check that orchestrator commits touch only allowed paths. |
 | REQ-CORE-07 | Closed-loop homeostasis | PARTIAL | Bounded loops with caps and stop conditions: repairs/retries/handoffs capped at 2, polish capped at 3 rounds with whole-round rollback, executor ceiling about 50 tool calls. `sync.py` `audit()` names a ticket with `repairs`, `retries` or `handoffs` above 2 and a polish with more than 3 rounds (PR #37, `tests/test_sync_caps.py`). | It names the breach; it does not stop it. No ControlLoopSpec: no declared variable, sensor freshness, target range, escalation or manual override per loop; the executor ceiling (about 50 tool calls) is not checked. | Declare the loops (repair, handoff, polish, idle server) in one table with variable, limit, escalation, override. |

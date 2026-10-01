@@ -1,0 +1,52 @@
+# Failure-class coverage for autopilot-jet (DOA `REQ-CORE-23`)
+
+**Standard:** DOA `v1.1.0`, `specifications/failure-classes.yaml` (`F-01`…`F-25`).
+**Subject:** the Autopilot JET skill: its instructions, `sync.py`, the dashboard, `redact.py`, `measure-run.py` and the repository CI. The host agent, the LLM provider, git remotes and the installer are external dependencies (see `DOA_CONFORMANCE_CLAIM.yaml`, `scope.boundary`).
+**Status:** self-assessed by an AI assistant from reading the repository; not independent. No end-to-end run of the skill was executed.
+
+This file is the per-class table that `REQ-CORE-23` asks for. `tests/test_failure_classes.py` checks it: every class `F-01`…`F-25` appears exactly once; every test named in a row exists; a `PARTIAL` row names at least one test; an `EXCLUDED`, `DESIGNED` or `FAIL` row says why; and the statuses match the `failure_classes` list in the claim.
+
+## Status words
+
+| Status | Meaning here |
+|---|---|
+| `PARTIAL` | Part of the mechanism is code under test. The tests are named in the last column; what is not covered is stated. |
+| `DESIGNED` | Described by the instructions, or by code without tests. No reproducible evidence. |
+| `EXCLUDED` | Does not apply to this subject. The reason is given. |
+| `FAIL` | No mechanism exists. |
+
+No class is `PASS`: every row has a stated gap, mostly that the orchestrator's own behaviour is an instruction to an LLM and is not observed in a run.
+
+## Table
+
+| ID | Class | Status | Detection | Containment | Recovery | Tests, or the gap |
+|---|---|---|---|---|---|---|
+| F-01 | Component failure | PARTIAL | A subagent returns anything but `DONE`; `retries` is counted per ticket | One executor context per ticket; `audit()` names a ticket over 2 retries | Fresh context, then stop at the ceiling and report (`phases/5-repair.md`) | `tests/test_sync_caps.py::CounterCeilingTests::test_at_the_ceiling_is_silent_above_it_is_named`. Gap: re-dispatch is an instruction, and no test kills a subagent. |
+| F-02 | Partial failure | DESIGNED | Reviewer findings (`BLOCKING`, `concerns`) in `phases/6-review.md` | Only blocking findings go to repair; the rest is deferred to the final pass | Repair in the same context, up to 2 times (`phases/5-repair.md`) | Gap: prose only; nothing measures a degraded ticket. |
+| F-03 | Network partition and split-brain | DESIGNED | `phases/0-preflight.md` case four: `state.js` under five minutes old and a server answering | Stop and ask which window carries on | The user decides; nothing is merged | Gap: the rule is an instruction. Two windows writing one `state.js` are not detected by code. |
+| F-04 | Stale state and memory | PARTIAL | `test_memory_freshness.py` compares the test count and the paths in `AGENTS.md` and `CLAUDE.md` with the repository | CI fails until the memory file is corrected | Update the memory line in the same change | `tests/test_memory_freshness.py::MemoryIsFresh::test_declared_test_count_matches_the_suite`. Gap: dates, versions and manual results in memory are not checked; the dashboard's stale-clock warning is not tested. |
+| F-05 | Corrupted state | PARTIAL | `sync.py` refuses a `state.js` that does not parse | Nothing is written: the page snapshot keeps the previous state | The agent re-reads and re-writes `state.js` (instruction) | `tests/test_native_runtime.py::ColdRuntimeTests::test_relocated_helper_rejects_corrupt_state_without_writes`. Gap: no independent backup of `state.js`. |
+| F-06 | Poisoning of data, model, memory or tool output | FAIL | none | none | none | Gap: no mechanism. The skill reads the user's repository, brief and memory file and treats them as input to act on. |
+| F-07 | Model failure | DESIGNED | Blind acceptance checks the product against the brief (`phases/8-final.md`) | A different context judges the work, not the author | Re-run the ticket in a fresh context | Gap: outage and hallucination are the host's; the check is an instruction. |
+| F-08 | Model and behavioural drift | EXCLUDED | n/a | n/a | n/a | Excluded: the skill does not learn or adapt at runtime, and the model is an external dependency outside the declared boundary. Drift of the host model is not measured here. |
+| F-09 | Incorrect adaptation | EXCLUDED | n/a | n/a | n/a | Excluded: there is no runtime adaptation; the skill changes only by a reviewed change to this repository. |
+| F-10 | Unsafe evolution | EXCLUDED | n/a | n/a | n/a | Excluded: the skill does not modify itself; the orchestrator writes only `.autopilot/`, the memory file and git (`SKILL.md`). Changes to the skill go through pull requests and CI. |
+| F-11 | Reward hacking | DESIGNED | `phases/polish.md` requires a reference and filters what a critic finds (`found` against `accepted`) | A fixed ceiling of three rounds; a regression reverts the whole round | Revert to the commit before round 1 | Gap: prose. The round ceiling is checked (see F-16); the filter is not. |
+| F-12 | Tool failure | PARTIAL | `sync.py` reports why the server did not start or answer | The dashboard falls back to the file; a recorded process that did not answer is kept and no second server is launched | The user opens the file; the next `sync.py` run retries | `tests/test_sync.py::ServeTests::test_owned_pid_with_http_timeout_is_not_blindly_restarted`. Gap: only the dashboard server is covered, not the host's tools. |
+| F-13 | Dependency failure | PARTIAL | Process queries return present, absent or unknown; a failed query is never treated as absent | An unknown process is never killed, duplicated or rewritten; Windows queries get a wider timeout | Re-query on the next run | `tests/test_sync.py::ProcessQueryTests::test_failed_queries_do_not_confirm_partial_stdout`. Gap: host, provider and git are not covered. |
+| F-14 | Cascading failure | DESIGNED | none beyond the ceilings in F-15 and F-18 | Three tickets in flight at most; zones disjoint within a wave | Phase 4 re-cut | Gap: the cap of three in flight cannot be checked from `state.js` (a correct launch shows four `in-progress` for a moment). |
+| F-15 | Resource exhaustion and starvation | PARTIAL | `audit()` names more than 16 plan tickets | The ceiling is stated to the user; a larger run is split | Justify in `spec.md` or split into two runs | `tests/test_sync_caps.py::TicketAndPolishCeilingTests::test_sixteen_plan_tickets_are_allowed_seventeen_are_named`. Gap: the executor ceiling of about 50 tool calls is an instruction; `measure-run.py` measures after the fact. |
+| F-16 | Deadlock and livelock | PARTIAL | `audit()` names polish with more than 3 rounds and tickets over 2 repairs or handoffs | Ceilings on repairs, retries, handoffs and polish rounds | Stop relaying; report that the cut was wrong | `tests/test_sync_caps.py::TicketAndPolishCeilingTests::test_three_polish_rounds_are_allowed_four_are_named`. Gap: `audit()` names a breach; it does not stop the run. |
+| F-17 | Synchronization failure | PARTIAL | `audit()` names a stage left `pending` behind an active one; `close_passed()` closes the earlier active stage | The stage is closed at the time the next one opened; `updatedAt` is not moved | The agent marks the stage `skipped` with a reason | `tests/test_sync_state.py::AuditTests::test_a_pending_stage_behind_the_active_one_is_named_not_fixed`. Gap: clock skew between hosts is not handled; timestamps come from one agent. |
+| F-18 | Runaway process and runaway growth | PARTIAL | `audit()` names over-limit counters per ticket and over 16 plan tickets | Per-ticket ceilings; tickets written once at the end of Phase 4 | Report, not another attempt | `tests/test_sync_caps.py::CounterCeilingTests::test_one_line_per_counter_lists_every_ticket`. Gap: no limit on how deep subagents may nest, and no orphan detection. |
+| F-19 | Security compromise | PARTIAL | `redact.py` finds secret shapes in `.autopilot/` and the memory file | A leaked secret is a stop condition (`SKILL.md`); values are replaced by `[REDACTED:NAME]` | Tell the user at once and advise rotating the secret; `redact.py --check --write` rewrites the hit (`phases/1-manifest.md`) | `tests/test_redact.py::DetectionTests::test_every_provider_shape_is_replaced_with_its_variable_name`. Gap: running `redact.py` is an instruction; no hook or CI step runs it. |
+| F-20 | Identity spoofing | EXCLUDED | n/a | n/a | n/a | Excluded: the skill issues no identities and authenticates no one. The loopback server binds only `127.0.0.1`; identity belongs to the host. |
+| F-21 | Privilege escalation | DESIGNED | Each ticket has a zone and a «must not touch» list in its prompt | Zones in a wave are disjoint | Re-cut the ticket | Gap: a zone is an instruction; nothing checks the files a ticket changed against its zone. |
+| F-22 | Adversarial manipulation | FAIL | none | none | none | Gap: no mechanism against prompt injection or hostile content in files the skill reads. |
+| F-23 | Loss of provenance | DESIGNED | One commit per ticket; the dated brief; decisions as ADRs in `docs/adr/` | Nothing is committed on a red suite | `git` history | Gap: prose and git. No hash of the brief or the manifest; the model and host that produced a change are not recorded. |
+| F-24 | Catastrophic loss | DESIGNED | `finishedAt` set or not decides resume against new run (`phases/0-preflight.md`) | The run record is committed, not ignored | Resume from the files on disk | Gap: no test of a resume. Loss of the repository is outside the boundary. |
+| F-25 | Deceptive or silent health | PARTIAL | An unknown process status is reported as unknown, never as healthy or absent | A recorded process that is not confirmed ours is left alone and the PID is kept | A later run probes again | `tests/test_sync.py::ServeTests::test_unknown_recorded_process_never_duplicates_or_rewrites_pid`. Gap: covers the helper, not the orchestrator's own reports. |
+
+## Totals
+
+`PARTIAL` 11 · `DESIGNED` 8 · `EXCLUDED` 4 · `FAIL` 2 · `PASS` 0. Total 25.
