@@ -35,6 +35,22 @@ class ProcessQueryTests(unittest.TestCase):
         self.assertNotEqual(args[0][0], "ps")
         self.assertIs(kwargs.get("shell", False), False)
 
+    def test_windows_queries_get_a_wider_timeout_than_ps(self):
+        completed = subprocess.CompletedProcess([], 0, stdout="present", stderr="")
+        queries = (lambda: sync.cmdline(42), lambda: sync.process_status(42), sync.iter_processes)
+        timeouts = {}
+        for platform in ("nt", "posix"):
+            seen = []
+            for query in queries:
+                with mock.patch.object(sync.os, "name", platform), \
+                        mock.patch.object(sync.subprocess, "run", return_value=completed) as run:
+                    query()
+                seen.append(run.call_args.kwargs["timeout"])
+            timeouts[platform] = seen
+        self.assertEqual(timeouts["posix"], [5, 5, 10])
+        for windows, posix in zip(timeouts["nt"], timeouts["posix"]):
+            self.assertGreater(windows, posix)
+
     def test_iter_processes_windows_parses_safe_query(self):
         delimiter = sync.PROCESS_DELIMITER
         completed = subprocess.CompletedProcess(
