@@ -173,7 +173,7 @@ The three are not interchangeable, and the split is what keeps the spec throwawa
 Reproduction is forbidden, not merely unused. A run never starts another run.
 
 - **No nested runs.** No subagent, reviewer or blind checker is told to invoke `/autopilot-jet`, and none is told to start another agent's command line. A ticket that outgrew its context ends in a handoff to **you** (`phases/5-subagents.md`), never in a subagent that opens a run of its own.
-- **No parallel runs on one `.autopilot/`.** A second window on a live run is the fourth case of `phases/0-preflight.md`: say so and stop for the user.
+- **No parallel runs on one `.autopilot/`.** A second window on a live run is the fourth case of `phases/0-preflight.md`: `sync.py --other-window` names it (tested, `tests/test_other_window.py`); say so and stop for the user.
 - **The skill's own tools cannot do it.** The scripts in `tools/` launch two kinds of process: read-only process queries (`ps`, PowerShell) and the dashboard server (`python -m http.server`). `tests/test_no_reproduction.py` fails if one launches anything else.
 
 What this does not cover: the host agent has its own subagent tool, and nothing in this repository stops it. The ban on using it for a second run is an instruction, so the first two bullets are not enforced.
