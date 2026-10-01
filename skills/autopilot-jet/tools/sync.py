@@ -38,6 +38,13 @@ LOG = os.path.join(A, "serve.log")
 BEGIN, END = "/*STATE-BEGIN*/", "/*STATE-END*/"
 PROCESS_DELIMITER = "\x1f"
 
+# Потолки из инструкций (phases/5-repair.md, 4-plan.md, polish.md). Здесь они только названы:
+# audit() сверяет с ними state.js, ничего не чинит и не блокирует.
+COUNTER_CEILING = 2       # repairs, retries, handoffs на один таск
+TICKET_CEILING = 16       # таски плана; P-таски доводки считаются отдельно
+POLISH_ROUNDS_CEILING = 3
+COUNTERS = ("repairs", "retries", "handoffs")
+
 
 def fail(msg):
     print(msg)
@@ -349,6 +356,78 @@ def audit(state):
             out.append("таск %s в работе без startedAt" % t.get("id"))
         if t.get("status") == "done" and not t.get("finishedAt"):
             out.append("таск %s закрыт без finishedAt" % t.get("id"))
+    out.extend(audit_caps(state))
+    return out
+
+
+def _over(value, ceiling):
+    """Число выше потолка. Не число (нет поля, null, строка, bool) — не нарушение: audit молчит о том, чего не видит."""
+    return isinstance(value, int) and not isinstance(value, bool) and value > ceiling
+
+
+def _zones_overlap(a, b):
+    """Зоны — списки путей-префиксов. Пересекаются, если один путь равен другому или лежит внутри него (по сегментам)."""
+    def segs(path):
+        return [part for part in str(path).replace("\\", "/").split("/") if part and part != "."]
+    for x in a or []:
+        for y in b or []:
+            sx, sy = segs(x), segs(y)
+            if sx and sy and (sx[:len(sy)] == sy or sy[:len(sx)] == sx):
+                return True
+    return False
+
+
+def _ancestors(ticket_id, by_id):
+    """Все таски, от которых ticket_id зависит прямо или через цепочку blockedBy."""
+    seen, stack = set(), list(by_id.get(ticket_id, {}).get("blockedBy") or [])
+    while stack:
+        current = stack.pop()
+        if current not in seen:
+            seen.add(current)
+            stack.extend(by_id.get(current, {}).get("blockedBy") or [])
+    return seen
+
+
+def audit_caps(state):
+    """Потолки и зоны. Не переход, записанный наполовину, а прогон, вышедший за правило.
+
+    Что проверяется и почему только это:
+      - repairs / retries / handoffs не выше двух на таск, тасков плана не больше шестнадцати,
+        раундов доводки не больше трёх: счётчики только растут, поэтому превышение — не гонка
+        записей, а факт;
+      - зоны тасков «в работе» не пересекаются, если один не зависит от другого.
+    Чего здесь нет: «не больше трёх в полёте». Правило запуска (5-subagents.md) велит сначала
+    запустить следующий таск и только потом обработать вернувшийся, так что у верного прогона
+    в state.js на миг четыре in-progress; по записи это не отличить от нарушения.
+    Что делать с найденным — в phases/5-repair.md: отрез был неверным, это в отчёт, не в новую попытку.
+    """
+    out = []
+    tickets = [t for t in (state.get("tickets") or []) if isinstance(t, dict)]
+    for name in COUNTERS:
+        names = [str(t.get("id")) for t in tickets if _over(t.get(name), COUNTER_CEILING)]
+        if names:
+            out.append("таски %s: %s выше потолка %d — отрез был неверным, это в отчёт, а не в ещё одну попытку"
+                       % (", ".join(names), name, COUNTER_CEILING))
+    plan = [t for t in tickets if not str(t.get("id", "")).startswith("P")]
+    if len(plan) > TICKET_CEILING:
+        out.append("тасков плана %d, потолок %d — обоснуй строкой в spec.md или раздели работу на два прогона"
+                   % (len(plan), TICKET_CEILING))
+    polish = state.get("polish")
+    rounds = polish.get("rounds") if isinstance(polish, dict) else None
+    if isinstance(rounds, list) and len(rounds) > POLISH_ROUNDS_CEILING:
+        out.append("раундов доводки %d, потолок %d — потолок не поднимают потому, что последний раунд был удачным"
+                   % (len(rounds), POLISH_ROUNDS_CEILING))
+    flying = [t for t in tickets if t.get("status") == "in-progress" and t.get("id") is not None]
+    by_id = {t["id"]: t for t in tickets if t.get("id") is not None}
+    clashes = []
+    for i, first in enumerate(flying):
+        for second in flying[i + 1:]:
+            related = (first["id"] in _ancestors(second["id"], by_id)
+                       or second["id"] in _ancestors(first["id"], by_id))
+            if not related and _zones_overlap(first.get("zone"), second.get("zone")):
+                clashes.append("%s и %s" % (first["id"], second["id"]))
+    if clashes:
+        out.append("таски в работе с пересекающимися зонами: %s — одни и те же файлы идут по очереди" % ", ".join(clashes))
     return out
 
 
