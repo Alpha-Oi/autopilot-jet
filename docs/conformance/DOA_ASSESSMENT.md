@@ -1,7 +1,7 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#50; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then nine requirements moved from `DESIGNED` to `PARTIAL` on new tests)
-**Subject:** autopilot-jet on `development` at `a66a0695a51a93aa9d2504790c3ebf9852551716`
+**Assessed:** 2026-10-01 (first pass at `8c8cb33`; refreshed the same day after PRs #26–#53; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then ten requirements moved to `PARTIAL` on new tests (eight from `DESIGNED`, two from `FAIL`))
+**Subject:** autopilot-jet on `development` at `c21700a021be2f18dbdf52d75e86f5b66fa38e03`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.
 
@@ -14,14 +14,14 @@ Autopilot JET is an agent skill. Its behaviour has two layers:
 
 DOA conformance is evidence-based. Evidence in this repository is strong for layer 2 and is documentation for layer 1. The assessment treats the whole skill as the organism and the host agent, LLM provider, git remotes and installer as external dependencies.
 
-Evidence reproduced during this refresh (Linux, Python 3.11, commit `a66a069`):
+Evidence reproduced during this refresh (Linux, Python 3.11, commit `c21700a`):
 
 | Check | Result |
 |---|---|
-| `python -B -m unittest discover -s tests` | 214 tests, OK (first pass: 40) |
+| `python -B -m unittest discover -s tests` | 237 tests, OK (first pass: 40) |
 | `flake8 . --select=E9,F63,F7,F82` | 0 findings |
 | `python -B tools/measure-run.py --check-only` | OK |
-| CI run for the same commit ([run 112](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36967221343)) | success on ubuntu, windows and macos on the second attempt; the first attempt failed on Windows in `test_native_runtime` (the own-PID PowerShell query came back empty on a slow runner), unrelated to the change, and the re-run passed |
+| CI run for the same commit ([run 118](https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36970689646)) | success on ubuntu, windows and macos |
 | Repository settings (public API) | secret scanning and push protection enabled; **still no branch rules on `development` or `main`** (`/rules/branches/<name>` returns an empty list) |
 | Workflow file | `permissions: contents: read`; actions pinned by SHA; `.github/dependabot.yml` present and already opened a PR (#29) |
 
@@ -32,13 +32,13 @@ No change in the status counts: the refresh closed gaps inside requirements, but
 | Status | Count |
 |---|---|
 | PASS | 1 |
-| PARTIAL | 18 |
+| PARTIAL | 19 |
 | DESIGNED | 7 |
-| FAIL | 2 |
+| FAIL | 1 |
 | EXCLUDED | 1 |
 | Total (Core 26 + Conditional 3) | 29 |
 
-The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, eighteen have part of the mechanism built and tested, seven are `DESIGNED` (described by instructions or by code without tests), and two have no mechanism.
+The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, nineteen have part of the mechanism built and tested, seven are `DESIGNED` (described by instructions or by code without tests), and one has no mechanism.
 
 **How `DESIGNED` is assigned.** The first pass used `PARTIAL` for both «part of the mechanism is built and tested» and «the mechanism is only described». DOA 1.1.0 separates them. The rule applied here is mechanical: a requirement stays `PARTIAL` only if the evidence cited in the claim includes code under test (`tests/`, or a tool covered by tests) for part of the mechanism; otherwise, if the mechanism is described, it is `DESIGNED`. This is a re-labelling under the new vocabulary, not new evidence: the «What exists» and «Gap» columns below are unchanged, apart from `REQ-CORE-14`, where `tools/redact.py` and its tests were added to the evidence and keep the requirement `PARTIAL`.
 
@@ -49,6 +49,8 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, eightee
 **One more moved after PR #40.** `REQ-CORE-04` went from `DESIGNED` to `PARTIAL` because `sync.py` `audit()` now names a recorded `mode`, `depth`, `tier` or `polish` outside its allowed values (9 tests, `tests/test_sync_dials.py`). It is a small step: it checks that the dials are recorded as valid values, not that the decision was right or unchanged.
 
 **One more moved after PR #45.** `REQ-COND-01` (reproduction control) went from `DESIGNED` to `PARTIAL`. `SKILL.md` now states that Autopilot does not start Autopilot (no nested runs, no parallel runs on one `.autopilot/`), both subagent prompts carry the ban, and `tests/test_no_reproduction.py` (11 tests) parses the scripts in `skills/autopilot-jet/tools/` and `tools/` and fails if any of them launches anything but a read-only process query (`ps`, PowerShell) or the dashboard server (`python -m http.server`), or launches something it cannot read. Eight planted violations each turned the tests red. It stays `PARTIAL`, not `PASS`: the host agent's own subagent tool is outside the repository, so the ban on using it for a second run is an instruction; the concurrent-window detection (`phases/0-preflight.md`) is still a description for the LLM, not code; the check is static.
+
+**One more moved after PR #53.** `REQ-CORE-21` (aging and senescence) went from `FAIL` to `PARTIAL`. `sync.py --aging` compares the run's copies of `sync.py` and `dashboard.html` in `.autopilot/` with the installed skill, writes nothing, prints an aging index (the share of copies that differ, `0.00` when all are current) and names each stale copy as `senescent`; `phases/0-instruments.md` runs it before the copy (say so if the index is above 0) and after it (the index must be `0.00`, otherwise the copy failed silently). 19 tests in `tests/test_aging.py`, several against the real `sync.py` and template; twelve planted breakages each turned the tests red. It stays `PARTIAL`, and only a part of what the standard asks: the skill has no version at all, so the age of the skill itself and of old runs is not counted; there is no restricted senescent state (an old `sync.py` keeps working until it is replaced); the replacement is still the `cp` instruction, and the code only verifies its result; the tool sees that a copy differs, not which one is newer.
 
 **One more moved after PR #50.** `REQ-COND-02` (federation and treaties) went from `FAIL` to `PARTIAL`. `SKILL.md` now declares `federation: none`, and `tests/test_no_federation.py` (15 tests) checks that the skill's scripts import no network client and open connections only to `127.0.0.1`, that every `http.server` they start is bound to `127.0.0.1` (so nothing off the machine can reach the dashboard server), and that the dashboard template refers to nothing off the page. Thirteen planted violations each turned the tests red. It stays `PARTIAL`, not `PASS`: the network tools of the host (the model provider, git, the installer) are outside the boundary, the product an executor builds in the user's project may use the network by design, the check is static, and that the skill adds no federation is an instruction to the LLM. Since the skill has no federation, there are no treaties, quotas or revocation to test.
 
@@ -84,7 +86,7 @@ The claim is `PARTIAL`, not `VERIFIED`: one requirement has a full PASS, eightee
 | REQ-CORE-18 | Resource accounting | PARTIAL | Token and time metrics per context (tested); the ceiling is justified with measured numbers. | Measurement is after the fact and Claude-Code-log specific; there is no budget reserved or enforced per run and no scarcity gate. | Add an optional per-run token budget to state.js and a warning in sync.py when exceeded. |
 | REQ-CORE-19 | Memory governance | PARTIAL | Project memory is written from the finished code, inside autopilot markers, user text untouched; run record kept in .autopilot; decisions as ADRs. `tests/test_memory_freshness.py` (PR #35) fails CI when the test count in AGENTS.md differs from the suite or when a repository path named in AGENTS.md or CLAUDE.md does not exist. | No retention, decay or erasure policy; memory records carry no confidence or provenance fields. The freshness check covers only the test count and paths; dates, environment versions and manual results in memory are still unchecked. | Extend the check to commands named in memory; define retention and erasure for the memory block. |
 | REQ-CORE-20 | Recovery taxonomy | DESIGNED | Recovery paths exist and differ: resume from files, repair in the same context, rebuild in a fresh context, whole-round rollback, dashboard regenerated from the template each flight. | Permitted recovery modes are not declared per component; the rule against cloning corrupted state is implicit. | Add a short recovery table (mode, when, verification) to AGENTS.md. |
-| REQ-CORE-21 | Aging and senescence | FAIL | The skill notes that an installed global copy may differ from the checkout, and README documents an update command. | No aging or version-skew mechanism: no skill-version stamp in runs, no staleness check of installed vs source skill, no deprecation path for old runs. | Stamp skill version into state.js and warn when the installed skill differs from the repository version. |
+| REQ-CORE-21 | Aging and senescence | PARTIAL | `sync.py --aging` (PR #53) compares the run's copies of `sync.py` and `dashboard.html` with the installed skill and prints an aging index with each stale copy named `senescent`; `phases/0-instruments.md` checks before and after the copy; `tests/test_aging.py` (19 tests). | Only the two copies are aged: the skill has no version, so the age of the skill and of old runs is not counted; no restricted senescent state; replacement is the `cp` instruction (the code verifies the result); the tool cannot say which copy is newer. | Give the skill a version and record it in `state.js`, then warn when a run was started by an older one; decide what a «retired» run is before building a deprecation path. |
 | REQ-CORE-22 | Identity continuity and anti-resurrection | FAIL | Closest: finishedAt closes a run and the helper refuses to relaunch a server for it. | No identity continuity record, tombstone or fencing: a finished or abandoned run directory can be resumed without any check that it is still valid. | Mark closed runs with a terminal marker that resume refuses without explicit user action. |
 | REQ-CORE-23 | Failure-class coverage | PARTIAL | Failure kinds are named (nedodelka vs otkaz), the audit lists known gaps, ADR 0006 documents the unknown-process case. [`DOA_FAILURE_CLASSES.md`](DOA_FAILURE_CLASSES.md) assesses all 25 classes one by one (detection, containment, recovery, tests or gap) and the claim carries the same statuses; `tests/test_failure_classes.py` keeps table, named tests and claim in step (PR #41). | No class is `PASS`; 7 are `DESIGNED`; one has no mechanism (`F-06`, poisoning of data and memory). `F-22` (prompt injection) is `PARTIAL`: obvious shapes are found, a rephrased attack is not. Recovery paths are mostly instructions for the host LLM. | Close `F-06` (the skill acts on text from the user's repository, brief and memory file, and nothing checks that the facts in them are true); raise `DESIGNED` classes to tested ones one at a time. |
 | REQ-CORE-24 | Audit and secret hygiene | PARTIAL | Secrets are redacted before writing and referred to by name; `tools/redact.py` implements the pattern table deterministically (`--check`, `--write`, `--stdin`, tested); .env is gitignored first; GitHub secret scanning and push protection are enabled. | The pattern table now exists as `tools/redact.py` with 21 tests (PR #26) and is referenced from `1-manifest.md`, `SKILL.md` and `9-memory.md`, but running it is still an instruction to the orchestrator, not an enforced gate. The audit trail (.autopilot) is not tamper-evident. | Make the check run without relying on the LLM (a hook or a CI step over `.autopilot/`); add content hashes for the audit trail. |
@@ -105,7 +107,7 @@ Status of each finding after PRs #26–#32 (2026-10-01). The original text is ke
 | 3 | No server-side branch rules | **Open.** Needs repository settings (owner action) | `/rules/branches/development` and `/main` return empty lists |
 | 4 | CI without `permissions:`, tag-pinned actions | **Closed** | `verify.yml` (#27); Dependabot keeps the pins fresh (#28, first PR #29) |
 | 5 | Memory drift | **Partly closed.** Numbers corrected by hand; no automatic freshness check | `AGENTS.md` (#27, #32) |
-| 6 | No aging or version-skew handling, no terminal marker | **Open** | REQ-CORE-21, REQ-CORE-22 remain FAIL |
+| 6 | No aging or version-skew handling, no terminal marker | **Partly closed.** The copies of the skill's files in a run are aged and checked (`sync.py --aging`, #53); no skill version, no terminal marker | REQ-CORE-21 is PARTIAL; REQ-CORE-22 remains FAIL |
 
 Original findings:
 
