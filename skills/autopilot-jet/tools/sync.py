@@ -808,6 +808,110 @@ def check_zone(directory):
     return 1 if outside else (3 if unchecked else 0)
 
 
+def commits_since(root, base):
+    """Коммиты от `base` (не включая) до HEAD, новые первыми: [(полный хеш, число родителей)]. Только чтение.
+
+    Возвращает (список, None) или (None, причина). Не предок HEAD или отсутствующий в git `base` — причина, а не
+    пустой список: откат от неизвестной точки назвал бы чужие коммиты кругом."""
+    try:
+        known = subprocess.run(["git", "rev-parse", "--verify", "--quiet", base + "^{commit}"], cwd=root,
+                               capture_output=True, timeout=30)
+        if known.returncode != 0:
+            return None, "baseCommit %s нет в git" % base[:12]
+        stray = subprocess.run(["git", "rev-list", "-n", "1", base, "^HEAD"], cwd=root, capture_output=True,
+                               timeout=30)
+        walk = subprocess.run(["git", "rev-list", "--topo-order", "--parents", base + "..HEAD"], cwd=root,
+                              capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None, "git не ответил"
+    if stray.returncode != 0 or walk.returncode != 0:
+        return None, "git не ответил"
+    if stray.stdout.strip():
+        return None, "baseCommit %s не лежит в истории текущей ветки" % base[:12]
+    rows = []
+    for line in walk.stdout.decode("utf-8", "replace").splitlines():
+        names = line.split()
+        if names:
+            rows.append((names[0], len(names) - 1))
+    return rows, None
+
+
+def rollback_plan(state, root, history_of=commits_since):
+    """План отката последнего круга доводки (REQ-CORE-10). Возвращает (статус, подробности).
+
+    "none" — откатывать нечего (подробности: почему); "unplanned" — круг есть, а план по записи не построить
+    (подробности: причина); "plan" — подробности: (номер круга, [(таск, полный хеш)] новыми первыми). Ничего не
+    пишет: команда отката печатается, а не выполняется."""
+    polish = state.get("polish")
+    rounds = polish.get("rounds") if isinstance(polish, dict) else None
+    if not isinstance(rounds, list) or not rounds or not isinstance(rounds[-1], dict):
+        return "none", "кругов доводки нет"
+    last = rounds[-1]
+    number = last.get("n")
+    names = last.get("tickets")
+    if not isinstance(names, list) or not names:
+        return "none", "в круге %s нет тасков" % number
+    base = polish.get("baseCommit")
+    if not isinstance(base, str) or not COMMIT_ID.match(base):
+        return "unplanned", "у доводки нет baseCommit"
+    tickets = {str(t.get("id")): t for t in state.get("tickets") or [] if isinstance(t, dict)}
+    wanted = []
+    for name in (str(n) for n in names):
+        ticket = tickets.get(name)
+        commit = ticket.get("commit") if ticket else None
+        if ticket is None:
+            return "unplanned", "таска %s нет в tickets" % name
+        if not isinstance(commit, str) or not COMMIT_ID.match(commit):
+            return "unplanned", "у таска %s нет commit" % name
+        wanted.append((name, commit.lower()))
+    history, why = history_of(root, base)
+    if history is None:
+        return "unplanned", why
+    found = {}
+    for name, commit in wanted:
+        hits = [(sha, parents) for sha, parents in history if sha.startswith(commit)]
+        if len(hits) != 1:
+            return "unplanned", "коммита %s (таск %s) нет между baseCommit и HEAD" % (commit[:12], name)
+        if hits[0][1] > 1:
+            return "unplanned", "коммит %s (таск %s) — слияние: откат слияния не планируется" % (commit[:12], name)
+        found[hits[0][0]] = name
+    return "plan", (number, [(found[sha], sha) for sha, _parents in history if sha in found])
+
+
+def check_rollback_plan(directory):
+    """Режим --rollback-plan: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    status, detail = rollback_plan(state, os.path.dirname(os.path.abspath(directory)))
+    if status == "none":
+        print("none · откатывать нечего: %s" % detail)
+        return 1
+    if status == "unplanned":
+        print("unplanned · план отката не построен: %s" % detail)
+        return 3
+    number, rows = detail
+    print("rollback · круг %s · коммитов %d · git revert --no-edit %s" % (number, len(rows),
+                                                                          " ".join(sha for _name, sha in rows)))
+    for name, sha in rows:
+        print("  · таск %s · %s" % (name, sha[:12]))
+    return 0
+
+
 ORDER = ["preflight", "manifest", "briefing", "spec", "plan", "build", "review", "final"]
 
 
@@ -997,6 +1101,12 @@ def main():
             print("использование: sync.py --zone-check [КАТАЛОГ]")
             sys.exit(2)
         sys.exit(check_zone(os.path.abspath(rest[0]) if rest else A))
+    if "--rollback-plan" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--rollback-plan"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --rollback-plan [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_rollback_plan(os.path.abspath(rest[0]) if rest else A))
     if "--brief-seal" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
