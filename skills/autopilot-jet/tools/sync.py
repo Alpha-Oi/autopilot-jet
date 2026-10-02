@@ -28,8 +28,18 @@
 Коды выхода: 0 — нет (обычное возобновление или нет прогона), 1 — да, 3 — не удалось определить.
 Запускать нужно из каталога навыка, а не из .autopilot/sync.py: копия в .autopilot/ может быть старой
 и тогда выполнит обычную синхронизацию.
+
+Второй такой же режим, тоже только чтение — возраст копий в прогоне (REQ-CORE-21 стандарта DOA):
+
+    python3 <каталог навыка>/tools/sync.py --aging [КАТАЛОГ]
+
+В .autopilot/ лежат копии двух файлов навыка: sync.py и dashboard.html. Навык обновляют, а копии остаются
+старыми. Режим сверяет их с установленным навыком и называет устаревшие. Индекс старения — доля копий,
+которые не совпали (0 — все свежие). Коды выхода: 0 — все свежие или прогона нет, 1 — есть устаревшие,
+3 — запущено не из каталога навыка.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -366,6 +376,75 @@ def other_window(state, now, serving):
     return "unknown", "; ".join(unknown)
 
 
+AGING_COMPONENTS = ("sync.py", "dashboard.html")
+
+
+def _normalized(name, data):
+    """Содержимое копии для сравнения: без различий в переводах строк и без снимка состояния в странице.
+
+    Снимок в dashboard.html между маркерами у каждого прогона свой и меняется при каждой синхронизации,
+    возрастом копии он не считается."""
+    data = data.replace(b"\r\n", b"\n")
+    if name == "dashboard.html":
+        begin, end = BEGIN.encode(), END.encode()
+        i, j = data.find(begin), data.find(end)
+        if 0 <= i < j:
+            data = data[: i + len(begin)] + data[j:]
+    return data
+
+
+def fingerprint(name, path):
+    """Отпечаток файла для сравнения или None, если файла нет."""
+    try:
+        with open(path, "rb") as handle:
+            return hashlib.sha256(_normalized(name, handle.read())).hexdigest()
+    except OSError:
+        return None
+
+
+def aging_report(run_dir, sources):
+    """Возраст копий навыка в прогоне. Возвращает (строки, индекс старения).
+
+    Строка — (имя, состояние, отпечаток копии, отпечаток источника); состояние: "current", "senescent"
+    (копия отличается от установленного навыка) или "missing" (копии нет). Индекс — доля копий, которые
+    не "current": 0 — все свежие, 1 — все устарели.
+    """
+    rows = []
+    for name in AGING_COMPONENTS:
+        want = fingerprint(name, sources[name])
+        have = fingerprint(name, os.path.join(run_dir, name))
+        state = "missing" if have is None else "current" if have == want else "senescent"
+        rows.append((name, state, have, want))
+    aged = sum(1 for row in rows if row[1] != "current")
+    return rows, aged / len(rows)
+
+
+def skill_sources():
+    """Файлы установленного навыка, с которыми сверяются копии; None, если запущено не из каталога навыка."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    template = os.path.join(here, "..", "phases", "dashboard-template.html")
+    if not os.path.isfile(template):
+        return None
+    return {"sync.py": os.path.abspath(__file__), "dashboard.html": os.path.normpath(template)}
+
+
+def check_aging(run_dir):
+    """Режим --aging: ничего не пишет. Возвращает код выхода."""
+    sources = skill_sources()
+    if sources is None:
+        print("aging · запущено не из каталога навыка: источника для сверки нет")
+        return 3
+    if not os.path.isdir(run_dir):
+        print("aging · индекс 0.00 · каталога прогона нет")
+        return 0
+    rows, index = aging_report(run_dir, sources)
+    aged = [row for row in rows if row[1] != "current"]
+    print("aging · индекс %.2f · устарело %d из %d" % (index, len(aged), len(rows)))
+    for name, state, have, want in aged:
+        print("  · %s: %s (копия %s, в навыке %s)" % (name, state, (have or "нет")[:8], (want or "нет")[:8]))
+    return 1 if aged else 0
+
+
 def check_other_window(directory):
     """Режим --other-window: ничего не пишет, сервер не трогает. Возвращает код выхода."""
     try:
@@ -568,6 +647,12 @@ def audit_dials(state):
 
 
 def main():
+    if "--aging" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--aging"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --aging [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_aging(os.path.abspath(rest[0]) if rest else A))
     if "--other-window" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--other-window"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
