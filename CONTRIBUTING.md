@@ -30,3 +30,14 @@ CI повторяет эти команды на Windows, Ubuntu и macOS — pu
 ## Ветки
 
 Основная ветка — `development`, в `main` попадают только релизы. Открывайте pull request в `development`.
+
+## Релиз
+
+Тег и релиз на GitHub ставит [`.github/workflows/release.yml`](.github/workflows/release.yml), а не человек. Чтобы выпустить версию:
+
+1. В `CHANGELOG.md` переименуйте `## [Unreleased]` в `## [X.Y.Z] — ГГГГ-ММ-ДД` и оставьте сверху пустой `## [Unreleased]`. Заголовок разбирается строго (`tools/release.py`): предрелизы вроде `1.3.0-rc1` версией не считаются.
+2. Слейте это в `development` обычным pull request.
+3. Откройте pull request `development` → `main` и слейте его (merge-коммитом, как раньше).
+4. После слияния workflow возьмёт версию и текст верхнего выпущенного раздела журнала и создаст тег `vX.Y.Z` на слитом коммите `main` с релизом. Если тег этой версии уже есть, он ничего не делает.
+
+Описание релиза — это раздел журнала как есть, поэтому пишите его так, как его прочтёт пользователь, и не длиннее 120 000 знаков. Если раздела нет или он пуст, workflow падает, а не выпускает пустое. Проверок CI на `main` он не ждёт: pull request в `main` уже прошёл их на `development`. Если у workflow нет права писать, включите в Settings → Actions → General → Workflow permissions «Read and write permissions».
