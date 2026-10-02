@@ -56,6 +56,7 @@ window.STATE =
   "polish": null,
   "tier": null,
   "briefFile": "2026-08-07-brief.md",
+  "briefSeals": {},
   "memoryFile": "AGENTS.md",
   "skillDir": "/Users/x/.claude/skills/autopilot-jet",
   "startedAt": "2026-08-07T14:02:06+03:00",
@@ -88,6 +89,8 @@ window.STATE =
 ```
 
 **`dir` is the run's directory, `slug` is the run's name, and they stopped being the same string.** The directory is `<YYYY-MM-DD>-<slug>--wip` while the flight is in the air and loses the suffix when it lands (`phases/0-preflight.md` step 1, `phases/8-final.md`). Every path goes through `dir`; `slug` is what the dashboard and the report call the run out loud. Rebuilding one from the other is wrong for the whole life of the run — which is exactly when paths are being written.
+
+**`briefSeals`** maps each brief file to the sha256 of its text above `## Дополнения`; it stays `{}` until Phase 1 has written and redacted the brief (`phases/1-manifest.md`, «Seal the brief»).
 
 Three of those fields exist because the orchestrator's context does not survive a compaction and these are the things it cannot rebuild from the repository:
 
