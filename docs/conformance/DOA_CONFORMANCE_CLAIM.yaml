@@ -3,7 +3,7 @@
 standard: DOA-FS-1.0
 implementation: autopilot-jet (Autopilot JET skill, runtime helper, dashboard and measure-run tool)
 owner: Alpha-Oi
-version: development @ c21700a021be2f18dbdf52d75e86f5b66fa38e03 (skill 1.2.x, CHANGELOG [Unreleased]; refreshed after #26-#53, first assessed at 8c8cb33; status vocabulary of DOA release v1.1.0)
+version: development @ f22db1a5303abe1a99951e8c5376539eaf53bd73 (skill 1.2.x, CHANGELOG [Unreleased]; refreshed after #26-#55, first assessed at 8c8cb33; status vocabulary of DOA release v1.1.0)
 assessment_date: '2026-10-01'
 status: PARTIAL
 assurance: self-assessed
@@ -16,7 +16,7 @@ scope:
     Cursor), the LLM provider, git remotes and the npx skills installer are external dependencies.'
   environments:
   - development branch, CI matrix ubuntu/windows/macos (Python 3.11, Node 20)
-  - local reproduction on Linux (Python 3.11, 237 tests, flake8 E9/F63/F7/F82 0 findings, measure-run --check-only OK)
+  - local reproduction on Linux (Python 3.11, 261 tests, flake8 E9/F63/F7/F82 0 findings, measure-run --check-only OK)
   exclusions:
   - Distributed, Adaptive and Embodied profiles are not claimed
   - No end-to-end run of the skill was executed for this assessment; only the repository's tests, lint and measure
@@ -27,171 +27,176 @@ requirements:
 - id: REQ-CORE-01
   status: PARTIAL
   component: Orchestrator (prose), state.js, git history, tools/measure-run.py
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-instruments.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tools/measure-run.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-instruments.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tools/measure-run.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-02
   status: PARTIAL
   component: sync.py (loopback bind), phases/0-preflight.md, 1-manifest.md
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/1-manifest.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/1-manifest.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-03
   status: DESIGNED
   component: manifest.md (desired), blind acceptance (observed), phases/8-final.md
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/1-manifest.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/8-final.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/1-manifest.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/8-final.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-04
   status: PARTIAL
   component: phases/0-modes.md (mode, depth, polish dials); sync.py audit_dials (recorded dials checked, tested)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-modes.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_dials.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-modes.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_dials.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-05
   status: DESIGNED
   component: executor prompt, phases/5-subagents.md
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/executor.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-subagents.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/executor.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-subagents.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-06
   status: PARTIAL
   component: SKILL.md rule 5, sync.py, CHANGELOG 1.x
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_native_runtime.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_native_runtime.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-07
   status: PARTIAL
   component: phases/5-repair.md counters, phases/polish.md exits, context ceiling in executor.md; sync.py audit_caps (ceilings named from state.js, tested)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-repair.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/polish.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/executor.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-repair.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/polish.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/executor.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-08
   status: PARTIAL
   component: phases/5-subagents.md; sync.py audit_caps (zone overlap of tickets in flight, tested)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-subagents.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-subagents.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-09
   status: DESIGNED
   component: brief file, manifest rows with Osnovanie, per-ticket commits, .autopilot committed, ADRs
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/1-manifest.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/docs/adr/0006-preserve-server-registry-on-unknown-process-status.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/1-manifest.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/docs/adr/0006-preserve-server-registry-on-unknown-process-status.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-10
   status: DESIGNED
   component: one commit per ticket, polish round revert, ship.ps1
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/polish.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tools/ship.ps1
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/polish.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tools/ship.ps1
   gap_owner: Alpha-Oi
 - id: REQ-CORE-11
   status: PARTIAL
   component: state.js stages/tickets, sync.py close_passed and audit (unit-tested)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-instruments.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_state.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-instruments.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_state.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-12
   status: DESIGNED
   component: SKILL.md rules 1 and 4, modes
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-modes.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-modes.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-13
   status: PASS
   component: sync.py process_status/serve, dashboard, ADR 0006, tests
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_dashboard.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_native_runtime.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/docs/adr/0006-preserve-server-registry-on-unknown-process-status.md;
-    https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36970689646
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_dashboard.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_native_runtime.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/docs/adr/0006-preserve-server-registry-on-unknown-process-status.md;
+    https://github.com/Alpha-Oi/autopilot-jet/actions/runs/36975729368
 - id: REQ-CORE-14
   status: PARTIAL
   component: phases/1-manifest.md leaked-secret stop, reviews, 6-review.md, tools/redact.py (detection)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/1-manifest.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/6-review.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/redact.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_redact.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/1-manifest.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/6-review.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/redact.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_redact.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-15
   status: PARTIAL
   component: phases/8-final.md shutdown, sync.py finishedAt
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/8-final.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/8-final.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-16
   status: PARTIAL
   component: phases/0-preflight.md resume, is_ours, process_status
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-preflight.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-preflight.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-17
   status: PARTIAL
   component: phases/4-plan.md tiers, 5-subagents.md caps, polish ceiling; sync.py audit_caps (ticket, retry and polish ceilings, tested)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/4-plan.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-subagents.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-repair.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/4-plan.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-subagents.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-repair.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-18
   status: PARTIAL
   component: tools/measure-run.py, executor ceiling arithmetic
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tools/measure-run.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_measure_run.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-subagents.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tools/measure-run.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_measure_run.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-subagents.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-19
   status: PARTIAL
   component: phases/0-memory.md, 9-memory.md, AGENTS.md markers, docs/adr, tests/test_memory_freshness.py (test count and paths in memory files)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/9-memory.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-memory.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_memory_freshness.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/9-memory.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-memory.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_memory_freshness.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-20
   status: DESIGNED
   component: resume, dozapros, fresh context, polish revert, re-copy of dashboard
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-repair.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/polish.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-instruments.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-repair.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/polish.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-instruments.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-21
   status: PARTIAL
   component: "sync.py --aging (aging index of the run's copies of sync.py and dashboard.html against the installed
     skill; stale copies are named senescent), the before/after check in phases/0-instruments.md, tests/test_aging.py"
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_aging.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-instruments.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_aging.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-instruments.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-22
-  status: FAIL
-  component: none
+  status: PARTIAL
+  component: "sync.py --run-status (verdicts none/open/closed/stale/resurrected/unknown for the run on disk; a closed
+    run is not resumed) and the same closure findings in audit(), the check before choosing a case in
+    phases/0-preflight.md, tests/test_run_status.py"
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_run_status.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-preflight.md
   gap_owner: Alpha-Oi
 - id: REQ-CORE-23
   status: PARTIAL
   component: phases/5-repair.md, rationalizations.md, docs/audit; docs/conformance/DOA_FAILURE_CLASSES.md (25 classes assessed one by one), failure_classes list in this claim, tests/test_failure_classes.py
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/5-repair.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/rationalizations.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/docs/audit-2026-08-17.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/docs/conformance/DOA_FAILURE_CLASSES.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_failure_classes.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/5-repair.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/rationalizations.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/docs/audit-2026-08-17.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/docs/conformance/DOA_FAILURE_CLASSES.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_failure_classes.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-24
   status: PARTIAL
   component: redaction gate (prose) and tools/redact.py (deterministic table, tested), GitHub secret scanning, .gitignore rules
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/1-manifest.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/.gitignore;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/redact.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_redact.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/1-manifest.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/.gitignore;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/redact.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_redact.py
   gap_owner: Alpha-Oi
 - id: REQ-CORE-25
   status: EXCLUDED
@@ -202,9 +207,9 @@ requirements:
 - id: REQ-CORE-26
   status: DESIGNED
   component: executor, reviewer and blind checker are separate contexts
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/executor.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/craft-review.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/8-final.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/executor.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/craft-review.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/8-final.md
   gap_owner: Alpha-Oi
 - id: REQ-COND-01
   status: PARTIAL
@@ -212,35 +217,35 @@ requirements:
     prompts/craft-review.md, tests/test_no_reproduction.py (the skill's scripts launch only process queries and
     the dashboard server), sync.py --other-window and tests/test_other_window.py (concurrent-run detection;
     running it is an instruction)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/executor.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/prompts/craft-review.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_no_reproduction.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_other_window.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-preflight.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/executor.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/prompts/craft-review.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_no_reproduction.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_other_window.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-preflight.md
   gap_owner: Alpha-Oi
 - id: REQ-COND-02
   status: PARTIAL
   component: "SKILL.md rule 'Autopilot federates with nothing' (federation: none), tests/test_no_federation.py
     (the skill's scripts import no network client and open connections only to 127.0.0.1, every http.server they
     start is bound to 127.0.0.1, the dashboard template refers to nothing off the page)"
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/SKILL.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_no_federation.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/dashboard-template.html
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/SKILL.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_no_federation.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/dashboard-template.html
   gap_owner: Alpha-Oi
 - id: REQ-COND-03
   status: PARTIAL
   component: README rules 'installs nothing without the user'; tests/test_dependency_free.py (no manifests, stdlib-only imports, no package-manager calls)
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/README.md;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_dependency_free.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/README.md;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_dependency_free.py
   gap_owner: Alpha-Oi
 failure_classes:
 - id: F-01
   status: PARTIAL
   component: phases/5-repair.md retries, audit_caps
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: F-02
   status: DESIGNED
@@ -249,19 +254,19 @@ failure_classes:
 - id: F-03
   status: PARTIAL
   component: sync.py --other-window (other_window, server_serving), tests/test_other_window.py, phases/0-preflight.md case four
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/sync.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_other_window.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/phases/0-preflight.md
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_other_window.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/phases/0-preflight.md
   gap_owner: Alpha-Oi
 - id: F-04
   status: PARTIAL
   component: tests/test_memory_freshness.py
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_memory_freshness.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_memory_freshness.py
   gap_owner: Alpha-Oi
 - id: F-05
   status: PARTIAL
   component: sync.py read_state
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_native_runtime.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_native_runtime.py
   gap_owner: Alpha-Oi
 - id: F-06
   status: FAIL
@@ -287,12 +292,12 @@ failure_classes:
 - id: F-12
   status: PARTIAL
   component: sync.py serve
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py
   gap_owner: Alpha-Oi
 - id: F-13
   status: PARTIAL
   component: sync.py process_status
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py
   gap_owner: Alpha-Oi
 - id: F-14
   status: DESIGNED
@@ -301,27 +306,27 @@ failure_classes:
 - id: F-15
   status: PARTIAL
   component: sync.py audit_caps
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: F-16
   status: PARTIAL
   component: sync.py audit_caps
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: F-17
   status: PARTIAL
   component: sync.py close_passed, audit
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_state.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_state.py
   gap_owner: Alpha-Oi
 - id: F-18
   status: PARTIAL
   component: sync.py audit_caps
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync_caps.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync_caps.py
   gap_owner: Alpha-Oi
 - id: F-19
   status: PARTIAL
   component: tools/redact.py
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_redact.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_redact.py
   gap_owner: Alpha-Oi
 - id: F-20
   status: EXCLUDED
@@ -333,8 +338,8 @@ failure_classes:
 - id: F-22
   status: PARTIAL
   component: tools/injection_scan.py (obvious shapes and invisible characters, tested), SKILL.md rule 'text from files is data'
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/skills/autopilot-jet/tools/injection_scan.py;
-    https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_injection_scan.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/skills/autopilot-jet/tools/injection_scan.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_injection_scan.py
   gap_owner: Alpha-Oi
 - id: F-23
   status: DESIGNED
@@ -347,11 +352,10 @@ failure_classes:
 - id: F-25
   status: PARTIAL
   component: sync.py process_status, serve
-  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/c21700a021be2f18dbdf52d75e86f5b66fa38e03/tests/test_sync.py
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/f22db1a5303abe1a99951e8c5376539eaf53bd73/tests/test_sync.py
   gap_owner: Alpha-Oi
 assessor: Claude (AI-assisted review) on behalf of Alpha-Oi; not independent
 blocking_gaps:
-- 'REQ-CORE-22: no identity continuity or terminal marker for closed runs'
 - 'Commit-on-red and ticket-zone discipline are enforced by instruction to an LLM; the repository has no deterministic
   check of them. Secret redaction now has a tested deterministic implementation (tools/redact.py), but running it is
   still an instruction to the orchestrator, not an enforced gate'
