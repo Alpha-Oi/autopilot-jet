@@ -56,6 +56,16 @@
 `briefSeals[<имя файла>]`, а режим сверяет файл с записью. Дополнения ниже заголовка растут и в хеш не входят.
 Режим только читает и печатает хеш: записывает его агент. Коды выхода: 0 — все брифы совпали или прогона нет,
 1 — есть не запечатанный бриф (хеш напечатан), 3 — бриф изменён, исчез или не прочитан.
+
+Пятый такой же режим, тоже только чтение — файлы таска против его зоны (REQ-CORE-05 и REQ-CORE-26 стандарта DOA):
+
+    python3 <каталог навыка>/tools/sync.py --zone-check [КАТАЛОГ]
+
+У каждого готового таска в state.js есть `zone` (пути-префиксы, которыми он владеет) и `commit` (один коммит на таск).
+Режим берёт файлы коммита из git (`git diff-tree`, только чтение) и называет те, что лежат вне зоны. Вне зоны
+допустимы только `.autopilot/` и файл памяти проекта (`memoryFile`). Это приговор, а не запрет: файл уже в коммите.
+Коды выхода: 0 — все проверенные таски в своих зонах или готовых тасков нет, 1 — есть файлы вне зоны, 3 — таск
+проверить нечем (нет zone или commit, коммита нет в git, git не ответил), 2 — ошибка вызова.
 """
 
 import hashlib
@@ -664,6 +674,127 @@ def check_brief_seal(directory):
     return worst
 
 
+ZONE_ALWAYS_ALLOWED = (".autopilot",)
+COMMIT_ID = re.compile(r"^[0-9a-fA-F]{4,64}$")
+
+
+def _path_segments(path):
+    return [part for part in str(path).replace("\\", "/").split("/") if part and part != "."]
+
+
+def in_zone(path, zone):
+    """Лежит ли путь внутри одной из зон (по сегментам: `src/bot` не содержит `src/bot2/x`). `.` — весь проект."""
+    parts = _path_segments(path)
+    if not parts or ".." in parts:
+        return False
+    for entry in zone:
+        if str(entry).strip() in (".", "./"):
+            return True
+        zone_parts = _path_segments(entry)
+        if zone_parts and parts[:len(zone_parts)] == zone_parts:
+            return True
+    return False
+
+
+def ticket_zone(ticket):
+    """Зона таска как список строк. None — зоны нет или она записана не так, проверять нечем."""
+    zone = ticket.get("zone")
+    if isinstance(zone, str):
+        zone = [zone]
+    if isinstance(zone, list) and zone and all(isinstance(entry, str) and entry.strip() for entry in zone):
+        return zone
+    return None
+
+
+def files_outside(files, zone, allowed):
+    return [name for name in files if not in_zone(name, allowed) and not in_zone(name, zone)]
+
+
+def commit_files(root, commit):
+    """Файлы коммита относительно корня проекта. Возвращает (список, None) или (None, причина). Только чтение."""
+    try:
+        prefix = subprocess.run(["git", "rev-parse", "--show-prefix"], cwd=root, capture_output=True, timeout=30)
+        listing = subprocess.run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", "--root", commit],
+                                 cwd=root, capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None, "git не ответил"
+    if prefix.returncode != 0:
+        return None, "каталог не в репозитории git"
+    if listing.returncode != 0:
+        return None, "коммита %s нет в git" % commit[:12]
+    base = prefix.stdout.decode("utf-8", "replace").strip()
+    names = [name for name in listing.stdout.decode("utf-8", "replace").split("\0") if name]
+    if not base:
+        return names, None
+    return [name[len(base):] if name.startswith(base) else "../" + name for name in names], None
+
+
+def zone_report(state, root, files_of=commit_files):
+    """Файлы готовых тасков против их зон. Возвращает список (id, статус, подробности).
+
+    Статусы: "inside" — все файлы коммита в зоне или в допустимом; "outside" — есть файлы вне зоны (подробности:
+    список); "unchecked" — таск готов, но проверить нечем (подробности: причина). Таски не в `done` не берутся:
+    коммит появляется только у готового."""
+    allowed = list(ZONE_ALWAYS_ALLOWED)
+    memory = state.get("memoryFile")
+    if isinstance(memory, str) and memory and os.path.basename(memory) == memory:
+        allowed.append(memory)
+    rows = []
+    tickets = state.get("tickets")
+    for ticket in tickets if isinstance(tickets, list) else []:
+        if not isinstance(ticket, dict) or ticket.get("status") != "done":
+            continue
+        name = str(ticket.get("id"))
+        zone = ticket_zone(ticket)
+        commit = ticket.get("commit")
+        if zone is None:
+            rows.append((name, "unchecked", "у таска нет зоны"))
+        elif not isinstance(commit, str) or not COMMIT_ID.match(commit):
+            rows.append((name, "unchecked", "у таска нет commit"))
+        else:
+            files, why = files_of(root, commit)
+            if files is None:
+                rows.append((name, "unchecked", why))
+            else:
+                outside = files_outside(files, zone, allowed)
+                rows.append((name, "outside" if outside else "inside", outside))
+    return rows
+
+
+def check_zone(directory):
+    """Режим --zone-check: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    rows = zone_report(state, os.path.dirname(os.path.abspath(directory)))
+    if not rows:
+        print("none · готовых тасков нет")
+        return 0
+    outside = [row for row in rows if row[1] == "outside"]
+    unchecked = [row for row in rows if row[1] == "unchecked"]
+    print("zone · проверено %d из %d · вне зоны %d" % (len(rows) - len(unchecked), len(rows), len(outside)))
+    zones = {str(t.get("id")): ticket_zone(t) for t in state.get("tickets") or [] if isinstance(t, dict)}
+    for name, _status, files in outside:
+        print("  ! таск %s вне зоны %s: %s" % (name, " · ".join(zones.get(name) or []), ", ".join(files)))
+    for name, _status, why in unchecked:
+        print("  · таск %s не проверен: %s" % (name, why))
+    return 1 if outside else (3 if unchecked else 0)
+
+
 ORDER = ["preflight", "manifest", "briefing", "spec", "plan", "build", "review", "final"]
 
 
@@ -847,6 +978,12 @@ def audit_dials(state):
 
 
 def main():
+    if "--zone-check" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--zone-check"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --zone-check [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_zone(os.path.abspath(rest[0]) if rest else A))
     if "--brief-seal" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):

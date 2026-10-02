@@ -25,6 +25,7 @@ SUBPROCESS_CALLS = {"run", "Popen", "call", "check_call", "check_output"}
 OS_LAUNCHERS = {"system", "popen", "execv", "execve", "execl", "execle", "execlp", "execvp", "execvpe",
                 "spawnl", "spawnle", "spawnlp", "spawnv", "spawnve", "spawnvp", "startfile"}
 READ_ONLY_PROGRAMS = {"ps", "powershell"}
+GIT_READ_ONLY = {"rev-parse", "diff-tree"}   # git читает коммит и ничего не пишет (sync.py --zone-check)
 SERVER = ("python", "-m", "http.server")
 
 
@@ -89,7 +90,8 @@ def launched_commands(source):
 def disallowed(source):
     """Запуски, которых нет в списке допустимых."""
     return [command for command in launched_commands(source)
-            if command[0] not in READ_ONLY_PROGRAMS and command != SERVER]
+            if command[0] not in READ_ONLY_PROGRAMS and command != SERVER
+            and not (command[0] == "git" and command[1] in GIT_READ_ONLY)]
 
 
 def lacks_ban(text, marker):
@@ -123,6 +125,19 @@ class CheckerCanTurnRed(unittest.TestCase):
                 self.assertEqual(len(found), 1)
                 self.assertNotIn(found[0][0], READ_ONLY_PROGRAMS)
 
+    def test_git_may_read_a_commit_and_nothing_else(self):
+        read = ("import subprocess\nsubprocess.run(['git', 'rev-parse', '--show-prefix'])\n"
+                "subprocess.run(['git', 'diff-tree', '--name-only', commit])\n")
+        self.assertEqual(disallowed(read), [])
+        for verb in ("commit", "push", "reset", "checkout", "add", "clean", "rm", "merge", "rebase", "config", "diff", "-C"):
+            with self.subTest(verb=verb):
+                found = disallowed("import subprocess\nsubprocess.run(['git', '%s', 'x'])\n" % verb)
+                self.assertEqual([command[:2] for command in found], [("git", verb)])
+
+    def test_a_git_launch_without_a_literal_verb_is_found(self):
+        self.assertEqual(len(disallowed("import subprocess\nsubprocess.run(['git'])\n")), 1)
+        self.assertEqual(len(disallowed("import subprocess\nsubprocess.run(['git', verb])\n")), 1)
+
     def test_the_skill_itself_is_not_an_allowed_server_argument(self):
         self.assertEqual(len(disallowed("import subprocess, sys\nsubprocess.run([sys.executable, 'autopilot.py'])\n")), 1)
         self.assertEqual(len(disallowed("import subprocess, sys\nsubprocess.run([sys.executable, '-m', 'pip'])\n")), 1)
@@ -153,7 +168,7 @@ class ToolsLaunchOnlyAllowedProcesses(unittest.TestCase):
     def test_sync_launches_what_it_is_expected_to(self):
         source = (TOOL_DIRS[0] / "sync.py").read_text(encoding="utf-8")
         programs = {command[0] for command in launched_commands(source)}
-        self.assertEqual(programs, {"ps", "powershell", "python"})
+        self.assertEqual(programs, {"ps", "powershell", "python", "git"})
 
     def test_no_tool_launches_anything_else(self):
         for path, source in product_sources():
