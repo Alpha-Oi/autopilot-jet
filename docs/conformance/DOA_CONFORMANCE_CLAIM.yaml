@@ -346,8 +346,11 @@ failure_classes:
     https://github.com/Alpha-Oi/autopilot-jet/blob/58807268143e0a8fce4edb7c2c45eeaf00591029/tests/test_injection_scan.py
   gap_owner: Alpha-Oi
 - id: F-23
-  status: DESIGNED
-  component: one commit per ticket, docs/adr
+  status: PARTIAL
+  component: one commit per ticket, docs/adr, brief seal (sync.py --brief-seal, briefSeals in state.js)
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/58807268143e0a8fce4edb7c2c45eeaf00591029/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/58807268143e0a8fce4edb7c2c45eeaf00591029/tests/test_brief_seal.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/58807268143e0a8fce4edb7c2c45eeaf00591029/skills/autopilot-jet/phases/1-manifest.md
   gap_owner: Alpha-Oi
 - id: F-24
   status: DESIGNED
