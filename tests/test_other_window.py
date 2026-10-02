@@ -203,11 +203,21 @@ class CliWithoutServerTests(CliCase):
         self.assertFalse(Path(self.dir, "serve.log").exists())
 
 
+# `http.server` при старте зовёт socket.getfqdn(): обратный DNS-запрос. На Linux и Windows он мгновенный, на
+# раннере macOS в CI он занимал около 35 секунд на каждый запуск сервера. Подмена лежит в sitecustomize вне
+# проверяемого каталога и не меняет ни командную строку процесса, ни сам сервер.
+NO_REVERSE_DNS = "import socket\nsocket.getfqdn = lambda name='': name or 'localhost'\n"
+
+
 class CliWithRealServerTests(CliCase):
     def start_server(self):
+        helper = tempfile.TemporaryDirectory(prefix="other window helper ")
+        self.addCleanup(helper.cleanup)
+        Path(helper.name, "sitecustomize.py").write_text(NO_REVERSE_DNS, encoding="utf-8")
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [helper.name, os.environ.get("PYTHONPATH")])))
         server = subprocess.Popen([sys.executable, "-u", "-m", "http.server", "0", "--bind", "127.0.0.1",
                                    "--directory", self.dir], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                  text=True)
+                                  text=True, env=env)
         self.addCleanup(lambda: (server.terminate(), server.wait(timeout=10), server.stdout.close()))
         line = server.stdout.readline()                       # "Serving HTTP on 127.0.0.1 port N ..."
         port = int(line.split("port")[1].split()[0])
