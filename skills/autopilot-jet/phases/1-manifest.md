@@ -74,6 +74,12 @@ Rules that make this file worth having:
 
   A brief dictated on a **later day** is a new file with that day's date — appending it to an older one erases the fact that the project was asked for twice.
 
+### Seal the brief
+
+Once the brief file is written and `redact.py --check` is clean, seal it: `python3 "<skillDir>/tools/sync.py" --brief-seal .autopilot` prints `unsealed · <file> · sha256 <hash>` and writes nothing. Copy the hash into `state.js` as `briefSeals["<file>"]`. It covers the text **above** `## Дополнения` — the part that is never edited — and not the additions below it, which grow by design; line endings and trailing blank lines do not count. A brief dictated on a later day is a new file and gets its own seal.
+
+From then on `sync.py` prints a `!` line when that text is not the sealed one, and `--brief-seal` exits 3 (`changed`, `missing`). **A changed seal is not repaired by re-sealing**: tell the user which file changed and ask. Re-record the hash only for a change the user's own words asked for, or after `redact.py --write` scrubbed a secret out of the brief — and say so in the report. What this catches is an accidental edit or an edit by another context; an agent that rewrites the brief **and** the seal defeats it, because the hash sits next to what it protects. Keeping to this rule stays an instruction.
+
 ## 3. Atomise into requirements
 
 Split the brief into the smallest units that can independently be true or false about the finished product. Write `.autopilot/<dir>/manifest.md`.

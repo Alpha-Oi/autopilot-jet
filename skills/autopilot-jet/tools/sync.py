@@ -46,6 +46,16 @@
 сегодняшний репозиторий. Режим называет: none (прогона нет), open, closed, stale (открытый, но давно не
 писался), resurrected (закрытый прогон снова пишется, или открытый лежит в каталоге без --wip), unknown.
 Коды выхода: 0 — none или open, 1 — closed, 3 — нужен человек (stale, resurrected, unknown).
+
+Четвёртый такой же режим, тоже только чтение — печать брифа (REQ-CORE-03 и REQ-CORE-09 стандарта DOA):
+
+    python3 <каталог навыка>/tools/sync.py --brief-seal [КАТАЛОГ]
+
+Бриф — желаемое состояние прогона: слова пользователя, с которыми сверяется готовый результат. Текст выше
+«## Дополнения» не редактируется (phases/1-manifest.md §2), поэтому его хеш записывают в state.js как
+`briefSeals[<имя файла>]`, а режим сверяет файл с записью. Дополнения ниже заголовка растут и в хеш не входят.
+Режим только читает и печатает хеш: записывает его агент. Коды выхода: 0 — все брифы совпали или прогона нет,
+1 — есть не запечатанный бриф (хеш напечатан), 3 — бриф изменён, исчез или не прочитан.
 """
 
 import hashlib
@@ -540,6 +550,120 @@ def check_other_window(directory):
     return {"resume": 0, "other-window": 1}.get(verdict, 3)
 
 
+BRIEF_MARKER = re.compile(r"^## Дополнения[ \t]*$", re.MULTILINE)
+
+
+def brief_original(text):
+    """Текст брифа выше первого заголовка «## Дополнения» — тот, что не редактируется. Без заголовка — весь файл.
+
+    Переводы строк и хвостовые пробелы не считаются изменением: их меняют редакторы и git."""
+    text = text.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
+    found = BRIEF_MARKER.search(text)
+    return (text[: found.start()] if found else text).rstrip()
+
+
+def brief_digest(text):
+    return hashlib.sha256(brief_original(text).encode("utf-8")).hexdigest()
+
+
+def _plain_name(value):
+    return isinstance(value, str) and value != "" and value not in (".", "..") and os.path.basename(value) == value \
+        and "\\" not in value
+
+
+def brief_seal_report(state, base):
+    """Печати брифов прогона. Возвращает список (файл, статус, хеш файла или None).
+
+    Статусы: "sealed" — хеш совпал; "changed" — текст выше «## Дополнения» не тот, что запечатан; "missing" —
+    запечатанного файла нет; "unreadable" — не прочитан; "unsealed" — бриф из `briefFile` есть, печати нет;
+    "badname" — запись печати указывает не на файл рядом, а на путь. Каталог брифов: `base/<dir>`."""
+    seals = state.get("briefSeals")
+    seals = seals if isinstance(seals, dict) else {}
+    directory = state.get("dir")
+    if not _plain_name(directory):
+        return []
+    names = list(seals)
+    brief = state.get("briefFile")
+    if isinstance(brief, str) and brief not in seals:
+        names.append(brief)
+    rows = []
+    for name in names:
+        if not _plain_name(name):
+            rows.append((str(name), "badname", None))
+            continue
+        path = os.path.join(base, directory, name)
+        try:
+            with open(path, encoding="utf-8", errors="replace") as handle:
+                digest = brief_digest(handle.read())
+        except FileNotFoundError:
+            rows.append((name, "missing" if name in seals else "unsealed", None))
+            continue
+        except OSError:
+            rows.append((name, "unreadable", None))
+            continue
+        if name not in seals:
+            rows.append((name, "unsealed", digest))
+        else:
+            rows.append((name, "sealed" if seals[name] == digest else "changed", digest))
+    return rows
+
+
+def seal_findings(state, base):
+    """Что в печатях брифов требует слова человека. Пусто — все запечатанные брифы совпали.
+
+    Не запечатанный бриф у закрытого прогона не находка: печатать там уже нечего."""
+    out = []
+    closed = bool(state.get("finishedAt"))
+    for name, status, _digest in brief_seal_report(state, base):
+        if status == "changed":
+            out.append("бриф %s изменён выше «## Дополнения»: текст пользователя не редактируется" % name)
+        elif status == "missing":
+            out.append("запечатанного брифа %s нет на месте" % name)
+        elif status == "unreadable":
+            out.append("бриф %s не прочитан: сверить с печатью нечем" % name)
+        elif status == "badname":
+            out.append("печать брифа указывает не на файл рядом: %s" % name)
+        elif status == "unsealed" and not closed:
+            out.append("бриф %s не запечатан: sync.py --brief-seal печатает хеш для briefSeals" % name)
+    return out
+
+
+def check_brief_seal(directory):
+    """Режим --brief-seal: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    rows = brief_seal_report(state, directory)
+    if not rows:
+        print("none · брифа в записи нет (нет dir или briefFile)")
+        return 0
+    worst = 0
+    for name, status, digest in rows:
+        if status == "sealed":
+            print("sealed · %s · %s" % (name, digest[:12]))
+        elif status == "unsealed":
+            worst = max(worst, 1)
+            print("unsealed · %s · sha256 %s" % (name, digest or "нет файла"))
+        else:
+            worst = 3
+            print("%s · %s%s" % (status, name, (" · сейчас %s" % digest[:12]) if digest else ""))
+    return worst
+
+
 ORDER = ["preflight", "manifest", "briefing", "spec", "plan", "build", "review", "final"]
 
 
@@ -723,6 +847,12 @@ def audit_dials(state):
 
 
 def main():
+    if "--brief-seal" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --brief-seal [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_brief_seal(os.path.abspath(rest[0]) if rest else A))
     if "--run-status" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--run-status"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
@@ -750,7 +880,7 @@ def main():
     print("%s · %s · обновлено %s" % (snap, srv, (state.get("updatedAt") or "?")[11:19]))
     for line in passed:
         print("  · " + line)
-    for line in audit(state)[:5]:
+    for line in (seal_findings(state, A) + audit(state))[:5]:
         print("  ! " + line)
 
 
