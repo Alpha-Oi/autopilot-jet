@@ -69,7 +69,7 @@ Step 2 needs to know what each ticket owns, so every ticket names its zone:
 
 **Зона:** `src/bot/` · `migrations/`
 
-Directories and modules — a boundary of ownership, not a file list. This is the one exception to "avoid paths": here the path *is* the decision being made, and it goes stale only if the ticket itself is re-cut.
+Directories and modules — a boundary of ownership, not a file list. **A zone covers everything the ticket's commit will touch, the place where its tests live included** (`tests/bot/` next to `src/bot/`): `sync.py --zone-check` (`phases/5-subagents.md`) names every file of a finished ticket's commit that lies outside its zone, so a test directory left out of the zone is reported on every ticket. Only `.autopilot/` and the memory file are allowed outside; a ticket that must touch the project root (the shell, the lockfile) lists those files in its zone. This is the one exception to "avoid paths": here the path *is* the decision being made, and it goes stale only if the ticket itself is re-cut.
 
 A wave of one is a normal answer. Ticket 01 — the shell, the schema, the shared primitives — is a wave of its own by definition.
 
