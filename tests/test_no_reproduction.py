@@ -25,7 +25,7 @@ SUBPROCESS_CALLS = {"run", "Popen", "call", "check_call", "check_output"}
 OS_LAUNCHERS = {"system", "popen", "execv", "execve", "execl", "execle", "execlp", "execvp", "execvpe",
                 "spawnl", "spawnle", "spawnlp", "spawnv", "spawnve", "spawnvp", "startfile"}
 READ_ONLY_PROGRAMS = {"ps", "powershell"}
-GIT_READ_ONLY = {"rev-parse", "diff-tree"}   # git читает коммит и ничего не пишет (sync.py --zone-check)
+GIT_READ_ONLY = {"rev-parse", "diff-tree", "rev-list"}   # git читает историю и ничего не пишет (sync.py --zone-check, --rollback-plan)
 SERVER = ("python", "-m", "http.server")
 
 
