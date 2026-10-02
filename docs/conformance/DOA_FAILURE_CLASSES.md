@@ -2,7 +2,7 @@
 
 **Standard:** DOA `v1.1.0`, `specifications/failure-classes.yaml` (`F-01`…`F-25`).
 **Subject:** the Autopilot JET skill: its instructions, `sync.py`, the dashboard, `redact.py`, `measure-run.py` and the repository CI. The host agent, the LLM provider, git remotes and the installer are external dependencies (see `DOA_CONFORMANCE_CLAIM.yaml`, `scope.boundary`).
-**Status:** self-assessed by an AI assistant from reading the repository; not independent. No end-to-end run of the skill was executed.
+**Status:** self-assessed by an AI assistant from reading the repository; not independent. One pilot run on a small test project (2026-10-02, `PILOT_2026-10-02.md`) is an observation, not evidence for any class; there is no independent end-to-end run.
 
 This file is the per-class table that `REQ-CORE-23` asks for. `tests/test_failure_classes.py` checks it: every class `F-01`…`F-25` appears exactly once; every test named in a row exists; a `PARTIAL` row names at least one test; an `EXCLUDED`, `DESIGNED` or `FAIL` row says why; and the statuses match the `failure_classes` list in the claim.
 
