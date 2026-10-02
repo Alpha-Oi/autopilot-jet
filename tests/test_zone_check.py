@@ -175,6 +175,19 @@ class ReportTests(Repo):
         self.assertEqual(sync.zone_report(self.state("x", 5, None), str(self.root), self.fake({})), [])
 
 
+class UnfinishedTests(unittest.TestCase):
+    def test_tickets_not_done_are_named_with_their_status(self):
+        state = {"tickets": [{"id": "01", "status": "done"}, {"id": "02", "status": "review"},
+                             {"id": "03", "status": "pending"}]}
+        self.assertEqual(sync.unfinished_tickets(state), ["02 (review)", "03 (pending)"])
+
+    def test_junk_is_not_a_crash(self):
+        for tickets in (None, "x", 5, {"a": 1}, [None, 5, "x"]):
+            with self.subTest(tickets=tickets):
+                self.assertEqual(sync.unfinished_tickets({"tickets": tickets}), [])
+        self.assertEqual(sync.unfinished_tickets({}), [])
+
+
 class RealGitTests(Repo):
     def test_the_files_of_a_commit_come_from_git(self):
         commit = self.commit({"src/bot/a.py": "1", "src/db/schema.sql": "2", ".autopilot/state.js": "3"})
@@ -287,6 +300,27 @@ class CliTests(Repo):
         code, out = self.check(self.state(self.ticket("01", ["src/"], "abcd1234", status="in-progress")))
         self.assertEqual((code, out.split(" · ")[0]), (0, "none"))
 
+    def test_a_ticket_still_in_review_makes_none_say_so(self):
+        self.commit({"src/bot/a.py": "1"})
+        code, out = self.check(self.state({"id": "01", "status": "review", "zone": ["src/bot/"]}))
+        self.assertEqual((code, out.strip()), (0, "none · готовых тасков нет · ещё не готовы: 01 (review)"))
+
+    def test_run_before_the_state_is_written_says_none_and_after_it_judges(self):
+        # порядок шага 8 фазы 5: коммит → запись `done` и `commit` в state.js → проверка зон
+        commit = self.commit({"src/bot/a.py": "1"})
+        before = self.check(self.state({"id": "01", "status": "review", "zone": ["src/bot/"]}))
+        after = self.check(self.state(self.ticket("01", ["src/bot/"], commit)))
+        self.assertTrue(before[1].startswith("none · "), before)
+        self.assertIn("ещё не готовы: 01 (review)", before[1])
+        self.assertEqual(after[1].splitlines()[0], "zone · проверено 1 из 1 · вне зоны 0")
+
+    def test_waiting_tickets_are_named_beside_a_verdict(self):
+        commit = self.commit({"src/bot/a.py": "1"})
+        state = self.state(self.ticket("01", ["src/bot/"], commit), {"id": "02", "status": "pending", "zone": ["src/db/"]})
+        code, out = self.check(state)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(out.splitlines()[0], "zone · проверено 1 из 1 · вне зоны 0 · ещё не готовы: 02 (pending)")
+
     def test_no_state_means_no_run_here(self):
         (self.root / ".autopilot").mkdir()
         result = self.run_cli("--zone-check", str(self.root / ".autopilot"))
@@ -335,6 +369,12 @@ class TheProcedureIsWritten(unittest.TestCase):
     def test_phase_five_runs_the_check_after_the_commit(self):
         text = (SKILL / "phases" / "5-subagents.md").read_text(encoding="utf-8")
         self.assertIn("--zone-check", text)
+
+    def test_phase_five_runs_the_check_after_the_ticket_is_written_down_not_before(self):
+        text = (SKILL / "phases" / "5-subagents.md").read_text(encoding="utf-8")
+        self.assertIn("written down as `done` with its `commit`", text)
+        self.assertIn("has nothing to judge", text)
+        self.assertIn("from T1 up", text)
 
     def test_phase_four_puts_the_tests_of_a_ticket_into_its_zone(self):
         text = (SKILL / "phases" / "4-plan.md").read_text(encoding="utf-8")

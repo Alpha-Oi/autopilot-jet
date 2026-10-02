@@ -148,7 +148,7 @@ One requirement = one thing that can be independently true or false.
 
 Recorded here because they all read this file. A failed gate is not a warning — the phase is redone.
 
-**G1 — after the briefing.** Every requirement has a status. Anything still `open` must have a recorded reason (unreachable user, question deferred). In **full** mode nothing may be `open`: the self-briefing answers everything or marks it `placeholder`.
+**G1 — after the briefing.** Every requirement has a status. Anything still `open` must have a recorded reason (unreachable user, question deferred). In **full** mode nothing may be left without an answer: the self-briefing records a decision (an `ASSUMPTION`) or marks the row `placeholder`. There is no status between `open` and `in-spec`, so a row answered in the self-briefing stays `open` with its decision written in the Основание column until Phase 3 moves it to `in-spec` — G1 asks for the recorded reason, not for a different word in the status cell.
 
 **G2 — after the spec.** Two halves, both mandatory, per `phases/3-spec.md`.
 
