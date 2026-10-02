@@ -341,8 +341,11 @@ failure_classes:
   status: EXCLUDED
   justification: 'The skill issues no identities and authenticates no one; identity belongs to the host.'
 - id: F-21
-  status: DESIGNED
-  component: prompts/executor.md zones
+  status: PARTIAL
+  component: prompts/executor.md zones, zone check after the commit (sync.py --zone-check)
+  evidence_ref: https://github.com/Alpha-Oi/autopilot-jet/blob/69b4aa151c873510781748296c453ccad4be4ec1/skills/autopilot-jet/tools/sync.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/69b4aa151c873510781748296c453ccad4be4ec1/tests/test_zone_check.py;
+    https://github.com/Alpha-Oi/autopilot-jet/blob/69b4aa151c873510781748296c453ccad4be4ec1/skills/autopilot-jet/prompts/executor.md
   gap_owner: Alpha-Oi
 - id: F-22
   status: PARTIAL
