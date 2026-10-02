@@ -37,6 +37,15 @@
 старыми. Режим сверяет их с установленным навыком и называет устаревшие. Индекс старения — доля копий,
 которые не совпали (0 — все свежие). Коды выхода: 0 — все свежие или прогона нет, 1 — есть устаревшие,
 3 — запущено не из каталога навыка.
+
+Третий такой же режим, тоже только чтение — состояние прогона перед возобновлением (REQ-CORE-22 стандарта DOA):
+
+    python3 <каталог навыка>/tools/sync.py --run-status [КАТАЛОГ]
+
+Закрытый прогон (finishedAt стоит) возобновлять нельзя: его закрыли, и записанное в нём состояние уже не про
+сегодняшний репозиторий. Режим называет: none (прогона нет), open, closed, stale (открытый, но давно не
+писался), resurrected (закрытый прогон снова пишется, или открытый лежит в каталоге без --wip), unknown.
+Коды выхода: 0 — none или open, 1 — closed, 3 — нужен человек (stale, resurrected, unknown).
 """
 
 import hashlib
@@ -63,6 +72,8 @@ PROCESS_DELIMITER = "\x1f"
 COUNTER_CEILING = 2       # repairs, retries, handoffs на один таск
 TICKET_CEILING = 16       # таски плана; P-таски доводки считаются отдельно
 POLISH_ROUNDS_CEILING = 3
+RESUME_STALE_DAYS = 7           # открытый прогон, не писавшийся дольше, возобновляют только по слову пользователя
+LIVE_TICKET_STATUSES = ("in-progress", "review", "repair")
 OTHER_WINDOW_SECONDS = 300   # «меньше пяти минут» из четвёртого случая phases/0-preflight.md
 COUNTERS = ("repairs", "retries", "handoffs")
 
@@ -445,6 +456,70 @@ def check_aging(run_dir):
     return 1 if aged else 0
 
 
+def closure_findings(state):
+    """Что в записи противоречит тому, закрыт прогон или нет. Пусто — запись согласована сама с собой.
+
+    Закрытый прогон (finishedAt) по фазе 8 тих: ни активного этапа, ни таска в работе. Открытый прогон лежит в
+    каталоге с --wip; закрытый его теряет, а «доделай» возвращает при возобновлении. Расхождение значит, что закрытое
+    снова пишется без заявленного возобновления: так воскресает то, что закрыли."""
+    out = []
+    if state.get("finishedAt"):
+        live = [str(s.get("id")) for s in (state.get("stages") or []) if s.get("status") == "active"]
+        busy = [str(item.get("id")) for item in (state.get("tickets") or []) if item.get("status") in LIVE_TICKET_STATUSES]
+        if live:
+            out.append("прогон закрыт (finishedAt), а этап %s снова active: закрытый прогон пишется молча" % ", ".join(live))
+        if busy:
+            out.append("прогон закрыт (finishedAt), а таск %s снова в работе: закрытый прогон пишется молча" % ", ".join(busy))
+    else:
+        directory = state.get("dir")
+        if isinstance(directory, str) and directory and not directory.endswith("--wip"):
+            out.append("finishedAt пуст, а каталог %s без --wip: закрытый прогон открыт заново без переименования" % directory)
+    return out
+
+
+def run_status(state, now):
+    """Можно ли возобновлять прогон. Возвращает (вердикт, пояснение).
+
+    Вердикт: "closed", "resurrected", "stale", "open" или "unknown". Закрытый не возобновляют; воскрешённому,
+    давнему и нечитаемому нужно слово человека."""
+    if not isinstance(state, dict):
+        return "unknown", "state.js не разобран как запись прогона"
+    problems = closure_findings(state)
+    if problems:
+        return "resurrected", problems[0]
+    if state.get("finishedAt"):
+        return "closed", "finishedAt стоит: прогон закрыт, возобновлять нельзя"
+    moment = parse_time(state.get("updatedAt"))
+    if moment is None:
+        return "unknown", "не прочитана метка updatedAt"
+    days = (now - moment).total_seconds() / 86400
+    if days > RESUME_STALE_DAYS:
+        return "stale", "последняя запись %d дн. назад (порог %d)" % (int(days), RESUME_STALE_DAYS)
+    return "open", "прогон открыт, последняя запись %d дн. назад" % max(int(days), 0)
+
+
+def check_run_status(directory):
+    """Режим --run-status: ничего не пишет. Возвращает код выхода."""
+    path = os.path.join(directory, "state.js")
+    try:
+        with open(path, encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    verdict, why = run_status(state, datetime.now(timezone.utc))
+    print("%s · %s" % (verdict, why))
+    return {"open": 0, "closed": 1}.get(verdict, 3)
+
+
 def check_other_window(directory):
     """Режим --other-window: ничего не пишет, сервер не трогает. Возвращает код выхода."""
     try:
@@ -549,6 +624,7 @@ def audit(state):
             out.append("таск %s в работе без startedAt" % t.get("id"))
         if t.get("status") == "done" and not t.get("finishedAt"):
             out.append("таск %s закрыт без finishedAt" % t.get("id"))
+    out.extend(closure_findings(state))
     out.extend(audit_caps(state))
     out.extend(audit_dials(state))
     return out
@@ -647,6 +723,12 @@ def audit_dials(state):
 
 
 def main():
+    if "--run-status" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--run-status"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --run-status [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_run_status(os.path.abspath(rest[0]) if rest else A))
     if "--aging" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--aging"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
