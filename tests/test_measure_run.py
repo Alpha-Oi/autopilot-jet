@@ -84,6 +84,98 @@ class AnalyseTests(unittest.TestCase):
         self.assertGreater(result["active"], 0)
 
 
+class StepBreakdownTests(unittest.TestCase):
+    def test_classify_kinds(self):
+        c = measure_run.classify
+        self.assertEqual(c("Agent", {}), "субагент")
+        self.assertEqual(c("Bash", {"command": "python3 .autopilot/sync.py"}), "sync.py")
+        self.assertEqual(c("Bash", {"command": "sed -i s/a/b/ .autopilot/state.js"}), "правка state.js")
+        self.assertEqual(c("Edit", {"file_path": "D:\\p\\.autopilot\\state.js"}), "правка state.js")
+        self.assertEqual(c("Bash", {"command": "python -m pytest -q"}), "тесты/сборка")
+        self.assertEqual(c("Bash", {"command": "git status --short"}), "git/gh")
+        self.assertEqual(c("Bash", {"command": "ls -la"}), "другой Bash")
+        self.assertEqual(c("Edit", {"file_path": "/p/tests/test_a.py"}), "правка тестов")
+        self.assertEqual(c("Write", {"file_path": "/p/src/a.py"}), "правка кода")
+        self.assertEqual(c("Read", {"file_path": "/p/a"}), "чтение (Read/Grep/Glob)")
+        self.assertEqual(c("TaskUpdate", {}), "задачи (TaskCreate/Update)")
+        self.assertEqual(c("WebSearch", {}), "прочий инструмент")
+
+    def test_step_category_priority_and_text_only(self):
+        blocks = [{"type": "tool_use", "name": "Read", "input": {}},
+                  {"type": "tool_use", "name": "Bash", "input": {"command": "pytest"}}]
+        self.assertEqual(measure_run.step_category(blocks), "тесты/сборка")
+        self.assertEqual(measure_run.step_category([{"type": "text", "text": "ok"}]),
+                         "ответ без действий")
+
+    def test_analyse_accumulates_cost_per_category(self):
+        def row(content, cw=100, cr=1000, out=10):
+            return ('{"timestamp":"2026-01-01T00:00:00Z","message":{"role":"assistant",'
+                    '"content":%s,"usage":{"input_tokens":1,"output_tokens":%d,'
+                    '"cache_creation_input_tokens":%d,"cache_read_input_tokens":%d}}}\n'
+                    % (content, out, cw, cr))
+        payload = (
+            row('[{"type":"tool_use","name":"Bash","input":{"command":"python3 .autopilot/sync.py"}}]')
+            + row('[{"type":"tool_use","name":"Read","input":{}}]')
+            + row('[{"type":"text","text":"готово"}]')
+        )
+        with mock.patch("builtins.open", mock.mock_open(read_data=payload)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual(result["cats"]["sync.py"][0], 1)
+        self.assertEqual(result["cats"]["чтение (Read/Grep/Glob)"][0], 1)
+        self.assertEqual(result["cats"]["ответ без действий"][0], 1)
+        total = sum(v[1] for v in result["cats"].values())
+        self.assertAlmostEqual(total, result["norm"])
+
+    def test_rows_of_one_message_are_counted_once(self):
+        def row(mid, content, out):
+            return ('{"timestamp":"2026-01-01T00:00:00Z","message":{"id":"%s","role":"assistant",'
+                    '"content":%s,"usage":{"input_tokens":1,"output_tokens":%d,'
+                    '"cache_creation_input_tokens":100,"cache_read_input_tokens":1000}}}\n'
+                    % (mid, content, out))
+        payload = (
+            row("m1", '[{"type":"thinking","thinking":"..."}]', 3)
+            + row("m1", '[{"type":"text","text":"иду читать"}]', 5)
+            + row("m1", '[{"type":"tool_use","name":"Read","input":{}}]', 9)
+            + row("m2", '[{"type":"text","text":"готово"}]', 4)
+        )
+        with mock.patch("builtins.open", mock.mock_open(read_data=payload)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual(result["steps"], 2)
+        self.assertEqual(result["out"], 9 + 4)
+        self.assertEqual(result["write"], 200)
+        self.assertEqual(result["cats"]["чтение (Read/Grep/Glob)"][0], 1)
+        self.assertEqual(result["cats"]["ответ без действий"][0], 1)
+
+    def test_samples_describe_expensive_actions(self):
+        payload = (
+            '{"timestamp":"2026-01-01T00:00:00Z","message":{"id":"a","role":"assistant","content":'
+            '[{"type":"tool_use","name":"Bash","input":{"command":"ls   -la  /tmp"}}],'
+            '"usage":{"input_tokens":1,"output_tokens":2,"cache_creation_input_tokens":10,'
+            '"cache_read_input_tokens":100}}}\n'
+        )
+        with mock.patch("builtins.open", mock.mock_open(read_data=payload)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual(len(result["samples"]), 1)
+        cat, desc, cost = result["samples"][0]
+        self.assertEqual((cat, desc), ("другой Bash", "ls -la /tmp"))
+        self.assertGreater(cost, 0)
+        output = io.StringIO()
+        with mock.patch("sys.stdout", output):
+            measure_run.print_steps([dict(result, label="Оркестратор")])
+        self.assertIn("ls -la /tmp", output.getvalue())
+
+    def test_print_steps_outputs_table(self):
+        cats = {c: [0, 0.0] for c in measure_run.CATS}
+        cats["sync.py"] = [2, 500000.0]
+        result = {"label": "Оркестратор", "cats": cats}
+        output = io.StringIO()
+        with mock.patch("sys.stdout", output):
+            measure_run.print_steps([result])
+        text = output.getvalue()
+        self.assertIn("Оркестратор", text)
+        self.assertIn("sync.py", text)
+
+
 class CliTests(unittest.TestCase):
     def test_check_only_succeeds_without_logs(self):
         output = io.StringIO()

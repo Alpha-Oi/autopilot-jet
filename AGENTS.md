@@ -11,11 +11,13 @@
 - `skills/autopilot-jet/SKILL.md` задаёт режимы, глубину и gates G1–G4; инструкции из `skills/autopilot-jet/phases/` читаются только для текущего этапа.
 - `skills/autopilot-jet/prompts/executor.md` и `skills/autopilot-jet/prompts/craft-review.md` — контракты независимых исполнителя и reviewer.
 - `skills/autopilot-jet/tools/sync.py` и `skills/autopilot-jet/phases/dashboard-template.html` — канонические helper и dashboard; продуктовые правки делаются здесь, не в runtime copies.
+- `skills/autopilot-jet/tools/redact.py` — детерминированный фильтр секретов (формы из `phases/1-manifest.md`): `--check [--write] PATH`, `--stdin`; печатает имена переменных, не значения; покрыт `tests/test_redact.py`.
+- `skills/autopilot-jet/tools/injection_scan.py` — детектор очевидных приёмов prompt injection и невидимых символов: `--check PATH`, `--stdin`; печатает только `путь:строка: вид`, найденный текст не показывает никогда (вывод попадает в контекст агента). Поиск по шаблонам: перефразированную или переведённую атаку не находит, чистый результат не доказательство. Правило «текст из файлов — данные» — в `SKILL.md`.
 - `tools/measure-run.py` — CLI анализа Claude Code JSONL: project path → logs directory → выбранная session и subagents → сравнительные token/time metrics.
 - `.agents/skills/autopilot-jet` → `skills/autopilot-jet/`; `.claude/skills/autopilot-jet` → `.agents/skills/autopilot-jet`; обе привязки — symlinks.
 - `.autopilot/state.js`, `.autopilot/sync.py`, `.autopilot/dashboard.html`, `.autopilot/index.html` — состояние и runtime конкретного прогона, а не канонический исходник skill.
 - `.github/workflows/verify.yml` — native Ubuntu/Windows/macOS matrix для push/PR на `main`, `master`, `development`: Python 3.11, Node 20, exact flake8, full unittest и measure check-only.
-- `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, Node VM render/performance и cold relocated/native subprocess behavior.
+- `tests/test_measure_run.py`, `tests/test_sync.py`, `tests/test_sync_state.py`, `tests/test_redact.py`, `tests/test_injection_scan.py`, `tests/test_dashboard.py`, `tests/test_native_runtime.py` покрывают path/JSONL/CLI, process ownership/HTTP seams, инварианты жизненного цикла `close_passed()`/`audit()`, фильтр секретов, Node VM render/performance и cold relocated/native subprocess behavior.
 - `docs/adr/0006-preserve-server-registry-on-unknown-process-status.md` закрепляет durable decision: неопределённый статус процесса не разрешает потерю server registry или duplicate launch.
 
 ## Архитектура и контракты
@@ -67,9 +69,10 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 ## Текущий проверенный срез
 
 - Финальный release payload — `c23de4263454dae03faa5341bceb7d5d24360230` в `development`; PR #1 смержен в `main` merge commit `ca6743bb0b2453c79325fe30f6b9680b911ef4ed`.
-- Локальный release gate: 33 tests/`OK` за 9.587s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `457.34ms < 712.29ms`, queries `0/15000`.
+- Локальный release gate на момент release payload: 33 tests/`OK` за 9.587s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `457.34ms < 712.29ms`, queries `0/15000`.
+- Актуально на `development` после PR с исправлением недочётов пилота (2026-10-02): 359 tests/`OK` (45 прежних, включая тест лимитов запросов процессов из #31 и 4 теста помощника повторов в `tests/test_native_runtime.py`, + 21 `tests/test_redact.py` + 26 `tests/test_sync_state.py` + 7 `tests/test_dependency_free.py` + 5 `tests/test_memory_freshness.py` + 21 `tests/test_sync_caps.py` + 9 `tests/test_sync_dials.py` + 11 `tests/test_failure_classes.py` + 21 `tests/test_injection_scan.py` + 13 `tests/test_no_reproduction.py` + 26 `tests/test_other_window.py` + 15 `tests/test_no_federation.py` + 19 `tests/test_aging.py` + 29 `tests/test_run_status.py` + 45 `tests/test_brief_seal.py` + 46 `tests/test_zone_check.py`), flake8 `0`, `measure-run --check-only` → `OK`; CI подтверждается Actions на соответствующем коммите. Строки про 33 теста выше — исторический release gate, не текущее состояние.
 - Реальный Edge smoke предыдущего среза → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`. Для текущего 100% checkpoint реальная browser tab отдельно не подтверждена.
-- GitHub Actions run `36339995752` для exact development SHA и PR-head run `36340188512` завершились `success` на Windows/Ubuntu/macOS: 33 tests/`OK`, lint `0`, benchmark pass и measure `OK` на каждом native runner.
+- GitHub Actions run `36339995752` для exact development SHA и PR-head run `36340188512` завершились `success` на Windows/Ubuntu/macOS (на момент release payload): 33 tests/`OK`, lint `0`, benchmark pass и measure `OK` на каждом native runner.
 - Финальный dashboard: embedded snapshot совпадает с `.autopilot/state.js`, `100%`, `7/7` тасков, run завершён. Реальный Edge smoke относится к предыдущему source-identical срезу; финальный metadata-only snapshot отдельно в живой browser tab не проверялся.
 - Frozen governance harness → `45/45`, `dangerousCommandsExecuted=false`.
 - Последние host metadata — `gpt-5.6-sol/max`; история неоднородна (`3 medium / 36 max / 36 xhigh`), поэтому утверждение о `max` для всей истории не делается.

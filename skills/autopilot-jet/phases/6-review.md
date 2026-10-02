@@ -21,7 +21,7 @@ It saw its ticket, the spec sections that ticket named, and `interfaces.md`. Not
 - **Yes, it could have known** → axis Spec or Craft. This is a defect of the code, and it is fixed in this ticket.
 - **No, it could not have known** → axis Manifest. The requirement was lost on the way down, and the defect is in the spec or in the cut — **not in the executor**. It still gets fixed, but do not re-run the subagent against words it was never given: repair the ticket first, or the spec, then run it.
 
-This is the same line the whole framework runs on, seen from close up. Between the gates everything measures against the spec, because the spec is the contract the crew actually received; only at G2 and G4 does anything measure against the brief, and there the subject is the plan, not the code. **The manifest is what lets axis 1 exist at all** — without it the brief is prose and cannot be checked one ticket at a time.
+**The manifest is what lets axis 1 exist at all** — without it the brief is prose and cannot be checked one ticket at a time.
 
 ## Scale to the ticket
 
@@ -29,12 +29,13 @@ Cheap early, delegated once it starts costing. A review that costs more than the
 
 | Where the run is | How |
 |---|---|
-| tier T0 — no tickets at all | all three axes yourself, inline: there is nobody to delegate to, and the run ends before it matters |
-| the first two tickets, diff under ~150 changed lines | inline still allowed |
+| tier T0 — no tickets at all | Manifest+Spec yourself, inline; **Craft in one subagent** — whoever wrote the code does not judge it, and small builds drift too |
+| ticket 01 — the skeleton, the schema, the shared primitives | **never inline**: Manifest+Spec in one subagent, Craft in another. Every later ticket stands on it, so it gets the review that is hardest to add later |
+| ticket 02, diff under ~150 changed lines | inline still allowed |
 | every ticket after that, and anything touching shared modules | Manifest+Spec in one subagent, Craft in another, in parallel |
 | the final whole-project pass at the end | separate subagents, per `phases/8-final.md` |
 
-**The threshold is not diff size alone.** A hundred-line diff costs the same to read whenever it arrives; what changes is what you have left to spend it from. Inline review is how the one never-refreshed context fills — one ticket at a time, until ticket 08 is judged by a reader who has been awake since the brief. The concession for the first two exists because early context is cheap and a reviewer's setup is not; it expires because neither stays true.
+**The threshold is not diff size alone.** A hundred-line diff costs the same to read whenever it arrives; what changes is what you have left to spend it from. Inline review is how the one never-refreshed context fills — one ticket at a time, until ticket 08 is judged by a reader who has been awake since the brief. The concession for ticket 02 exists because early context is cheap and a reviewer's setup is not; it expires because neither stays true.
 
 ## The reviewer outlives the ticket
 
@@ -61,7 +62,7 @@ A reviewer knows nothing you do not hand it — the same rule as for an executor
 | the ticket body and its acceptance criteria | ✓ | ✓ |
 | whatever the repo documents about how code is written | — | ✓ |
 | **`prompts/craft-review.md`, by path** — the smells, the assertion-level testing check, the return format. The path is `skillDir` in `state.js` | — | ✓ |
-| what it must not do: repair nothing, refactor nothing, open no files outside the diff to «понять получше» | ✓ | ✓ |
+| what it must not do: repair nothing, refactor nothing, open no files outside the diff to «понять получше» (the Craft reviewer's one exception is the probe in a throwaway copy, `prompts/craft-review.md`) | ✓ | ✓ |
 
 **Give each one only its own axes.** A reviewer handed material for an axis it was not asked to judge will judge it anyway, badly and without saying so — and two overlapping half-reviews are what the separation of axes exists to prevent.
 
@@ -81,7 +82,7 @@ BLOCKING: только требование не доставлено, выду�
           Нечего блокировать — пиши `нет`, это нормальный и частый ответ.
 ```
 
-**Не больше 20 строк, без кусков кода и без диффа.** A finding phrased as a condition can be forwarded to the executor as a дозапрос unchanged; a finding phrased as «стоило бы аккуратнее» has to be rewritten by you before it can go anywhere, and rewriting it means reading the diff — which is the whole thing this arrangement exists to avoid.
+**Не больше 20 строк, без кусков кода и без диффа.** A finding phrased as a condition goes to the executor as a дозапрос unchanged; a vague one has to be rewritten by you, and that means reading the diff.
 
 **Tell the reviewer what `BLOCKING` costs, in its prompt.** It is not a severity rating for its own use: everything it lists there becomes a дозапрос plus a re-review, and everything it leaves out still reaches the user in the report. A reviewer that does not know this hedges upward — listing anything it feels strongly about — and the run pays a repair cycle per feeling.
 
@@ -133,7 +134,7 @@ What is always blocking, no judgement involved:
 - **Manifest `partial` or `missing`** — a requirement the user asked for is not delivered. This is the one category no ослабление ever touches: the whole framework exists to catch it, and «поправим потом» is how it stops being caught.
 - **Craft *invented fact*** — a plausible-looking price, address or text standing where the user's own fact belongs. It ships as truth if it ships at all.
 - **Spec *extra*** that adds surface nobody asked for — removed, unless the rest genuinely needs it, and then one line in the commit message says so.
-- **A red suite.** Nothing is committed on red, ever.
+- **A red suite, or a build or typecheck that fails.** Nothing is committed on red, ever; a failing build is a finding, not a line for the documentation.
 
 Everything else — Craft judgement calls, style, structure, a test set that is bigger than its seams — goes to `state.js` under `concerns` with its file and line, and travels to the final report. **It is not a дозапрос and does not delay the commit.**
 
@@ -147,6 +148,3 @@ When a дозапрос comes back, **review the fix, not the ticket again.** Se
 
 Refactoring belongs here, not inside the red-green loop. Cleaning up while chasing a failing test is how both jobs get done badly.
 
-## Reporting
-
-To yourself, structured, per axis. **To the user, nothing** — unless something is being carried to the final report as a concern. The user gets one plain line per ticket from Phase 5, not a review.

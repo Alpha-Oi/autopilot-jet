@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 
@@ -214,15 +215,73 @@ class ColdRuntimeTests(unittest.TestCase):
         self.assertNotIn("Traceback", no_project.stdout + no_project.stderr)
 
 
+def query_with_retries(query, attempts=3, pause=1.0, sleep=time.sleep, clock=time.monotonic):
+    """Зовёт ``query()`` до ``attempts`` раз, пока не вернётся непустое. Возвращает (значение, секунды каждой попытки).
+
+    Системный запрос командной строки на Windows идёт через холодный PowerShell и CIM; на загруженном раннере он
+    может не уложиться в предел ожидания и вернуть пустоту («неизвестно»). Единичный пустой ответ не доказывает,
+    что запрос сломан, а пустой ответ во всех попытках подряд доказывает.
+    """
+    seconds = []
+    value = ""
+    for number in range(attempts):
+        if number:
+            sleep(pause)
+        started = clock()
+        value = query()
+        seconds.append(round(clock() - started, 1))
+        if value:
+            break
+    return value, seconds
+
+
+class RetryHelperCanTurnRed(unittest.TestCase):
+    """Помощник повторов проверен на синтетических ответах: иначе он мог бы молча пропускать любую поломку."""
+
+    @staticmethod
+    def sequence(*answers):
+        queue = list(answers)
+        calls = []
+
+        def query():
+            calls.append(1)
+            return queue.pop(0) if queue else ""
+        return query, calls
+
+    def test_the_first_answer_is_taken_without_retrying(self):
+        query, calls = self.sequence("cmd")
+        self.assertEqual(query_with_retries(query, sleep=lambda _s: None)[0], "cmd")
+        self.assertEqual(len(calls), 1)
+
+    def test_one_empty_answer_is_retried_and_a_later_answer_is_taken(self):
+        query, calls = self.sequence("", "cmd")
+        value, seconds = query_with_retries(query, sleep=lambda _s: None)
+        self.assertEqual(value, "cmd")
+        self.assertEqual((len(calls), len(seconds)), (2, 2))
+
+    def test_an_always_empty_answer_stays_empty_after_every_attempt(self):
+        query, calls = self.sequence()
+        value, seconds = query_with_retries(query, attempts=3, sleep=lambda _s: None)
+        self.assertEqual(value, "")
+        self.assertEqual((len(calls), len(seconds)), (3, 3))
+
+    def test_the_pause_is_taken_between_attempts_only(self):
+        pauses = []
+        query, _calls = self.sequence()
+        query_with_retries(query, attempts=3, pause=2.5, sleep=pauses.append)
+        self.assertEqual(pauses, [2.5, 2.5])
+
+
 class NativeProcessTests(unittest.TestCase):
     def test_own_pid_has_native_python_command_line(self):
         spec = importlib.util.spec_from_file_location("native_sync", HELPER)
         helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(helper)
 
-        command = helper.cmdline(os.getpid())
+        command, seconds = query_with_retries(lambda: helper.cmdline(os.getpid()))
 
-        self.assertTrue(command, "Native own-PID query returned unknown/empty")
+        self.assertTrue(command, "Native own-PID query returned unknown/empty on every attempt "
+                                 "(seconds per attempt: %s)" % seconds)
         self.assertIn("python", command.casefold())
         self.assertIn("unittest", command.casefold())
 

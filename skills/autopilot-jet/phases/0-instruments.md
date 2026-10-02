@@ -5,7 +5,7 @@ Everything Phase 0 needs to know about the dashboard, and nothing else. **The re
 Two files, and the split matters:
 
 - **`.autopilot/state.js`** — the truth, and the only thing you ever write. You read it on resume; the user never opens it.
-- **`.autopilot/dashboard.html`** — the only human view. Copied from the template once and **never touched again**. No build step, no dependencies, nothing to generate: in a real browser it opens by double-click, and in an in-app pane it needs one static file server and no more (§3).
+- **`.autopilot/dashboard.html`** — the only human view. Refreshed from the skill's template at the start of **every** flight (§1: new run, next feature, resume), and **never edited by hand** in between. No build step, no dependencies, nothing to generate: in a real browser it opens by double-click, and in an in-app pane it needs one static file server and no more (§3).
 
 **The page carries a snapshot of the state inside itself, and reads `state.js` from beside it on top of that.** The snapshot is what makes the dashboard show data when it is opened with no address at all — double-clicked, handed to a pane as `data:`, opened a month after the run, opened while the server is dead. The file beside it is what makes the clocks run: the page re-loads it every ten seconds without reloading itself, and it is what *you* read on a resume — two kilobytes, not eighty.
 
@@ -27,6 +27,8 @@ cp "${TPL%/phases/*}/tools/sync.py" "$A/sync.py"
 
 **Every path here is absolute, and the `echo` runs before the copy.** Four ways this used to fail, all measured on 2026-08-19 and all silent: a chained `cp && ln && echo` drops `skillDir` when `ln` refuses; `find` returns a *relative* path when the skill is installed inside the project (`.claude/skills/`), and a relative `skillDir` is one no subagent can open; a run started from a subdirectory built `.autopilot/` in the wrong place; and `cp` onto a directory Phase 0 step 3 had not created yet failed outright. Hence `$A` from the git root, `pwd -P` (which also resolves the symlink skills are installed through), and `mkdir -p`. `ln -sfn`, not `-sf`: on a symlink pointing at a directory BSD `ln` without `-n` writes *inside* it and reports success.
 
+**Check how old the copies are — once before the `cp`, once after it.** `python3 "${TPL%/phases/*}/tools/sync.py" --aging "$A"` compares the two copies in `.autopilot/` (`sync.py`, `dashboard.html`) with the installed skill, writes nothing, and prints an *aging index* — the share of copies that differ (`0.00` means all current) — and names each stale copy as `senescent`. **Before the `cp`:** an index above 0 means an earlier flight left copies from an older skill (the old layout and logo, measured 2026-09-29). Say so in one line and carry on: the `cp` below is the replacement. **After the `cp`:** the index must be `0.00`. Anything else means the copy failed silently — stop and name the copy it prints. Run it from the skill, never as `.autopilot/sync.py`: that copy may be the old one, and it exits `3` when it is not the skill's own. A new repo has no `.autopilot/` yet and prints index `0.00`. The page's state snapshot is not counted as age.
+
 **`find -L`, and no `*` anywhere in it** — both measured on 2026-08-17. Skills are installed as symlinks (`~/.claude/skills/autopilot-jet` → `~/.agents/skills/autopilot-jet`) and a plain `find` will not follow one, so it reports nothing while the file sits right there; a `plugins/*/` glob is worse still, because in zsh an unmatched glob aborts the command before it runs — and the same line works in bash, which is what makes it hard to notice.
 
 Empty output means the skill lives somewhere none of those five roots cover: widen the search once, by hand, and carry on. Never regenerate the template, never read it into context, never edit it after the copy.
@@ -35,7 +37,7 @@ Empty output means the skill lives somewhere none of those five roots cover: wid
 
 **`sync.py` is the whole of the run's plumbing, and it lives beside the run, not in your head.** One call — `python3 .autopilot/sync.py` — mirrors `state.js` into the page, checks that it parses, and raises the server if it is not up. It replaced forty lines of bash that used to be executed by hand every flight, which is where the variation came from: the rule was written correctly and performed slightly differently each time. It finds its own directory from `__file__`, so a relative call works from the git root and an absolute path works from anywhere.
 
-**This block runs on every flight that opens the dashboard — new repo, new feature, resume alike.** «Copied once» is about the flight, not the folder: every command here is idempotent, the copy picks up what the skill has learned since, and a `.autopilot/` from before 2026-08-19 has no `index.html` until this line puts one there. The resume that skipped it is exactly how a returning user landed on a directory listing.
+**This block runs on every flight that opens the dashboard — new repo, new feature, resume alike — and it overwrites `dashboard.html` and `sync.py` each time, even when `.autopilot/` already exists.** An old copy is the failure to avoid: a project that kept an older `dashboard.html` showed the previous logo and layout through a whole run (measured 2026-09-29, noticed only by eye). Do not skip the block because the folder is there. It resets the snapshot inside the page, which is why §3's `sync.py` call follows it on a resume. «Copied once» is about the flight, not the folder: every command here is idempotent, the copy picks up what the skill has learned since, and a `.autopilot/` from before 2026-08-19 has no `index.html` until this line puts one there. The resume that skipped it is exactly how a returning user landed on a directory listing.
 
 ## 2. Write `.autopilot/state.js`
 
@@ -54,6 +56,7 @@ window.STATE =
   "polish": null,
   "tier": null,
   "briefFile": "2026-08-07-brief.md",
+  "briefSeals": {},
   "memoryFile": "AGENTS.md",
   "skillDir": "/Users/x/.claude/skills/autopilot-jet",
   "startedAt": "2026-08-07T14:02:06+03:00",
@@ -86,6 +89,8 @@ window.STATE =
 ```
 
 **`dir` is the run's directory, `slug` is the run's name, and they stopped being the same string.** The directory is `<YYYY-MM-DD>-<slug>--wip` while the flight is in the air and loses the suffix when it lands (`phases/0-preflight.md` step 1, `phases/8-final.md`). Every path goes through `dir`; `slug` is what the dashboard and the report call the run out loud. Rebuilding one from the other is wrong for the whole life of the run — which is exactly when paths are being written.
+
+**`briefSeals`** maps each brief file to the sha256 of its text above `## Дополнения`; it stays `{}` until Phase 1 has written and redacted the brief (`phases/1-manifest.md`, «Seal the brief»).
 
 Three of those fields exist because the orchestrator's context does not survive a compaction and these are the things it cannot rebuild from the repository:
 
@@ -183,6 +188,8 @@ Every one of them, two moves and no more: **edit the affected rows** of `state.j
 This is here because on 2026-08-19 `spec` stayed `active` for two and a half hours beside a finished plan and a running build, and the person who noticed was the user, looking at the dashboard. Half a ritual performed by hand is a ritual that will be half-performed.
 
 **Lines starting with `!` are the ones left for you, and they are fixed in the same turn.** What cannot be derived is not guessed: a stage the run walked past but never marked — `pending` behind an active one — needs `skipped` **and a reason**, and only you know it. Same for a ticket in flight with no `startedAt`. A wrong guess about what you meant is worse than the inconsistency it would paper over.
+
+**`!` lines also name a run that has gone past a rule, not only a half-written transition** — and these are not fixed by editing `state.js`, because there is nothing wrong with the record. `repairs`, `retries` or `handoffs` above two on a ticket, more than sixteen plan tickets (`P`-tickets of polish are counted apart), more than three polish rounds, a recorded `mode`, `depth` or `tier` outside its list (`full`·`semi`·`interview`·`manual`, `strict`·`normal`·`deep`, `T0`–`T3`) or a `polish` that is neither `null` nor an object — the run's policy can no longer be rebuilt from the record, and only you know which value was meant; two tickets in flight whose zones overlap while neither depends on the other: each is the ceiling in `phases/5-repair.md`, `phases/4-plan.md`, `phases/polish.md` or `phases/5-subagents.md` stating itself. The answer is the one those files give — the cut was wrong, and that goes into the report, not into one more attempt. `sync.py` does not stop anything; it names. **It does not check «three in flight»**: the launch rule has you start the next ticket before you process the one that came back, so a correct run shows four `in-progress` for a moment, and a record cannot tell that from a violation.
 
 **Skipping `sync.py` degrades, it does not break.** The page on http is fed by `state.js` either way; what goes stale is only what the page shows to someone who opens the file with no server behind it. So if a stretch of the build is one edit after another, syncing on the stage transition rather than on every single row is a judgement call you are allowed to make — but end every phase synced.
 
