@@ -75,7 +75,7 @@ In priority order:
 - **Everything else you decide yourself** and record it. Error wording, retry policy, sane defaults, naming, layout — that is craft, and Phase 3 is where it belongs. This line does **not** move with the mode: `interview` buys the user every decision that is genuinely theirs, not the right to be asked which HTTP status to return.
 
   «Everything else» is narrower than it sounds, and getting the line wrong in this direction is the expensive mistake. A decision belongs back in the interview, not in your hands, if it **costs the user money or ties them to a vendor**, if it **changes what they see or what they can do**, if **undoing it later means rebuilding rather than editing**, or if it **encodes a rule about their business** — prices, deadlines, who may do what, what happens to someone's data. None of those are craft, however obvious the answer looks from here. When you cannot tell which side a decision falls on, that uncertainty *is* the signal: ask.
-- **Nothing left open? Say so and go.** «Вопросов нет — в задаче всё однозначно, пишу спецификацию.» Mark the `briefing` stage `skipped` in `state.js` with the note «вопросов не потребовалось», so the user sees a decision rather than a step that quietly did not happen.
+- **Nothing left open? Say so and go.** «Вопросов нет — в задаче всё однозначно, пишу спецификацию.» Mark the `briefing` stage `skipped` in `state.js` with the note (the stage's `note` field) «вопросов не потребовалось», so the user sees a decision rather than a step that quietly did not happen.
 
 For calibration: in **semi** most briefs land between two and eight questions; in **interview** and **manual** ten to twenty-five on a real project is ordinary, since the forks `semi` settles quietly all reach the user there. **Neither range is a ceiling any more than a floor** — fifteen questions on a three-line marketplace brief is not an interrogation, it is the cheapest part of the build, and what makes a long interview bad is padding, never length.
 
@@ -155,7 +155,7 @@ The three marks stay distinct, and nothing here blurs them: **`G##` is the user'
 
 ## Full mode — the self-briefing
 
-**No interview happens.** The `briefing` stage in `state.js` is marked `skipped` with the note «полный автомат — самобрифинг», not left `pending`: the user has to see that the step was a decision, not a stall.
+**No interview happens.** The `briefing` stage in `state.js` is marked `skipped` with `"note": "полный автомат — самобрифинг"`, not left `pending`: the user has to see that the step was a decision, not a stall.
 
 Run the same checklist against yourself and write the answers into the manifest, each labelled by kind. At **`full deep`** the adversarial pass runs too, and every finding it produces that only the user could have settled becomes an `ASSUMPTION` — that is what «полный автомат» means here, not that the question was never worth asking. Each of them is a line in the Phase 8 report, and on a `deep` run that section is the longest one in it.
 

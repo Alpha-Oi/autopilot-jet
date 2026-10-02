@@ -132,6 +132,30 @@ class ReportTests(Fixture):
         self.assertEqual(report[0][2], sync.brief_digest(BRIEF))
         self.assertIn("не запечатан", sync.seal_findings(state, str(self.base))[0])
 
+    def test_a_named_brief_that_phase_one_has_not_written_yet_is_pending_not_a_finding(self):
+        # Phase 0 пишет state.js с именем брифа, а сам бриф пишет фаза 1: между ними находки быть не должно
+        (self.run_dir / NAME).unlink()
+        state = self.state(briefSeals={})
+        self.assertEqual(self.statuses(state), {NAME: "pending"})
+        self.assertEqual(sync.seal_findings(state, str(self.base)), [])
+
+    def test_the_brief_goes_pending_then_unsealed_then_sealed(self):
+        (self.run_dir / NAME).unlink()
+        state = self.state(briefSeals={})
+        seen = [self.statuses(state)[NAME]]
+        self.write_brief(BRIEF)
+        seen.append(self.statuses(state)[NAME])
+        state["briefSeals"] = {NAME: sync.brief_digest(BRIEF)}
+        seen.append(self.statuses(state)[NAME])
+        self.assertEqual(seen, ["pending", "unsealed", "sealed"])
+
+    def test_a_pending_brief_does_not_hide_a_changed_one(self):
+        second = "2026-11-01-brief.md"
+        self.write_brief(BRIEF.replace("ремонт", "ремонта"))
+        state = self.state(briefFile=second)
+        self.assertEqual(self.statuses(state), {NAME: "changed", second: "pending"})
+        self.assertEqual(len(sync.seal_findings(state, str(self.base))), 1)
+
     def test_a_state_without_the_field_is_unsealed_not_a_crash(self):
         state = self.state()
         del state["briefSeals"]
@@ -213,6 +237,12 @@ class CliTests(CliCase):
         self.assertEqual(code, 3, out)
         self.assertTrue(out.startswith("changed · " + NAME), out)
 
+    def test_a_brief_that_is_not_written_yet_exits_zero_and_says_pending(self):
+        (self.run_dir / NAME).unlink()
+        code, out = self.seal(self.state(briefSeals={}))
+        self.assertEqual(code, 0, out)
+        self.assertTrue(out.startswith("pending · " + NAME), out)
+
     def test_a_missing_brief_exits_three(self):
         (self.run_dir / NAME).unlink()
         self.assertEqual(self.seal(self.state())[0], 3)
@@ -276,6 +306,11 @@ class SyncSurfacesTheFindingTests(CliCase):
         out = self.sync_output(self.state())
         self.assertTrue(any(line.startswith("  ! бриф " + NAME + " изменён") for line in out.splitlines()), out)
 
+    def test_the_sync_line_is_quiet_while_the_brief_is_not_written_yet(self):
+        (self.run_dir / NAME).unlink()
+        out = self.sync_output(self.state(briefSeals={}))
+        self.assertNotIn("  ! ", out)
+
     def test_a_sealed_brief_keeps_the_sync_quiet(self):
         out = self.sync_output(self.state())
         self.assertNotIn("  ! ", out)
@@ -309,6 +344,10 @@ class TheProcedureIsWritten(unittest.TestCase):
     def test_the_state_template_carries_the_field(self):
         text = (SKILL / "phases" / "0-instruments.md").read_text(encoding="utf-8")
         self.assertIn('"briefSeals": {}', text)
+
+    def test_preflight_says_pending_is_a_state_to_go_on_from(self):
+        text = (SKILL / "phases" / "0-preflight.md").read_text(encoding="utf-8")
+        self.assertIn("`pending`", text)
 
     def test_preflight_runs_the_check_before_resuming(self):
         self.assertIn("--brief-seal", (SKILL / "phases" / "0-preflight.md").read_text(encoding="utf-8"))

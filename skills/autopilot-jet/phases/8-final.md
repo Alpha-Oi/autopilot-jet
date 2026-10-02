@@ -119,10 +119,15 @@ git -C "$A" mv "$D" "${D%--wip}"
 
 **Here, and not after the report.** The report names paths inside that directory (`## Где что лежит`), and a path that stops existing a minute after the user reads it is a broken path. The rename also has to be inside the final commit, so it goes before the memory file is committed, not after.
 
-Then two writes, both small:
+Then the **landing write** — one edit of `state.js`, made right after the rename with nothing in between (no `sync.py`, no other edit), plus one small edit of the README row:
 
-- `dir` in `state.js` → the new name. It is the field every path is built from, and the next session — a доводка, a «доделай» a month later — resolves nothing without it.
+- `dir` → the new name. It is the field every path is built from, and the next session — a доводка, a «доделай» a month later — resolves nothing without it.
+- **in the same write**, everything that says the run is over: `finishedAt` → now, the `blind` block, the refreshed `requirements` counts, and every stage closed — `final` to `done`, and anything still `active` or `pending` to `done`, `skipped` (with a note) or `failed`, whichever is true.
 - the run's row in `.autopilot/README.md` → status «сдан», and the `Итог` cell filled with **one line of what it delivered**, in the user's language. Not a stage count, not «готово»: what now exists that did not before. Once the dashboard moves on to the next flight, that row is the only place this run says what it was.
+
+**Why `dir` and `finishedAt` travel together.** A directory without `--wip` beside a `finishedAt` of `null` is what `sync.py --run-status` calls `resurrected` (`phases/0-preflight.md`): a closed run being reopened. The two marks of «landed» therefore appear in **one** write; a run interrupted between two writes would look reopened to the next session (measured in a pilot run, 2026-10-02). And the write goes **before the final commit**, so that git keeps the closed state: a `state.js` closed after the commit is a file the repository never sees closed.
+
+Then `python3 .autopilot/sync.py` once (it sees `finishedAt` and does not raise a server), so the snapshot inside `dashboard.html` freezes on the final numbers **before** the commit that carries it, and commit: the rename, the register, the closed `state.js`, the dashboard, the memory file.
 
 **If the rename fails, the run is not undone by it.** A name already taken by an earlier flight of the same slug, or a dirty index inside the directory — say it in one line, leave the directory as it is, and make `dir` in `state.js` match whatever it is actually called. A landed run wearing a `--wip` is a cosmetic defect; a `dir` pointing at a directory that does not exist breaks every path the next session builds.
 
@@ -234,13 +239,13 @@ npm install && npm run dev
 
 ## Closing the instruments
 
-The memory file goes in with the final commit, before this. Then, in `state.js` and nowhere else: set `finishedAt`, write the `blind` block, refresh the counts, close every stage — `final` to `done`, and anything still `active` or `pending` to `done`, `skipped` (with a note) or `failed`, whichever is true. A run whose dashboard says «в работе» a day after it landed is lying to the person who trusted it.
+The closing itself — `finishedAt`, the `blind` block, the counts, every stage closed — was done in the landing write (§2b) and went into the final commit together with the memory file. What is left here is the picture the user is left with and the server. A run whose dashboard says «в работе» a day after it landed is lying to the person who trusted it.
 
 The open page picks this up by itself within ten seconds — this is the picture the user is left with, and it arrives without you doing anything more.
 
 `finishedAt` also stops the clocks and the ten-second polling: the page freezes on the final numbers instead of counting time nobody is spending. Leave it `null` on a finished run and the user's total keeps growing overnight.
 
-**Sync once more right after writing it** — `python3 .autopilot/sync.py`. This is the write that decides what a landed run looks like six months later: the snapshot inside `dashboard.html` freezes on the final numbers, so the page opens from the archive with the whole flight intact, long after the server is gone. `sync.py` sees `finishedAt` and does not raise a server for a run that has landed, so this cannot resurrect what the next block is about to kill.
+**The sync that follows the landing write decides what a landed run looks like six months later**: the snapshot inside `dashboard.html` freezes on the final numbers, so the page opens from the archive with the whole flight intact, long after the server is gone. `sync.py` sees `finishedAt` and does not raise a server for a run that has landed, so this cannot resurrect what the next block is about to kill.
 
 **Then, and only then, put out the server** — the one Phase 0 started for the pane (`phases/0-instruments.md`). It goes last because the page has to fetch the final state first, and it goes at all because a run that ends leaving an HTTP server on the user's machine has left something running that nobody will ever think to stop.
 

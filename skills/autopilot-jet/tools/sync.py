@@ -586,7 +586,8 @@ def brief_seal_report(state, base):
 
     Статусы: "sealed" — хеш совпал; "changed" — текст выше «## Дополнения» не тот, что запечатан; "missing" —
     запечатанного файла нет; "unreadable" — не прочитан; "unsealed" — бриф из `briefFile` есть, печати нет;
-    "badname" — запись печати указывает не на файл рядом, а на путь. Каталог брифов: `base/<dir>`."""
+    "pending" — `briefFile` назван (его пишет шаблон `state.js` в Phase 0), а файла ещё нет: бриф пишет фаза 1,
+    это не находка; "badname" — запись печати указывает не на файл рядом, а на путь. Каталог брифов: `base/<dir>`."""
     seals = state.get("briefSeals")
     seals = seals if isinstance(seals, dict) else {}
     directory = state.get("dir")
@@ -606,7 +607,7 @@ def brief_seal_report(state, base):
             with open(path, encoding="utf-8", errors="replace") as handle:
                 digest = brief_digest(handle.read())
         except FileNotFoundError:
-            rows.append((name, "missing" if name in seals else "unsealed", None))
+            rows.append((name, "missing" if name in seals else "pending", None))
             continue
         except OSError:
             rows.append((name, "unreadable", None))
@@ -665,9 +666,11 @@ def check_brief_seal(directory):
     for name, status, digest in rows:
         if status == "sealed":
             print("sealed · %s · %s" % (name, digest[:12]))
+        elif status == "pending":
+            print("pending · %s · файла ещё нет: его запишет фаза 1" % name)
         elif status == "unsealed":
             worst = max(worst, 1)
-            print("unsealed · %s · sha256 %s" % (name, digest or "нет файла"))
+            print("unsealed · %s · sha256 %s" % (name, digest))
         else:
             worst = 3
             print("%s · %s%s" % (status, name, (" · сейчас %s" % digest[:12]) if digest else ""))
@@ -761,6 +764,13 @@ def zone_report(state, root, files_of=commit_files):
     return rows
 
 
+def unfinished_tickets(state):
+    """Таски не в `done`, как «id (статус)»: проверка зон их не судит, и об этом надо сказать вслух."""
+    tickets = state.get("tickets")
+    return ["%s (%s)" % (t.get("id"), t.get("status")) for t in (tickets if isinstance(tickets, list) else [])
+            if isinstance(t, dict) and t.get("status") != "done"]
+
+
 def check_zone(directory):
     """Режим --zone-check: ничего не пишет. Возвращает код выхода."""
     try:
@@ -781,12 +791,15 @@ def check_zone(directory):
         print("unknown · state.js не разобран как запись прогона")
         return 3
     rows = zone_report(state, os.path.dirname(os.path.abspath(directory)))
+    waiting = unfinished_tickets(state)
+    later = ("ещё не готовы: " + ", ".join(waiting)) if waiting else ""
     if not rows:
-        print("none · готовых тасков нет")
+        print("none · готовых тасков нет" + ((" · " + later) if later else ""))
         return 0
     outside = [row for row in rows if row[1] == "outside"]
     unchecked = [row for row in rows if row[1] == "unchecked"]
-    print("zone · проверено %d из %d · вне зоны %d" % (len(rows) - len(unchecked), len(rows), len(outside)))
+    print("zone · проверено %d из %d · вне зоны %d%s" % (len(rows) - len(unchecked), len(rows), len(outside),
+                                                          (" · " + later) if later else ""))
     zones = {str(t.get("id")): ticket_zone(t) for t in state.get("tickets") or [] if isinstance(t, dict)}
     for name, _status, files in outside:
         print("  ! таск %s вне зоны %s: %s" % (name, " · ".join(zones.get(name) or []), ", ".join(files)))

@@ -126,6 +126,35 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(sync.closure_findings({}), [])
 
 
+class LandingWriteTests(unittest.TestCase):
+    """Фаза 8: каталог без --wip и finishedAt появляются одной записью. Иначе следующая сессия видит «воскрешение»."""
+
+    PHASES = Path(__file__).parents[1] / "skills" / "autopilot-jet" / "phases"
+
+    def test_the_run_before_landing_is_open_in_a_wip_directory(self):
+        self.assertEqual(verdict(open_run()), "open")
+
+    def test_the_gap_between_the_rename_and_finishedAt_reads_as_resurrected(self):
+        gap = open_run(dir="2026-10-01-feature")
+        self.assertEqual(verdict(gap), "resurrected")
+        self.assertTrue(any("без --wip" in line for line in sync.audit(gap)))
+
+    def test_the_landing_write_gives_a_closed_run_that_nothing_names(self):
+        landed = closed_run(dir="2026-10-01-feature")
+        self.assertEqual(verdict(landed), "closed")
+        self.assertEqual(sync.audit(landed), [])
+
+    def test_phase_eight_writes_the_rename_and_finishedAt_together_before_the_final_commit(self):
+        text = (self.PHASES / "8-final.md").read_text(encoding="utf-8")
+        self.assertIn("landing write", text)
+        self.assertIn("in the same write", text)
+        self.assertIn("before the final commit", text)
+
+    def test_phase_eight_no_longer_closes_the_run_after_the_commit(self):
+        text = (self.PHASES / "8-final.md").read_text(encoding="utf-8")
+        self.assertNotIn("Then, in `state.js` and nowhere else: set `finishedAt`", text)
+
+
 class AuditIntegrationTests(unittest.TestCase):
     def test_audit_names_a_closed_run_that_is_written_to_again(self):
         state = closed_run(stages=[{"id": "build", "status": "active", "startedAt": stamp(0, 5)}])
