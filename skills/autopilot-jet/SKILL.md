@@ -178,6 +178,17 @@ Reproduction is forbidden, not merely unused. A run never starts another run.
 
 What this does not cover: the host agent has its own subagent tool, and nothing in this repository stops it. The ban on using it for a second run is an instruction, so the first two bullets are not enforced.
 
+## Autopilot federates with nothing
+
+`federation: none`. The skill exchanges no data, tasks or identity with another Autopilot or any other system, so it carries no treaty, quota or revocation machinery: there is nobody to make a treaty with.
+
+- **Its scripts talk only to this machine.** The scripts in `tools/` open connections to `127.0.0.1` alone: they probe the dashboard server this run raised, and that server is started with `--bind 127.0.0.1`, so nothing off the machine can reach it.
+- **The dashboard reads one file.** The page loads the `state.js` beside it and nothing else: no external script, font, image or request, and the logos are embedded.
+- **What leaves the machine is the host's doing** — the LLM provider, git remotes, the installer — and sits outside this skill (`docs/conformance/DOA_CONFORMANCE_CLAIM.yaml`, `scope.boundary`).
+- `tests/test_no_federation.py` fails if a script imports a network client, opens a connection that is not to `127.0.0.1`, starts a server that is not bound to `127.0.0.1`, or if the dashboard template refers to anything off the page.
+
+What this does not cover: the host agent's own network tools, and the product an executor builds in the user's project (an app may call an API: that is the product, not the skill). That the skill adds no federation is an instruction to the LLM; only the scripts and the template are checked.
+
 ## Judgement
 
 This skill describes a process, not the product. Its numbers — tiers, question counts, story counts, wave widths — are **calibration for a first guess, never targets to hit.** A spec written to reach a story count, or a plan cut to land inside a tier, has optimised for the rule instead of for the person who asked.
