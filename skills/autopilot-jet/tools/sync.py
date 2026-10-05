@@ -104,6 +104,11 @@ PROCESS_DELIMITER = "\x1f"
 COUNTER_CEILING = 2       # repairs, retries, handoffs на один таск
 TICKET_CEILING = 16       # таски плана; P-таски доводки считаются отдельно
 POLISH_ROUNDS_CEILING = 3
+# «Не больше трёх в полёте» (phases/5-subagents.md). Правило запуска велит сначала запустить следующий
+# таск, потом обработать вернувшийся, так что у верного прогона в state.js на миг четыре in-progress:
+# тройка в полёте плюс один вернувшийся, ещё не записанный в review. Пятый — уже не гонка записей.
+FLIGHT_CAP = 3
+FLIGHT_SEEN_MAX = FLIGHT_CAP + 1
 RESUME_STALE_DAYS = 7           # открытый прогон, не писавшийся дольше, возобновляют только по слову пользователя
 LIVE_TICKET_STATUSES = ("in-progress", "review", "repair")
 OTHER_WINDOW_SECONDS = 300   # «меньше пяти минут» из четвёртого случая phases/0-preflight.md
@@ -1180,9 +1185,11 @@ def audit_caps(state):
         раундов доводки не больше трёх: счётчики только растут, поэтому превышение — не гонка
         записей, а факт;
       - зоны тасков «в работе» не пересекаются, если один не зависит от другого.
-    Чего здесь нет: «не больше трёх в полёте». Правило запуска (5-subagents.md) велит сначала
+      - не больше четырёх in-progress сразу (потолок полёта три плюс один вернувшийся: см. FLIGHT_SEEN_MAX).
+    Чего здесь нет: ровно «не больше трёх в полёте». Правило запуска (5-subagents.md) велит сначала
     запустить следующий таск и только потом обработать вернувшийся, так что у верного прогона
-    в state.js на миг четыре in-progress; по записи это не отличить от нарушения.
+    в state.js на миг четыре in-progress; по записи это не отличить от нарушения. Поэтому четыре молчат,
+    а пять и больше названы: это нарушение потолка по любой очерёдности записей.
     Что делать с найденным — в phases/5-repair.md: отрез был неверным, это в отчёт, не в новую попытку.
     """
     out = []
@@ -1202,6 +1209,9 @@ def audit_caps(state):
         out.append("раундов доводки %d, потолок %d — потолок не поднимают потому, что последний раунд был удачным"
                    % (len(rounds), POLISH_ROUNDS_CEILING))
     flying = [t for t in tickets if t.get("status") == "in-progress" and t.get("id") is not None]
+    if len(flying) > FLIGHT_SEEN_MAX:
+        out.append("в работе %d тасков (%s), потолок полёта %d — лишние ждут свободного места, это не параллельность"
+                   % (len(flying), ", ".join(str(t["id"]) for t in flying), FLIGHT_CAP))
     by_id = {t["id"]: t for t in tickets if t.get("id") is not None}
     clashes = []
     for i, first in enumerate(flying):
