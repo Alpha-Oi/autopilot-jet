@@ -57,6 +57,18 @@
 Режим только читает и печатает хеш: записывает его агент. Коды выхода: 0 — все брифы совпали или прогона нет,
 1 — есть не запечатанный бриф (хеш напечатан), 3 — бриф изменён, исчез или не прочитан.
 
+Ещё один такой же режим, тоже только чтение — печать памяти проекта (класс отказов F-06 стандарта DOA: отравление данных
+и памяти):
+
+    python3 <каталог навыка>/tools/sync.py --memory-seal [КАТАЛОГ]
+
+Память проекта (`CLAUDE.md` или `AGENTS.md`, имя в `memoryFile`) читает каждый следующий прогон как указания, а править
+её может кто угодно между прогонами. Хеш всего файла записывают в `state.js` как `memorySeals[<имя файла>]` после того,
+как память прочитана и проверена (фаза 0) и после того, как её дописала фаза 8; режим сверяет файл с записью и называет
+изменение, но не судит о тексте: правку пользователя от подложенной он не отличает. Только чтение, хеш записывает агент.
+Коды выхода: 0 — печать совпала, памяти ещё нет или прогона нет, 1 — память не запечатана (хеш напечатан), 3 — память
+изменена, исчезла или не прочитана.
+
 Пятый такой же режим, тоже только чтение — файлы таска против его зоны (REQ-CORE-05 и REQ-CORE-26 стандарта DOA):
 
     python3 <каталог навыка>/tools/sync.py --zone-check [КАТАЛОГ]
@@ -677,6 +689,106 @@ def check_brief_seal(directory):
     return worst
 
 
+def memory_digest(text):
+    """sha256 всего файла памяти. Переводы строк, BOM и хвостовые пробелы не считаются изменением: их меняют
+    редакторы и git. В отличие от брифа, в хеш входит всё: и блок между `autopilot:start`/`end`, и то, что
+    пользователь написал вокруг него, потому что следующий прогон читает файл целиком."""
+    text = text.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(text.rstrip().encode("utf-8")).hexdigest()
+
+
+def memory_seal_report(state, base):
+    """Печать памяти проекта. Возвращает список (файл, статус, хеш файла или None): пустой — `memoryFile` не назван.
+
+    Статусы те же, что у брифа: "sealed", "changed", "missing" (запечатанного файла нет), "unreadable", "unsealed"
+    (файл есть, печати нет), "badname" (имя указывает на путь, а не на файл в корне проекта); "pending" — файла
+    памяти ещё нет и печати тоже (проект без памяти: фаза 0 её только поднимет). Файл ищется в корне проекта,
+    то есть на уровень выше каталога `.autopilot` (`base`)."""
+    seals = state.get("memorySeals")
+    seals = seals if isinstance(seals, dict) else {}
+    names = list(seals)
+    memory = state.get("memoryFile")
+    if isinstance(memory, str) and memory and memory not in seals:
+        names.append(memory)
+    root = os.path.dirname(os.path.abspath(base))
+    rows = []
+    for name in names:
+        if not _plain_name(name):
+            rows.append((str(name), "badname", None))
+            continue
+        try:
+            with open(os.path.join(root, name), encoding="utf-8", errors="replace") as handle:
+                digest = memory_digest(handle.read())
+        except FileNotFoundError:
+            rows.append((name, "missing" if name in seals else "pending", None))
+            continue
+        except OSError:
+            rows.append((name, "unreadable", None))
+            continue
+        if name not in seals:
+            rows.append((name, "unsealed", digest))
+        else:
+            rows.append((name, "sealed" if seals[name] == digest else "changed", digest))
+    return rows
+
+
+def memory_findings(state, base):
+    """Что в печати памяти требует слова человека. Пусто — запечатанная память совпала или печати ещё нет.
+
+    «Не запечатана» находкой не считается: печать берётся после чтения и проверки (фаза 0) и после записи
+    фазы 8, и между ними у открытого прогона её законно ещё нет."""
+    out = []
+    for name, status, _digest in memory_seal_report(state, base):
+        if status == "changed":
+            out.append("память проекта %s изменена после печати: прочитать, что изменилось (git diff), "
+                       "проверить injection_scan.py и сказать пользователю" % name)
+        elif status == "missing":
+            out.append("запечатанной памяти проекта %s нет на месте" % name)
+        elif status == "unreadable":
+            out.append("память проекта %s не прочитана: сверить с печатью нечем" % name)
+        elif status == "badname":
+            out.append("печать памяти указывает не на файл в корне проекта: %s" % name)
+    return out
+
+
+def check_memory_seal(directory):
+    """Режим --memory-seal: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    rows = memory_seal_report(state, directory)
+    if not rows:
+        print("none · памяти проекта в записи нет (нет memoryFile)")
+        return 0
+    worst = 0
+    for name, status, digest in rows:
+        if status == "sealed":
+            print("sealed · %s · %s" % (name, digest[:12]))
+        elif status == "pending":
+            print("pending · %s · файла памяти ещё нет: его поднимет фаза 0" % name)
+        elif status == "unsealed":
+            worst = max(worst, 1)
+            print("unsealed · %s · sha256 %s" % (name, digest))
+        else:
+            worst = 3
+            print("%s · %s%s" % (status, name, (" · сейчас %s" % digest[:12]) if digest else ""))
+    return worst
+
+
 ZONE_ALWAYS_ALLOWED = (".autopilot",)
 COMMIT_ID = re.compile(r"^[0-9a-fA-F]{4,64}$")
 
@@ -806,6 +918,140 @@ def check_zone(directory):
     for name, _status, why in unchecked:
         print("  · таск %s не проверен: %s" % (name, why))
     return 1 if outside else (3 if unchecked else 0)
+
+
+def commits_since(root, base):
+    """Коммиты от `base` (не включая) до HEAD, новые первыми: [(полный хеш, число родителей)]. Только чтение.
+
+    Возвращает (список, None) или (None, причина). Не предок HEAD или отсутствующий в git `base` — причина, а не
+    пустой список: откат от неизвестной точки назвал бы чужие коммиты кругом."""
+    try:
+        known = subprocess.run(["git", "rev-parse", "--verify", "--quiet", base + "^{commit}"], cwd=root,
+                               capture_output=True, timeout=30)
+        if known.returncode != 0:
+            return None, "baseCommit %s нет в git" % base[:12]
+        stray = subprocess.run(["git", "rev-list", "-n", "1", base, "^HEAD"], cwd=root, capture_output=True,
+                               timeout=30)
+        walk = subprocess.run(["git", "rev-list", "--topo-order", "--parents", base + "..HEAD"], cwd=root,
+                              capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None, "git не ответил"
+    if stray.returncode != 0 or walk.returncode != 0:
+        return None, "git не ответил"
+    if stray.stdout.strip():
+        return None, "baseCommit %s не лежит в истории текущей ветки" % base[:12]
+    rows = []
+    for line in walk.stdout.decode("utf-8", "replace").splitlines():
+        names = line.split()
+        if names:
+            rows.append((names[0], len(names) - 1))
+    return rows, None
+
+
+def reverted_commits(root, shas):
+    """Какие из коммитов уже откатаны: в истории есть «This reverts commit <хеш>» (так подписывает `git revert`).
+    Возвращает (множество хешей, None) или (None, причина). Только чтение."""
+    done = set()
+    for sha in shas:
+        try:
+            found = subprocess.run(["git", "rev-list", "-n", "1", "--fixed-strings",
+                                    "--grep=This reverts commit " + sha, "HEAD"], cwd=root, capture_output=True,
+                                   timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return None, "git не ответил"
+        if found.returncode != 0:
+            return None, "git не ответил"
+        if found.stdout.strip():
+            done.add(sha)
+    return done, None
+
+
+def rollback_plan(state, root, history_of=commits_since, reverted_of=reverted_commits):
+    """План отката последнего круга доводки (REQ-CORE-10). Возвращает (статус, подробности).
+
+    "none" — откатывать нечего (подробности: почему); "unplanned" — круг есть, а план по записи не построить
+    (подробности: причина); "plan" — подробности: (номер круга, [(таск, полный хеш)] новыми первыми). Ничего не
+    пишет: команда отката печатается, а не выполняется. Круг, который уже откатан (так записано в `stoppedBy` или
+    для его коммитов есть коммиты-откаты), плана не получает: повторный `git revert` тех же коммитов остановился бы
+    посреди отката и оставил репозиторий в состоянии «revert in progress»."""
+    polish = state.get("polish")
+    rounds = polish.get("rounds") if isinstance(polish, dict) else None
+    if not isinstance(rounds, list) or not rounds or not isinstance(rounds[-1], dict):
+        return "none", "кругов доводки нет"
+    if polish.get("stoppedBy") == "regression":
+        return "none", "круг уже откатан (stoppedBy: regression)"
+    last = rounds[-1]
+    number = last.get("n")
+    names = last.get("tickets")
+    if not isinstance(names, list) or not names:
+        return "none", "в круге %s нет тасков" % number
+    base = polish.get("baseCommit")
+    if not isinstance(base, str) or not COMMIT_ID.match(base):
+        return "unplanned", "у доводки нет baseCommit"
+    tickets = {str(t.get("id")): t for t in state.get("tickets") or [] if isinstance(t, dict)}
+    wanted = []
+    for name in (str(n) for n in names):
+        ticket = tickets.get(name)
+        commit = ticket.get("commit") if ticket else None
+        if ticket is None:
+            return "unplanned", "таска %s нет в tickets" % name
+        if not isinstance(commit, str) or not COMMIT_ID.match(commit):
+            return "unplanned", "у таска %s нет commit" % name
+        wanted.append((name, commit.lower()))
+    history, why = history_of(root, base)
+    if history is None:
+        return "unplanned", why
+    found = {}
+    for name, commit in wanted:
+        hits = [(sha, parents) for sha, parents in history if sha.startswith(commit)]
+        if len(hits) != 1:
+            return "unplanned", "коммита %s (таск %s) нет между baseCommit и HEAD" % (commit[:12], name)
+        if hits[0][1] > 1:
+            return "unplanned", "коммит %s (таск %s) — слияние: откат слияния не планируется" % (commit[:12], name)
+        found[hits[0][0]] = name
+    done, why = reverted_of(root, sorted(found))
+    if done is None:
+        return "unplanned", why
+    if done and done == set(found):
+        return "none", "круг уже откатан: для всех его коммитов есть коммиты-откаты"
+    if done:
+        return "unplanned", "круг откатан частично (%d из %d коммитов): что осталось, решает человек" % (
+            len(done), len(found))
+    return "plan", (number, [(found[sha], sha) for sha, _parents in history if sha in found])
+
+
+def check_rollback_plan(directory):
+    """Режим --rollback-plan: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    status, detail = rollback_plan(state, os.path.dirname(os.path.abspath(directory)))
+    if status == "none":
+        print("none · откатывать нечего: %s" % detail)
+        return 1
+    if status == "unplanned":
+        print("unplanned · план отката не построен: %s" % detail)
+        return 3
+    number, rows = detail
+    print("rollback · круг %s · коммитов %d · git revert --no-edit %s" % (number, len(rows),
+                                                                          " ".join(sha for _name, sha in rows)))
+    for name, sha in rows:
+        print("  · таск %s · %s" % (name, sha[:12]))
+    return 0
 
 
 ORDER = ["preflight", "manifest", "briefing", "spec", "plan", "build", "review", "final"]
@@ -997,6 +1243,18 @@ def main():
             print("использование: sync.py --zone-check [КАТАЛОГ]")
             sys.exit(2)
         sys.exit(check_zone(os.path.abspath(rest[0]) if rest else A))
+    if "--rollback-plan" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--rollback-plan"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --rollback-plan [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_rollback_plan(os.path.abspath(rest[0]) if rest else A))
+    if "--memory-seal" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--memory-seal"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --memory-seal [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_memory_seal(os.path.abspath(rest[0]) if rest else A))
     if "--brief-seal" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
@@ -1030,7 +1288,7 @@ def main():
     print("%s · %s · обновлено %s" % (snap, srv, (state.get("updatedAt") or "?")[11:19]))
     for line in passed:
         print("  · " + line)
-    for line in (seal_findings(state, A) + audit(state))[:5]:
+    for line in (seal_findings(state, A) + memory_findings(state, A) + audit(state))[:5]:
         print("  ! " + line)
 
 

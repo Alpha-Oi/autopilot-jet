@@ -1,0 +1,42 @@
+name: Release
+
+# Тег и релиз ставит GitHub, а не человек и не ИИ-агент: у агента нет права на теги в этой среде.
+# Срабатывает на слияние в main. Версия и описание берутся из верхнего выпущенного раздела CHANGELOG.md
+# (tools/release.py). Если тег этой версии уже есть, workflow ничего не делает, поэтому повторные слияния
+# в main без новой версии безвредны. Проверки CI на main workflow не ждёт: релизный PR в main уже прошёл их
+# на development, а красный main виден в Actions.
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read version and notes from CHANGELOG
+        run: |
+          version="$(python3 tools/release.py version)"
+          python3 tools/release.py notes > "$RUNNER_TEMP/release-notes.md"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Create tag and release when the tag is missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v${VERSION}" > /dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists; nothing to release."
+            exit 0
+          fi
+          gh release create "v${VERSION}" --target "${GITHUB_SHA}" --title "v${VERSION}" --notes-file "$RUNNER_TEMP/release-notes.md"

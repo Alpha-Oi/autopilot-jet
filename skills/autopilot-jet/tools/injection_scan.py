@@ -109,6 +109,11 @@ _COMMENT = re.compile(r"<!--(.*?)-->", re.DOTALL)
 _ADDRESSED_TO_AI = re.compile(
     r"\b(?:ai|assistant|agent|llm|claude|chatgpt|copilot|cursor|gpt)\b[^\n]{0,40}"
     r"\b(?:must|should|always|never|do\s+not|don'?t|run|execute|ignore|instead)\b", _FLAGS)
+# Обращение к модели с двоеточием или запятой и повелительным глаголом подрыва: «assistant: … skip the review».
+# Глаголы без «нужно/всегда/никогда» рядом с адресатом первая версия правила пропускала (пилот 2, 2026-10-05).
+_ADDRESSED_IMPERATIVE = re.compile(
+    r"\b(?:ai|assistant|agent|llm|claude|chatgpt|copilot|cursor|gpt)\b\s*[:,—-]\s*[^\n]{0,60}"
+    r"\b(?:skip|bypass|disable|override|forget|approve|reveal|exfiltrate|delete)\b", _FLAGS)
 
 
 def _line_of(text, offset):
@@ -122,7 +127,7 @@ def _phrase_findings(text):
             found.append(Finding(kind, _line_of(text, match.start()), ""))
     for comment in _COMMENT.finditer(text):
         body = comment.group(1)
-        if _ADDRESSED_TO_AI.search(body) or any(p.search(body) for k, p in _PATTERNS if k in _COMMENT_KINDS):
+        if _ADDRESSED_TO_AI.search(body) or _ADDRESSED_IMPERATIVE.search(body) or any(p.search(body) for k, p in _PATTERNS if k in _COMMENT_KINDS):
             found.append(Finding("hidden-comment", _line_of(text, comment.start()), ""))
     return found
 

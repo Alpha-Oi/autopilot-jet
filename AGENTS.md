@@ -70,7 +70,7 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 
 - Финальный release payload — `c23de4263454dae03faa5341bceb7d5d24360230` в `development`; PR #1 смержен в `main` merge commit `ca6743bb0b2453c79325fe30f6b9680b911ef4ed`.
 - Локальный release gate на момент release payload: 33 tests/`OK` за 9.587s, exact isolated flake8 7.3.0 → `0`, `measure-run --check-only` → `OK`; benchmark `457.34ms < 712.29ms`, queries `0/15000`.
-- Актуально на `development` после PR с исправлением недочётов пилота (2026-10-02): 359 tests/`OK` (45 прежних, включая тест лимитов запросов процессов из #31 и 4 теста помощника повторов в `tests/test_native_runtime.py`, + 21 `tests/test_redact.py` + 26 `tests/test_sync_state.py` + 7 `tests/test_dependency_free.py` + 5 `tests/test_memory_freshness.py` + 21 `tests/test_sync_caps.py` + 9 `tests/test_sync_dials.py` + 11 `tests/test_failure_classes.py` + 21 `tests/test_injection_scan.py` + 13 `tests/test_no_reproduction.py` + 26 `tests/test_other_window.py` + 15 `tests/test_no_federation.py` + 19 `tests/test_aging.py` + 29 `tests/test_run_status.py` + 45 `tests/test_brief_seal.py` + 46 `tests/test_zone_check.py`), flake8 `0`, `measure-run --check-only` → `OK`; CI подтверждается Actions на соответствующем коммите. Строки про 33 теста выше — исторический release gate, не текущее состояние.
+- Актуально на `development` после PR с печатью памяти проекта (2026-10-05): 484 tests/`OK` (45 прежних, включая тест лимитов запросов процессов из #31 и 4 теста помощника повторов в `tests/test_native_runtime.py`, + 21 `tests/test_redact.py` + 26 `tests/test_sync_state.py` + 7 `tests/test_dependency_free.py` + 5 `tests/test_memory_freshness.py` + 21 `tests/test_sync_caps.py` + 9 `tests/test_sync_dials.py` + 11 `tests/test_failure_classes.py` + 23 `tests/test_injection_scan.py` + 13 `tests/test_no_reproduction.py` + 26 `tests/test_other_window.py` + 15 `tests/test_no_federation.py` + 19 `tests/test_aging.py` + 29 `tests/test_run_status.py` + 45 `tests/test_brief_seal.py` + 46 `tests/test_zone_check.py` + 45 `tests/test_rollback_plan.py` + 29 `tests/test_release_workflow.py` + 49 `tests/test_memory_seal.py`), flake8 `0`, `measure-run --check-only` → `OK`; CI подтверждается Actions на соответствующем коммите. Строки про 33 теста выше — исторический release gate, не текущее состояние.
 - Реальный Edge smoke предыдущего среза → live state update и controls видимы, exit `0`; benchmark `483.02ms < 666.80ms`, queries `0/15000`. Для текущего 100% checkpoint реальная browser tab отдельно не подтверждена.
 - GitHub Actions run `36339995752` для exact development SHA и PR-head run `36340188512` завершились `success` на Windows/Ubuntu/macOS (на момент release payload): 33 tests/`OK`, lint `0`, benchmark pass и measure `OK` на каждом native runner.
 - Финальный dashboard: embedded snapshot совпадает с `.autopilot/state.js`, `100%`, `7/7` тасков, run завершён. Реальный Edge smoke относится к предыдущему source-identical срезу; финальный metadata-only snapshot отдельно в живой browser tab не проверялся.
@@ -83,6 +83,14 @@ python -X utf8 -B .autopilot/sync.py --no-serve
 - Пользователь 2026-09-27 явно разрешил exact Public payload и последовательность; она выполнена: lease-защищённый `development`, exact-SHA CI, `main` от upstream base `99c7e736`, PR #1, fresh PR-head CI, merge и post-merge memory/dashboard.
 - Public repository остаётся `Alpha-Oi/autopilot-jet`, id `1372711955`, default branch `development`; `main` содержит полный release через merge commit `ca6743b`.
 - Финальное evidence (`release-finalization-20260927.json`) хранится локально у автора в `.autopilot/` и в репозиторий не входит. Незавершённых release-обязательств нет.
+
+## Как работать с владельцем репозитория
+
+Правило записано по прямой просьбе владельца (2026-10-05) и действует для любого ассистента в этом репозитории.
+
+- Когда предлагаешь несколько вариантов или шагов, выводи **каждый** тремя частями: что нужно сделать, что это даст, какие замечания и пределы именно у этого пункта. Скажи, сколько пунктов можно сделать сразу, а какие требуют решения или рук владельца (настройки репозитория на GitHub, публичные и необратимые действия, выбор между вариантами).
+- Всё, что можно сделать **сразу, за один проход**, делай сразу и не жди отдельной команды на каждый пункт: проверки CI, подготовку PR, слияние в `development` после зелёных проверок, обновление документов. Останавливайся только там, где нужен выбор владельца или его руки, и скажи, где именно и почему.
+- Это не отменяет остальных правил: публичное и необратимое (слияние в `main`, тег, релиз) по-прежнему требует явного согласия, а проверки по задачам (ubuntu, macOS, windows) перед слиянием обязательны.
 
 ## Как здесь работает Autopilot
 
