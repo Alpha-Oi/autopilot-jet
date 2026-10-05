@@ -57,6 +57,18 @@
 Режим только читает и печатает хеш: записывает его агент. Коды выхода: 0 — все брифы совпали или прогона нет,
 1 — есть не запечатанный бриф (хеш напечатан), 3 — бриф изменён, исчез или не прочитан.
 
+Ещё один такой же режим, тоже только чтение — печать памяти проекта (класс отказов F-06 стандарта DOA: отравление данных
+и памяти):
+
+    python3 <каталог навыка>/tools/sync.py --memory-seal [КАТАЛОГ]
+
+Память проекта (`CLAUDE.md` или `AGENTS.md`, имя в `memoryFile`) читает каждый следующий прогон как указания, а править
+её может кто угодно между прогонами. Хеш всего файла записывают в `state.js` как `memorySeals[<имя файла>]` после того,
+как память прочитана и проверена (фаза 0) и после того, как её дописала фаза 8; режим сверяет файл с записью и называет
+изменение, но не судит о тексте: правку пользователя от подложенной он не отличает. Только чтение, хеш записывает агент.
+Коды выхода: 0 — печать совпала, памяти ещё нет или прогона нет, 1 — память не запечатана (хеш напечатан), 3 — память
+изменена, исчезла или не прочитана.
+
 Пятый такой же режим, тоже только чтение — файлы таска против его зоны (REQ-CORE-05 и REQ-CORE-26 стандарта DOA):
 
     python3 <каталог навыка>/tools/sync.py --zone-check [КАТАЛОГ]
@@ -677,6 +689,106 @@ def check_brief_seal(directory):
     return worst
 
 
+def memory_digest(text):
+    """sha256 всего файла памяти. Переводы строк, BOM и хвостовые пробелы не считаются изменением: их меняют
+    редакторы и git. В отличие от брифа, в хеш входит всё: и блок между `autopilot:start`/`end`, и то, что
+    пользователь написал вокруг него, потому что следующий прогон читает файл целиком."""
+    text = text.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(text.rstrip().encode("utf-8")).hexdigest()
+
+
+def memory_seal_report(state, base):
+    """Печать памяти проекта. Возвращает список (файл, статус, хеш файла или None): пустой — `memoryFile` не назван.
+
+    Статусы те же, что у брифа: "sealed", "changed", "missing" (запечатанного файла нет), "unreadable", "unsealed"
+    (файл есть, печати нет), "badname" (имя указывает на путь, а не на файл в корне проекта); "pending" — файла
+    памяти ещё нет и печати тоже (проект без памяти: фаза 0 её только поднимет). Файл ищется в корне проекта,
+    то есть на уровень выше каталога `.autopilot` (`base`)."""
+    seals = state.get("memorySeals")
+    seals = seals if isinstance(seals, dict) else {}
+    names = list(seals)
+    memory = state.get("memoryFile")
+    if isinstance(memory, str) and memory and memory not in seals:
+        names.append(memory)
+    root = os.path.dirname(os.path.abspath(base))
+    rows = []
+    for name in names:
+        if not _plain_name(name):
+            rows.append((str(name), "badname", None))
+            continue
+        try:
+            with open(os.path.join(root, name), encoding="utf-8", errors="replace") as handle:
+                digest = memory_digest(handle.read())
+        except FileNotFoundError:
+            rows.append((name, "missing" if name in seals else "pending", None))
+            continue
+        except OSError:
+            rows.append((name, "unreadable", None))
+            continue
+        if name not in seals:
+            rows.append((name, "unsealed", digest))
+        else:
+            rows.append((name, "sealed" if seals[name] == digest else "changed", digest))
+    return rows
+
+
+def memory_findings(state, base):
+    """Что в печати памяти требует слова человека. Пусто — запечатанная память совпала или печати ещё нет.
+
+    «Не запечатана» находкой не считается: печать берётся после чтения и проверки (фаза 0) и после записи
+    фазы 8, и между ними у открытого прогона её законно ещё нет."""
+    out = []
+    for name, status, _digest in memory_seal_report(state, base):
+        if status == "changed":
+            out.append("память проекта %s изменена после печати: прочитать, что изменилось (git diff), "
+                       "проверить injection_scan.py и сказать пользователю" % name)
+        elif status == "missing":
+            out.append("запечатанной памяти проекта %s нет на месте" % name)
+        elif status == "unreadable":
+            out.append("память проекта %s не прочитана: сверить с печатью нечем" % name)
+        elif status == "badname":
+            out.append("печать памяти указывает не на файл в корне проекта: %s" % name)
+    return out
+
+
+def check_memory_seal(directory):
+    """Режим --memory-seal: ничего не пишет. Возвращает код выхода."""
+    try:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        print("none · state.js нет: прогона здесь нет")
+        return 0
+    except OSError as e:
+        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
+        return 3
+    try:
+        state = json.loads(_state_body(raw))
+    except json.JSONDecodeError:
+        print("unknown · state.js не разбирается")
+        return 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return 3
+    rows = memory_seal_report(state, directory)
+    if not rows:
+        print("none · памяти проекта в записи нет (нет memoryFile)")
+        return 0
+    worst = 0
+    for name, status, digest in rows:
+        if status == "sealed":
+            print("sealed · %s · %s" % (name, digest[:12]))
+        elif status == "pending":
+            print("pending · %s · файла памяти ещё нет: его поднимет фаза 0" % name)
+        elif status == "unsealed":
+            worst = max(worst, 1)
+            print("unsealed · %s · sha256 %s" % (name, digest))
+        else:
+            worst = 3
+            print("%s · %s%s" % (status, name, (" · сейчас %s" % digest[:12]) if digest else ""))
+    return worst
+
+
 ZONE_ALWAYS_ALLOWED = (".autopilot",)
 COMMIT_ID = re.compile(r"^[0-9a-fA-F]{4,64}$")
 
@@ -1137,6 +1249,12 @@ def main():
             print("использование: sync.py --rollback-plan [КАТАЛОГ]")
             sys.exit(2)
         sys.exit(check_rollback_plan(os.path.abspath(rest[0]) if rest else A))
+    if "--memory-seal" in sys.argv:
+        rest = [a for a in sys.argv[1:] if a != "--memory-seal"]
+        if len(rest) > 1 or any(a.startswith("--") for a in rest):
+            print("использование: sync.py --memory-seal [КАТАЛОГ]")
+            sys.exit(2)
+        sys.exit(check_memory_seal(os.path.abspath(rest[0]) if rest else A))
     if "--brief-seal" in sys.argv:
         rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
         if len(rest) > 1 or any(a.startswith("--") for a in rest):
@@ -1170,7 +1288,7 @@ def main():
     print("%s · %s · обновлено %s" % (snap, srv, (state.get("updatedAt") or "?")[11:19]))
     for line in passed:
         print("  · " + line)
-    for line in (seal_findings(state, A) + audit(state))[:5]:
+    for line in (seal_findings(state, A) + memory_findings(state, A) + audit(state))[:5]:
         print("  ! " + line)
 
 
