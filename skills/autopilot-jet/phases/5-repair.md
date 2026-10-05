@@ -66,3 +66,17 @@ Two things this is not:
 
 - **Not a way to drop a requirement.** A requirement the code proves impossible is a question for the user — in full mode, an ASSUMPTION plus a placeholder — never a `D##` that quietly retires it.
 - **Not a route for good ideas.** A discovery is something the code demonstrated, not something you thought of while writing it. Ideas are still `A##`, still need a parent and the proportion limit, and at `strict` are still forbidden.
+
+## Recovery modes — which one, when, and what each one may not do
+
+Five recovery paths exist and they are different things. Pick by the situation, not by habit; a mode used outside its row is how a repair becomes a clone of the failure.
+
+| Mode | When | May not | Checked by |
+|---|---|---|---|
+| Resume from files | `state.js` has `finishedAt: null` and the run is not going on in another window (`phases/0-preflight.md`) | resume a closed run, or an old one without asking | `sync.py --run-status`, `sync.py --other-window` |
+| Repair in the same context | a `BLOCKING` finding on one ticket (the section above) | go past two `repairs` on the ticket | the `repairs` ceiling in `sync.py` audit |
+| Rebuild in a fresh context | a handoff or a retry after a failed attempt (above and `phases/5-subagents.md`) | carry the failed context over: the successor gets the files on disk and the handoff, not the transcript | the `handoffs` and `retries` ceilings in `sync.py` audit |
+| Whole-round rollback | a regression after a polish round (`phases/polish.md`) | `git reset --hard`, or a revert that is not the printed command | `sync.py --rollback-plan` |
+| Dashboard regenerated from the template | the dashboard copy is stale or broken (`phases/0-instruments.md`) | patch the old copy | `sync.py --aging` |
+
+Corrupted state is never cloned forward: a record that contradicts itself (`sync.py` names it) is reported to the user, not copied into the next attempt.
