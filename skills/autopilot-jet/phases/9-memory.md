@@ -109,7 +109,7 @@ Currency is the criterion this file fails first and most quietly. So, before the
 3. **Check the block for secret values** — the redaction gate from `phases/1-manifest.md` applies here as it does everywhere: run `tools/redact.py --check` on the memory file(s). Variable names, never values.
 4. **Check the length against the tier.** A landing page with a two-page memory file has been padded, and padding is how a reader learns to skim.
 
-Then write the block between the markers, commit it with the final commit, and note the chosen file in the Phase 8 report under «Где что лежит».
+Then write the block between the markers, commit it with the final commit, and note the chosen file in the Phase 8 report under «Где что лежит». **Seal what you wrote:** run `python3 "<skillDir>/tools/sync.py" --memory-seal .autopilot` after the block is written and the checks above are clean, and record the printed hash as `memorySeals["<file>"]` — this is the one moment the seal is moved on purpose, and it goes into the landing write (`phases/8-final.md` §2b) with the rest of `state.js`. The next run's preflight compares the file with exactly this hash.
 
 ## Moment 4 — the ADRs (Phase 8, tier T2+)
 

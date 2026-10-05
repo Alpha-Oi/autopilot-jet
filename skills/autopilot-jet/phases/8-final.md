@@ -93,7 +93,7 @@ The memory agent writes the full description of the project into `CLAUDE.md` or 
 
 The ADR agent is the mirror image and that is why it cannot be the same one. **`spec.md` dies with the run**, and with it every «почему так» in it — the reason for the data model, what the build proved wrong at ticket four, which word the project uses for which thing. Six months later the next session reads working code and no reason for any of it, and re-opens decisions that were settled here. At tier T2+ that is worth three files in `docs/adr/`; below it, the memory file carries what little there is.
 
-Everything about all of this — which memory file, the markers, the sections per tier, what an ADR contains, and the verification pass over the commands — is in `phases/9-memory.md`. Read it before spawning.
+Everything about all of this — which memory file, the markers, the sections per tier, what an ADR contains, the verification pass over the commands, and re-sealing the memory file with `--memory-seal` once it is written (`memorySeals` in `state.js`, taken with the landing write) — is in `phases/9-memory.md`. Read it before spawning.
 
 This is the artifact that decides what the *next* run costs. A project whose second session begins by re-reading the whole codebase paid for that in the first session and got nothing.
 
