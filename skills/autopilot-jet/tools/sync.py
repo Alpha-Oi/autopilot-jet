@@ -836,16 +836,38 @@ def commits_since(root, base):
     return rows, None
 
 
-def rollback_plan(state, root, history_of=commits_since):
+def reverted_commits(root, shas):
+    """Какие из коммитов уже откатаны: в истории есть «This reverts commit <хеш>» (так подписывает `git revert`).
+    Возвращает (множество хешей, None) или (None, причина). Только чтение."""
+    done = set()
+    for sha in shas:
+        try:
+            found = subprocess.run(["git", "rev-list", "-n", "1", "--fixed-strings",
+                                    "--grep=This reverts commit " + sha, "HEAD"], cwd=root, capture_output=True,
+                                   timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return None, "git не ответил"
+        if found.returncode != 0:
+            return None, "git не ответил"
+        if found.stdout.strip():
+            done.add(sha)
+    return done, None
+
+
+def rollback_plan(state, root, history_of=commits_since, reverted_of=reverted_commits):
     """План отката последнего круга доводки (REQ-CORE-10). Возвращает (статус, подробности).
 
     "none" — откатывать нечего (подробности: почему); "unplanned" — круг есть, а план по записи не построить
     (подробности: причина); "plan" — подробности: (номер круга, [(таск, полный хеш)] новыми первыми). Ничего не
-    пишет: команда отката печатается, а не выполняется."""
+    пишет: команда отката печатается, а не выполняется. Круг, который уже откатан (так записано в `stoppedBy` или
+    для его коммитов есть коммиты-откаты), плана не получает: повторный `git revert` тех же коммитов остановился бы
+    посреди отката и оставил репозиторий в состоянии «revert in progress»."""
     polish = state.get("polish")
     rounds = polish.get("rounds") if isinstance(polish, dict) else None
     if not isinstance(rounds, list) or not rounds or not isinstance(rounds[-1], dict):
         return "none", "кругов доводки нет"
+    if polish.get("stoppedBy") == "regression":
+        return "none", "круг уже откатан (stoppedBy: regression)"
     last = rounds[-1]
     number = last.get("n")
     names = last.get("tickets")
@@ -875,6 +897,14 @@ def rollback_plan(state, root, history_of=commits_since):
         if hits[0][1] > 1:
             return "unplanned", "коммит %s (таск %s) — слияние: откат слияния не планируется" % (commit[:12], name)
         found[hits[0][0]] = name
+    done, why = reverted_of(root, sorted(found))
+    if done is None:
+        return "unplanned", why
+    if done and done == set(found):
+        return "none", "круг уже откатан: для всех его коммитов есть коммиты-откаты"
+    if done:
+        return "unplanned", "круг откатан частично (%d из %d коммитов): что осталось, решает человек" % (
+            len(done), len(found))
     return "plan", (number, [(found[sha], sha) for sha, _parents in history if sha in found])
 
 
