@@ -1,6 +1,6 @@
 # DOA conformance assessment
 
-**Assessed:** 2026-10-02 (first pass at `8c8cb33` on 2026-10-01; refreshed after PRs #26–#71; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then fifteen requirements moved to `PARTIAL` on new tests (twelve from `DESIGNED`, three from `FAIL`))
+**Assessed:** 2026-10-05 (first pass at `8c8cb33` on 2026-10-01; refreshed after PRs #26–#72; statuses re-labelled with the `DESIGNED` status of DOA 1.1.0, then fifteen requirements moved to `PARTIAL` on new tests (twelve from `DESIGNED`, three from `FAIL`))
 **Subject:** autopilot-jet on `development` at `2d2eef4b524a3d7ccb13cdd28e2b0b6ab5482001`
 **Standard:** Digital Organism Architecture `DOA-FS-1.0` (release `v1.1.0`), profile Core
 **Claim:** [`DOA_CONFORMANCE_CLAIM.yaml`](DOA_CONFORMANCE_CLAIM.yaml): status `PARTIAL`, self-assessed, not independent.

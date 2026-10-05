@@ -3,8 +3,8 @@
 standard: DOA-FS-1.0
 implementation: autopilot-jet (Autopilot JET skill, runtime helper, dashboard and measure-run tool)
 owner: Alpha-Oi
-version: development @ 2d2eef4b524a3d7ccb13cdd28e2b0b6ab5482001 (skill 1.3.0 plus CHANGELOG [Unreleased]; refreshed after #26-#71, first assessed at 8c8cb33; status vocabulary of DOA release v1.1.0)
-assessment_date: '2026-10-02'
+version: skill 1.4.0 (tag v1.4.0 on main 0ea933d); evidence pinned to development @ 2d2eef4b524a3d7ccb13cdd28e2b0b6ab5482001, which v1.4.0 contains (refreshed after #26-#72; first assessed at 8c8cb33; status vocabulary of DOA release v1.1.0)
+assessment_date: '2026-10-05'
 status: PARTIAL
 assurance: self-assessed
 profiles:
