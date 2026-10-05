@@ -54,8 +54,9 @@ def ticket(name, commit):
 
 
 class PlanTests(unittest.TestCase):
-    def plan(self, st, rows=((P3, 1), (P2, 1), (P1, 1), (OTHER, 1))):
-        return sync.rollback_plan(st, "/nowhere", history_of=history(*rows))
+    def plan(self, st, rows=((P3, 1), (P2, 1), (P1, 1), (OTHER, 1)), reverted=()):
+        return sync.rollback_plan(st, "/nowhere", history_of=history(*rows),
+                                  reverted_of=lambda root, shas: (set(reverted), None))
 
     def test_there_is_nothing_to_roll_back_without_a_polish_round(self):
         for polish in (None, {}, {"rounds": []}, {"rounds": None}, {"rounds": "x"}, {"rounds": [None]}, "x", 5):
@@ -125,6 +126,33 @@ class PlanTests(unittest.TestCase):
         status, why = self.plan(st, rows=((P1, 2),))
         self.assertEqual(status, "unplanned")
         self.assertIn("слияние", why)
+
+    def test_a_round_that_is_already_reverted_gets_no_plan(self):
+        st = state([{"n": 1, "tickets": ["P1", "P2"]}], [ticket("P1", P1), ticket("P2", P2)])
+        status, why = self.plan(st, reverted=(P1, P2))
+        self.assertEqual(status, "none")
+        self.assertIn("уже откатан", why)
+
+    def test_a_round_reverted_in_part_is_left_to_a_person(self):
+        st = state([{"n": 1, "tickets": ["P1", "P2"]}], [ticket("P1", P1), ticket("P2", P2)])
+        status, why = self.plan(st, reverted=(P2,))
+        self.assertEqual(status, "unplanned")
+        self.assertIn("частично (1 из 2", why)
+
+    def test_the_record_that_the_loop_stopped_on_a_regression_means_it_is_already_rolled_back(self):
+        st = state([{"n": 1, "tickets": ["P1"]}], [ticket("P1", P1)])
+        st["polish"]["stoppedBy"] = "regression"
+        self.assertEqual(self.plan(st)[0], "none")
+        for other in (None, "dry", "ceiling", "user"):
+            with self.subTest(stoppedBy=other):
+                st["polish"]["stoppedBy"] = other
+                self.assertEqual(self.plan(st)[0], "plan")
+
+    def test_a_git_that_does_not_answer_about_reverts_is_the_reason(self):
+        st = state([{"n": 1, "tickets": ["P1"]}], [ticket("P1", P1)])
+        self.assertEqual(sync.rollback_plan(st, "/x", history_of=history((P1, 1)),
+                                            reverted_of=lambda r, s: (None, "git не ответил")),
+                         ("unplanned", "git не ответил"))
 
     def test_git_that_does_not_answer_is_the_reason(self):
         st = state([{"n": 1, "tickets": ["P1"]}], [ticket("P1", P1)])
@@ -205,6 +233,27 @@ class HistoryTests(Repo):
         self.assertEqual(rows[0][1], 2)
 
 
+class RevertedTests(Repo):
+    def test_a_revert_made_by_git_is_found_by_the_hash_it_names(self):
+        self.commit({"a.txt": "0"})
+        one = self.commit({"b.txt": "1"})
+        two = self.commit({"c.txt": "2"})
+        git(self.root, "revert", "--no-edit", one)
+        self.assertEqual(sync.reverted_commits(str(self.root), [one, two]), ({one}, None))
+
+    def test_nothing_reverted_is_an_empty_set_and_a_short_hash_in_a_message_is_not_a_match(self):
+        self.commit({"a.txt": "0"})
+        one = self.commit({"b.txt": "1"})
+        self.commit({"c.txt": "2"}, "Это не откат: This reverts commit " + one[:12])
+        self.assertEqual(sync.reverted_commits(str(self.root), [one]), (set(), None))
+
+    def test_a_directory_that_is_not_a_repository_is_a_reason(self):
+        with tempfile.TemporaryDirectory() as plain:
+            done, why = sync.reverted_commits(plain, ["a" * 40])
+        self.assertIsNone(done)
+        self.assertEqual(why, "git не ответил")
+
+
 class RehearsalTests(Repo):
     """Репетиция отката: напечатанную команду выполняют, и дерево возвращается к состоянию до круга."""
 
@@ -247,6 +296,24 @@ class RehearsalTests(Repo):
         git(expected, "checkout", "-q", base)
         git(expected, "cherry-pick", other)
         self.assertEqual(git(self.root, "rev-parse", "HEAD^{tree}"), git(expected, "rev-parse", "HEAD^{tree}"))
+
+    def test_asking_again_after_the_rollback_says_it_is_done_and_prints_no_second_command(self):
+        # пилот 2: повторный git revert тех же коммитов остановился бы посреди отката
+        _base, _p1, _other, _p2, st = self.project()
+        git(self.root, *self.printed_command(st)[1:])
+        code, out = self.cli(st)
+        self.assertEqual(code, 1, out)
+        self.assertTrue(out.startswith("none · откатывать нечего: круг уже откатан"), out)
+        self.assertNotIn("git revert", out)
+
+    def test_a_second_run_of_the_same_command_is_what_the_plan_now_refuses(self):
+        _base, _p1, _other, _p2, st = self.project()
+        command = self.printed_command(st)
+        git(self.root, *command[1:])
+        result = subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *command[1:]],
+                                cwd=self.root, capture_output=True, text=True, encoding="utf-8")
+        self.assertIn("revert", (result.stdout + result.stderr).lower())
+        self.assertTrue((self.root / ".git" / "REVERT_HEAD").exists() or result.returncode != 0)
 
     def test_a_dirty_tree_stops_the_revert_instead_of_losing_work(self):
         _base, _p1, _other, _p2, st = self.project()
@@ -336,6 +403,17 @@ class TheProcedureIsWritten(unittest.TestCase):
         text = self.text()
         self.assertIn("git revert --no-edit", text)
         self.assertIn("never `git reset --hard`", text)
+
+    def test_the_regression_rule_says_to_record_the_stop_and_not_to_run_the_command_twice(self):
+        text = self.text()
+        self.assertIn('`stoppedBy` to `"regression"`', text)
+        self.assertIn("once", text)
+
+    def test_the_first_line_of_the_answer_tells_a_current_copy_from_an_old_one(self):
+        text = self.text()
+        self.assertIn("Read the first line of the answer before you act on it", text)
+        self.assertIn("starts with `rollback`, `none` or `unplanned`", text)
+        self.assertIn("ordinary sync", text)
 
     def test_a_plan_that_could_not_be_built_goes_to_the_user(self):
         self.assertIn("unplanned", self.text())
