@@ -34,7 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --select=E9,F,E7,W6 --show-source --statistics
 
       - name: Install npm dependencies when present
         if: ${{ hashFiles('package.json') != '' }}

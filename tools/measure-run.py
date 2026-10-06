@@ -84,6 +84,14 @@ TEST_WORDS = ("pytest", "npm test", "npm run test", "go test", "cargo test", "un
               "tsc", "npm run build", "npm run lint", "flake8", "ruff", "eslint", "mypy", "pnpm test", "yarn test")
 
 
+def is_test_path(fp):
+    """Путь к тесту: каталог tests/test, файл test_*.py или *.test.*; разделители Windows и POSIX равны."""
+    norm = str(fp).replace("\\", "/")
+    base = os.path.basename(norm)
+    return "/tests/" in norm or "/test/" in norm or norm.startswith(("tests/", "test/")) \
+        or base.startswith("test_") or ".test." in base
+
+
 def classify(name, inp):
     """Вид одного действия модели. Только по имени инструмента и его входу, без чтения результата."""
     inp = inp or {}
@@ -105,8 +113,7 @@ def classify(name, inp):
         base = os.path.basename(fp.replace("\\", "/"))
         if base == "state.js":
             return "правка state.js"
-        norm = fp.replace("\\", "/")
-        if "/tests/" in norm or "/test/" in norm or base.startswith("test_") or ".test." in base:
+        if is_test_path(fp):
             return "правка тестов"
         return "правка кода"
     if name in ("Read", "Grep", "Glob"):
@@ -173,7 +180,6 @@ def analyse(path, label):
 
     for st in steps.values():
         u = st["u"]
-        m = {"content": st["content"]}
         if u:
             cr = u.get("cache_read_input_tokens", 0) or 0
             cw = u.get("cache_creation_input_tokens", 0) or 0
@@ -191,8 +197,8 @@ def analyse(path, label):
                 cats[cat][1] += cost
                 if cat in SAMPLE_CATS:
                     samples.append((cat, describe(st["content"], cat), cost))
-        for c in m.get("content") or []:
-            if not isinstance(c, dict) or c.get("type") != "tool_use":
+        for c in st["content"]:
+            if c.get("type") != "tool_use":
                 continue
             name, inp = c.get("name"), c.get("input", {})
             tools[name] += 1
@@ -201,9 +207,7 @@ def analyse(path, label):
                 if any(k in cmd for k in ("pytest", "npm test", "go test", "cargo test", "unittest")):
                     test_runs += 1
             elif name in ("Edit", "Write", "NotebookEdit"):
-                fp = str(inp.get("file_path", ""))
-                base = os.path.basename(fp)
-                if "/tests/" in fp or "/test/" in fp or base.startswith("test_") or ".test." in base:
+                if is_test_path(inp.get("file_path", "")):
                     test_edits += 1
                 else:
                     code_edits += 1
@@ -307,9 +311,14 @@ def main(argv=None):
         return (n, os.path.getsize(p))
 
     if args.session_id:                         # явный выбор: id сессии
-        picked = [p for p in sessions if args.session_id in os.path.basename(p)]
+        picked = ([p for p in sessions if os.path.basename(p)[:-6] == args.session_id]
+                  or [p for p in sessions if args.session_id in os.path.basename(p)])
         if not picked:
             print(f"сессия {args.session_id} не найдена в {d}", file=sys.stderr)
+            return 1
+        if len(picked) > 1:
+            print(f"id {args.session_id} подходит к {len(picked)} сессиям, уточни: "
+                  + ", ".join(os.path.basename(p)[:-6] for p in picked[:5]), file=sys.stderr)
             return 1
         main_log = picked[0]
     else:
@@ -323,8 +332,13 @@ def main(argv=None):
 
     metas = {}
     for mf in glob.glob(os.path.join(sub_dir, "subagents", "*.meta.json")):
-        with open(mf, encoding="utf-8") as f:
-            metas[os.path.basename(mf)[:-10]] = json.load(f)
+        try:
+            with open(mf, encoding="utf-8") as f:
+                meta = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue                                 # описание субагента — подпись, без неё считаем по имени файла
+        if isinstance(meta, dict):
+            metas[os.path.basename(mf)[:-10]] = meta
 
     results = [analyse(main_log, "Оркестратор")]
     for jf in sorted(glob.glob(os.path.join(sub_dir, "subagents", "*.jsonl"))):
