@@ -52,6 +52,9 @@ _KEYWORD_NAMES = {
 
 _SEP = r"[\s:=—–\"'«»(),-]{1,8}"
 _KEYWORDS = "key|token|secret|password|passwd|pwd|ключ|токен|пароль|доступ"
+# Значение, оборванное знаком вне набора hex/base64 (`abc…!tail`), редактируется целиком: хвост до пробела, кавычки или
+# скобки тоже часть секрета. Знаки конца фразы (`. , : ; ?`) в хвост не входят, иначе съелась бы пунктуация вокруг.
+_TAIL = r"(?:[^\s\"'`,;<>)\]}]*[^\s\"'`,;<>)\]}.:?])?"
 
 
 def _env_name(identifier):
@@ -115,13 +118,13 @@ def _build_rules():
     # Общая форма 1: NAME=value / NAME: "value" — имя берётся из самой строки.
     add("generic-assignment",
         r"(?i)(?<![A-Za-z0-9_])((?:[A-Za-z_][A-Za-z0-9_.-]*?)?(?:" + _KEYWORDS +
-        r")[A-Za-z0-9_.-]*)[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9][A-Za-z0-9+/_=-]{31,})",
+        r")[A-Za-z0-9_.-]*)[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9][A-Za-z0-9+/_=-]{31,}" + _TAIL + ")",
         lambda m: _env_name(m.group(1)), group=2, priority=5,
         accept=lambda m: _secret_like(m.group(2)))
     # Общая форма 2: «токен: <значение>», «password is <значение>».
     add("generic-near-keyword",
         r"(?i)(?<![A-Za-z0-9_])(" + _KEYWORDS + r")[^\W\d_]*(?:\s+[^\W\d_]{1,12}){0,3}" + _SEP +
-        r"([A-Za-z0-9][A-Za-z0-9+/_=-]{31,})(?![A-Za-z0-9+/_=-])",
+        r"([A-Za-z0-9][A-Za-z0-9+/_=-]{31,}" + _TAIL + ")",
         lambda m: _keyword_name(m.group(1)), group=2, priority=6,
         accept=lambda m: _secret_like(m.group(2)))
     return rules

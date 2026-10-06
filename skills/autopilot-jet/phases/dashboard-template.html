@@ -761,8 +761,8 @@ function render(lang){
       ${t.concerns?.length ? `<div class="sub">${esc(t.concerns.join('; '))}</div>` : ''}</td>
     <td>${(t.requirements||[]).map(r => `<span class="tag">${esc(r)}</span>`).join('') || '<span class="empty">—</span>'}</td>
     <td class="mins">${t.startedAt ? timerHTML(t.startedAt, t.finishedAt) : '—'}</td>
-    <td class="mins">${t.retries ? t.retries : ''}${
-      t.repairs ? `<span style="color:var(--fix)"> +${t.repairs}</span>` : ''}</td>
+    <td class="mins">${t.retries ? esc(t.retries) : ''}${
+      t.repairs ? `<span style="color:var(--fix)"> +${esc(t.repairs)}</span>` : ''}</td>
     <td class="mins">${fmtTests(t.tests)}</td>
     <td class="mins">${t.commit ? `<code>${esc(t.commit).slice(0,7)}</code>` : '—'}</td>
   </tr>`).join('');
@@ -873,7 +873,7 @@ function render(lang){
       <div class="sub">${L.debtSub(S.debt?.placeholders?.length||0, S.debt?.assumptions?.length||0, S.debt?.emptyEnv?.length||0)}</div>
     </div>
     <div class="card"><div class="k">${L.tests}</div>
-      <div class="v">${tests ? tests.passed : '—'}${tests && tests.failed ? `<small style="color:var(--bad)"> · ${L.failed(tests.failed)}</small>` : ''}</div>
+      <div class="v">${tests ? esc(tests.passed) : '—'}${tests && tests.failed ? `<small style="color:var(--bad)"> · ${L.failed(esc(tests.failed))}</small>` : ''}</div>
       <div class="sub">${T.length ? L.testsSub : L.testsSubOne}</div>
     </div>
     <div class="card"><div class="k">${L.reqs}</div>

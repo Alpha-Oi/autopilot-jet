@@ -450,7 +450,7 @@ assets/                         ← логотип
 ```bash
 python -m unittest discover -s tests -v          # тесты
 python tools/measure-run.py --check-only         # проверка путей и скрипта замера
-pip install flake8 && flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+pip install flake8 && flake8 . --count --select=E9,F,E7,W6 --show-source --statistics
 ```
 
 То же самое запускает [CI](.github/workflows/verify.yml) на Windows, Ubuntu и macOS при каждом push и pull request. Как предлагать правки — в [CONTRIBUTING.md](CONTRIBUTING.md), что менялось — в [CHANGELOG.md](CHANGELOG.md).

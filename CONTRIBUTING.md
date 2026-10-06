@@ -15,7 +15,7 @@
 ```bash
 python -m unittest discover -s tests -v
 python tools/measure-run.py --check-only
-pip install flake8 && flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+pip install flake8 && flake8 . --count --select=E9,F,E7,W6 --show-source --statistics
 ```
 
 CI повторяет эти команды на Windows, Ubuntu и macOS — pull request сливается, когда все три зелёные.

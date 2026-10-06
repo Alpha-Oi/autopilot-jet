@@ -350,6 +350,7 @@ class MainIntegrationTests(unittest.TestCase):
         self.assertEqual(len(findings), 5)
         self.assertIn("  ! таск 01 в работе без startedAt", findings)
         self.assertNotIn("таск 06", done.stdout)
+        self.assertTrue(any(line.startswith("  …и ещё находок: ") for line in done.stdout.splitlines()), done.stdout)
 
 
 if __name__ == "__main__":
