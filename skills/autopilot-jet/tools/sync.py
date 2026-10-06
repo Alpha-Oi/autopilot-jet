@@ -80,6 +80,8 @@
 проверить нечем (нет zone или commit, коммита нет в git, git не ответил), 2 — ошибка вызова.
 """
 
+import base64
+import binascii
 import hashlib
 import json
 import os
@@ -200,11 +202,27 @@ def _query_timeout(seconds):
     return seconds * 4 if os.name == "nt" else seconds
 
 
+# Строка запуска процесса на Windows приходит из PowerShell, а PowerShell печатает в кодовой странице консоли (на русской
+# Windows это 866), тогда как Python читает вывод в локальной (cp1251). Русская буква в пути (`C:\Users\а\...`) портилась,
+# путь переставал совпадать с каталогом прогона, процесс считался чужим, и каждая синхронизация поднимала ещё один
+# сервер: на живом прогоне 2026-10-06 их осталось семь. Поэтому строка едет как base64 от UTF-8, чистый ASCII.
+POWERSHELL_BASE64 = "[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes([string]%s))"
+
+
+def _from_base64(text):
+    """Строка base64 от PowerShell -> текст UTF-8. Не разобралась: пустая строка, не искажённый путь."""
+    try:
+        return base64.b64decode(text.strip(), validate=True).decode("utf-8")
+    except (ValueError, binascii.Error):
+        return ""
+
+
 def cmdline(pid):
     if os.name == "nt":
         command = (
-            "(Get-CimInstance -ClassName Win32_Process -Filter "
-            "'ProcessId = %d' -ErrorAction Stop).CommandLine" % int(pid)
+            "$process = Get-CimInstance -ClassName Win32_Process -Filter "
+            "'ProcessId = %d' -ErrorAction Stop; " % int(pid)
+            + POWERSHELL_BASE64 % "$process.CommandLine"
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
@@ -212,7 +230,9 @@ def cmdline(pid):
     try:
         result = subprocess.run(argv, capture_output=True, text=True,
                                 timeout=_query_timeout(5), check=False)
-        return result.stdout.strip() if result.returncode == 0 else ""
+        if result.returncode != 0:
+            return ""
+        return _from_base64(result.stdout) if os.name == "nt" else result.stdout.strip()
     except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         return ""
 
@@ -253,7 +273,7 @@ def iter_processes():
     if os.name == "nt":
         command = (
             "Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object { "
-            "'{0}{1}{2}' -f $_.ProcessId, [char]31, $_.CommandLine }"
+            "'{0}{1}{2}' -f $_.ProcessId, [char]31, " + POWERSHELL_BASE64 % "$_.CommandLine" + " }"
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
@@ -270,6 +290,8 @@ def iter_processes():
     for line in output.splitlines():
         stripped = line.strip()
         pid_text, separator, command = stripped.partition(PROCESS_DELIMITER)
+        if separator and os.name == "nt":
+            command = _from_base64(command)
         if not separator:
             pid_text, separator, command = stripped.partition(" ")
         if separator and pid_text.isdigit():
