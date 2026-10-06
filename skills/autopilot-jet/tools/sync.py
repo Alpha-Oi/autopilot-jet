@@ -1133,8 +1133,44 @@ def audit(state):
         if t.get("status") == "done" and not t.get("finishedAt"):
             out.append("таск %s закрыт без finishedAt" % t.get("id"))
     out.extend(closure_findings(state))
+    out.extend(audit_shapes(state))
     out.extend(audit_caps(state))
     out.extend(audit_dials(state))
+    return out
+
+
+def _count(value):
+    """Целое число (не bool, не строка, не дробь)."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def audit_shapes(state):
+    """Запись, у которой страница не может прочесть своё. Не переход и не потолок: форма полей.
+
+    Найдено на третьем пробном прогоне (2026-10-06, Windows): агент закрыл шесть этапов как `done` без `startedAt`, и
+    страница писала «не начат» рядом с зелёной точкой и «8 из 8 этапов пройдено»; итог слепой приёмки он записал как
+    `{verdict, drift}` вместо `{matched, checked, mismatches}`, и страница показала «/ требований подтверждено» без чисел
+    рядом с «Расхождений нет». Форма `blind` в инструкциях тогда нигде не была описана (теперь — `phases/7-instruments.md`).
+    Тут называются только эти две формы (этап без finishedAt уже назван выше, второй раз его не повторяем): старые записи без `blind` и со строкой в `tests` (она допустима, `fmtTests`
+    читает и строку) молчат. Поле, которого нет, не нарушение: audit молчит о том, чего не видит.
+    """
+    out = []
+    unopened = [str(s.get("id")) for s in _dicts(state.get("stages"))
+                if s.get("status") == "done" and s.get("finishedAt") and not s.get("startedAt")]
+    if unopened:
+        out.append("этапы %s закрыты как done без startedAt: на странице они «пройдены» без времени; если этап не шёл — "
+                   "пометь skipped с причиной, если шёл — впиши startedAt" % ", ".join(unopened))
+    blind = state.get("blind")
+    if blind is not None:
+        if not isinstance(blind, dict):
+            out.append("blind записан не объектом: ожидалось {matched, checked, mismatches}")
+        else:
+            lacking = [name for name in ("matched", "checked") if not _count(blind.get(name))]
+            if lacking:
+                out.append("blind без чисел %s (ожидалось {matched, checked, mismatches}): страница не покажет итог "
+                           "слепой приёмки" % ", ".join(lacking))
+            elif not isinstance(blind.get("mismatches"), list):
+                out.append("blind без списка mismatches: страница не скажет, были ли расхождения")
     return out
 
 

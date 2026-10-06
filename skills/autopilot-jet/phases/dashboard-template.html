@@ -344,7 +344,7 @@ const I18N = {
     toClose:"Что осталось закрыть",placeholders:"Заглушки — нужны твои данные",
     assumptions:"Решения, принятые за тебя",envVars:"Переменные в .env",
     additions:"Добавлено сверх заказанного",none:"пусто",
-    blind:"Слепая приёмка",blindOk:"Расхождений нет.",blindBad:"Расхождения:",
+    blind:"Слепая приёмка",blindOk:"Расхождений нет.",blindBad:"Расхождения:",blindUnknown:"итог записан в нераспознанном виде",
     blindV:(m,c)=>`${m} / ${c} требований подтверждено`,
     updated:"Обновлено",filesIn:"Требования и таски — в",
     modes:{full:"полный автомат",semi:"полуавтомат",interview:"интервью",manual:"ручной"},
@@ -385,7 +385,7 @@ const I18N = {
     toClose:"Still to close",placeholders:"Placeholders — your data needed",
     assumptions:"Decisions made for you",envVars:"Variables in .env",
     additions:"Added beyond the brief",none:"none",
-    blind:"Blind acceptance",blindOk:"No disagreements.",blindBad:"Disagreements:",
+    blind:"Blind acceptance",blindOk:"No disagreements.",blindBad:"Disagreements:",blindUnknown:"result recorded in an unrecognised shape",
     blindV:(m,c)=>`${m} / ${c} requirements confirmed`,
     updated:"Updated",filesIn:"Requirements and tickets in",
     modes:{full:"fully automatic",semi:"semi-automatic",interview:"interview",manual:"manual"},
@@ -742,8 +742,10 @@ function render(lang){
 
   // Лента этапов — она же ответ на «где мы сейчас», когда тасков нет вовсе.
   const stageRows = stages.map(s => {
+    // Пройденный этап не может быть «не начат»: без времени старта показываем прочерк, а не противоречие рядом с зелёной точкой.
     const dur = s.status === 'skipped' ? L.skipped
       : s.startedAt ? timerHTML(s.startedAt, s.finishedAt)
+      : s.status === 'done' ? '—'
       : `<span class="empty">${L.notStarted}</span>`;
     return `<div class="st ${esc(s.status || 'pending')}">
       <div class="rail"><i></i></div>
@@ -785,9 +787,16 @@ function render(lang){
        </table></div>`
     : (t0 || sp) ? `<h2>${L.stages.build}</h2>${t0block}` : '';
 
+  // Итог слепой приёмки: {matched, checked, mismatches}. Чего в записи нет, того и не утверждаем: без чисел нет «N / M»,
+  // без списка нет «расхождений нет» (запись другого вида из пробного прогона 2026-10-06 давала «/ требований подтверждено»).
+  const bl = S.blind && typeof S.blind === 'object' ? S.blind : null;
+  const blNums = !!bl && Number.isFinite(bl.matched) && Number.isFinite(bl.checked);
+  const blList = !bl ? null : Array.isArray(bl.mismatches) ? bl.mismatches : Array.isArray(bl.drift) ? bl.drift : null;
+  const blHead = blNums ? L.blindV(esc(bl.matched), esc(bl.checked))
+    : bl && typeof bl.verdict === 'string' && bl.verdict.trim() ? esc(bl.verdict.trim()) : L.blindUnknown;
   const blind = S.blind ? `<h2>${L.blind}</h2><div class="card">
-      <div class="v">${L.blindV(esc(S.blind.matched), esc(S.blind.checked))}</div>
-      ${S.blind.mismatches?.length ? `<div class="sub">${L.blindBad}</div>${list(S.blind.mismatches)}`
+      <div class="v">${blHead}</div>
+      ${blList === null ? '' : blList.length ? `<div class="sub">${L.blindBad}</div>${list(blList)}`
         : `<div class="sub">${L.blindOk}</div>`}</div>` : '';
 
   document.documentElement.lang = L.lang;
@@ -873,7 +882,7 @@ function render(lang){
       <div class="sub">${L.debtSub(S.debt?.placeholders?.length||0, S.debt?.assumptions?.length||0, S.debt?.emptyEnv?.length||0)}</div>
     </div>
     <div class="card"><div class="k">${L.tests}</div>
-      <div class="v">${tests ? esc(tests.passed) : '—'}${tests && tests.failed ? `<small style="color:var(--bad)"> · ${L.failed(esc(tests.failed))}</small>` : ''}</div>
+      <div class="v">${typeof tests === 'string' ? (tests.trim() ? esc(tests.trim()) : '—') : tests ? esc(tests.passed) : '—'}${tests && typeof tests === 'object' && tests.failed ? `<small style="color:var(--bad)"> · ${L.failed(esc(tests.failed))}</small>` : ''}</div>
       <div class="sub">${T.length ? L.testsSub : L.testsSubOne}</div>
     </div>
     <div class="card"><div class="k">${L.reqs}</div>

@@ -95,7 +95,7 @@ npx skills add Alpha-Oi/autopilot-jet --skill autopilot-jet -a claude-code -g -y
 
 </details>
 
-**Требуется:** [Node.js](https://nodejs.org) (для `npx`) и любой поддерживаемый AI-агент — Claude Code, Cursor, Codex и [70+ других](https://github.com/vercel-labs/skills#supported-agents). Больше ничего.
+**Требуется:** [Node.js](https://nodejs.org) (для `npx`) и любой поддерживаемый AI-агент — Claude Code, Cursor, Codex и [70+ других](https://github.com/vercel-labs/skills#supported-agents). Ещё нужен **Python 3.11 или новее**, который запускается командой `python3`: на ней держатся страница прогресса и проверки навыка (печати брифа и памяти, откат, возобновление). **На Windows** `python3` есть, если поставить Python из Microsoft Store (в PowerShell наберите `python` без аргументов, откроется Магазин); установщик с python.org обычно создаёт только `python` и `py`, и навык его не найдёт. Проверка: `python3 --version`. Что делает навык совсем без Python, на живом прогоне не проверялось: по инструкциям страница тогда открывается просто файлом, а проверки не выполняются.
 
 ---
 

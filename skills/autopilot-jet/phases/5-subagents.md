@@ -4,7 +4,7 @@ Where the code gets written. **Identical in all four modes — this phase is alw
 
 At tier T0 there are no tickets: you are the crew, working straight from the spec in the current context. Everything below about contracts and returns still applies to you — top up `interfaces.md` with what you actually built, run the Phase 6 checklist, commit once.
 
-**T0 does not excuse empty instruments.** Mark the `build` stage `active` before you start and `done` when you finish, record the pass in `state.js` under `singlePass` (files, tests, commit, both timestamps), and update the `requirements` counts exactly as a ticket would. A run that finished the whole project and left the user a dashboard showing nothing but a running clock has failed at the one job the dashboard has. See `phases/7-instruments.md`.
+**T0 does not excuse empty instruments.** Mark the `build` stage `active` (with its `startedAt`) before you start and `done` when you finish, record the pass in `state.js` under `singlePass` (files, tests, commit, both timestamps), and update the `requirements` counts exactly as a ticket would. A run that finished the whole project and left the user a dashboard showing nothing but a running clock has failed at the one job the dashboard has. See `phases/7-instruments.md`.
 
 ## One ticket, one subagent, one fresh context
 

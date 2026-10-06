@@ -347,3 +347,74 @@ console.log(JSON.stringify({tickQueries, baselineQueries,
 
 if __name__ == "__main__":
     unittest.main()
+
+
+PILOT3 = json.loads((ROOT / "tests" / "data" / "pilot3_state.json").read_text(encoding="utf-8"))
+
+
+def render_html(state, lang="ru"):
+    probe = "render(%s); console.log(JSON.stringify({html: app.innerHTML}));" % json.dumps(lang)
+    return run_runtime(probe, initial_state=state)["html"]
+
+
+class PilotRecordRendersHonestlyTests(unittest.TestCase):
+    """Третий пробный прогон (2026-10-06): запись, у которой страница не может прочесть своё, не должна выглядеть как данные."""
+
+    def test_a_done_stage_without_a_start_is_not_called_not_started(self):
+        html = render_html(PILOT3)
+        stages = re.search(r'<div class="st done">.*?(?=<h2>)', html, re.DOTALL).group(0)
+        self.assertEqual(stages.count("не начат"), 0)
+        self.assertIn('<div class="mins">—</div>', stages)
+
+    def test_a_pending_stage_is_still_not_started(self):
+        state = dict(PILOT3, finishedAt=None,
+                     stages=[{"id": "preflight", "status": "pending"}])
+        self.assertIn("не начат", render_html(state))
+
+    def test_the_tests_tile_shows_a_string_record(self):
+        html = render_html(PILOT3)
+        tile = re.search(r'<div class="k">Тесты</div>\s*<div class="v">(.*?)</div>', html, re.DOTALL).group(1)
+        self.assertEqual(tile, "12 passed")
+
+    def test_the_tests_tile_still_shows_an_object_record(self):
+        html = render_html(dict(PILOT3, tests={"passed": 34, "failed": 2}))
+        tile = re.search(r'<div class="k">Тесты</div>\s*<div class="v">(.*?)</div>', html, re.DOTALL).group(1)
+        self.assertTrue(tile.startswith("34"), tile)
+        self.assertIn("2", tile)
+
+    def test_a_blind_record_without_numbers_shows_its_verdict_not_an_empty_count(self):
+        html = render_html(PILOT3)
+        card = re.search(r"Слепая приёмка</h2>(.*?)</div></div>|Слепая приёмка</h2>(.*)", html, re.DOTALL).group(0)
+        self.assertIn("все 5 требований брифа реализованы", card)
+        self.assertNotIn("/ требований подтверждено", card)
+        self.assertNotIn("undefined", card)
+        self.assertIn("Расхождений нет.", card)       # список расхождений в записи есть (drift, пустой), его читаем как mismatches
+
+    def test_a_blind_record_with_nothing_to_read_claims_nothing(self):
+        html = render_html(dict(PILOT3, blind={}))
+        card = html[html.index("Слепая приёмка"):]
+        self.assertIn("нераспознанном виде", card)
+        self.assertNotIn("Расхождений нет", card)
+        self.assertNotIn("/ требований подтверждено", card)
+
+    def test_a_blind_record_that_is_not_an_object_claims_nothing(self):
+        html = render_html(dict(PILOT3, blind="всё хорошо"))
+        card = html[html.index("Слепая приёмка"):]
+        self.assertIn("нераспознанном виде", card)
+        self.assertNotIn("Расхождений нет", card)
+
+    def test_the_documented_blind_shape_renders_as_before(self):
+        html = render_html(dict(PILOT3, blind={"matched": 4, "checked": 5, "mismatches": ["R03 не сделан"]}))
+        card = html[html.index("Слепая приёмка"):]
+        self.assertIn("4 / 5 требований подтверждено", card)
+        self.assertIn("Расхождения:", card)
+        self.assertIn("R03 не сделан", card)
+        clean = render_html(dict(PILOT3, blind={"matched": 5, "checked": 5, "mismatches": []}))
+        self.assertIn("5 / 5 требований подтверждено", clean)
+        self.assertIn("Расхождений нет.", clean)
+
+    def test_the_english_page_says_the_same_in_english(self):
+        html = render_html(dict(PILOT3, blind={}), lang="en")
+        card = html[html.index("Blind acceptance"):]
+        self.assertIn("unrecognised shape", card)
+        self.assertNotIn("No disagreements", card)
