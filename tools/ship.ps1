@@ -30,7 +30,9 @@ param(
     [switch]$NoInstall,
     [string]$Repo = 'Alpha-Oi/autopilot-jet',
     [string]$Base = 'development',
-    [string]$Skill = 'autopilot-jet'
+    [string]$Skill = 'autopilot-jet',
+    # Версия CLI закреплена: `npx skills` без версии каждый раз тянет последнюю и запускает её с -y на вашей машине.
+    [string]$SkillsCli = 'skills@1.7.0'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -140,7 +142,7 @@ else {
 
 if (-not $NoInstall) {
     Step 'Переустановка навыка'
-    Invoke-Native npx @('skills', 'add', $Repo, '--skill', $Skill, '-g', '-y', '-a', 'claude-code')
+    Invoke-Native npx @('--yes', $SkillsCli, 'add', $Repo, '--skill', $Skill, '-g', '-y', '-a', 'claude-code')
 }
 
 Write-Host "`nГотово: PR #$number слит, локальная $Base обновлена." -ForegroundColor Green

@@ -79,7 +79,8 @@ class TicketAndPolishCeilingTests(unittest.TestCase):
         self.assertEqual(caps(state), [])
 
     def test_three_polish_rounds_are_allowed_four_are_named(self):
-        rounds = lambda count: {"polish": {"rounds": [{"n": n} for n in range(1, count + 1)]}}
+        def rounds(count):
+            return {"polish": {"rounds": [{"n": n} for n in range(1, count + 1)]}}
         self.assertEqual(caps(rounds(3)), [])
         findings = caps(rounds(4))
         self.assertEqual(len(findings), 1)

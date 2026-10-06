@@ -223,5 +223,51 @@ class CliTests(unittest.TestCase):
         self.assertEqual(first, second)
 
 
+class AuditFixesTests(unittest.TestCase):
+    def test_test_paths_are_recognised_with_both_separators(self):
+        for path in (r"C:\proj\tests\helpers.py", "/p/tests/helpers.py", "tests/helpers.py", "/p/test_x.py", "a.test.js"):
+            with self.subTest(path=path):
+                self.assertTrue(measure_run.is_test_path(path))
+        for path in (r"C:\proj\src\app.py", "/p/src/contest.py", ""):
+            with self.subTest(path=path):
+                self.assertFalse(measure_run.is_test_path(path))
+
+    def test_analyse_counts_windows_test_edits_as_test_edits(self):
+        row = ('{"timestamp":"2026-01-01T00:00:00Z","message":{"role":"assistant","content":'
+               '[{"type":"tool_use","name":"Edit","input":{"file_path":"C:\\\\p\\\\tests\\\\helpers.py"}}],'
+               '"usage":{"input_tokens":1,"output_tokens":1}}}\n')
+        with mock.patch("builtins.open", mock.mock_open(read_data=row)):
+            result = measure_run.analyse("s.jsonl", "тест")
+        self.assertEqual((result["test_edits"], result["code_edits"]), (1, 0))
+
+    def _run_main(self, files, argv):
+        with tempfile.TemporaryDirectory() as tmp:
+            logs = Path(tmp)
+            for name, text in files.items():
+                target = logs / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(text, encoding="utf-8")
+            stderr = io.StringIO()
+            with mock.patch.object(measure_run, "logs_dir_for", return_value=logs), \
+                    mock.patch.object(sys, "stderr", stderr), mock.patch.object(sys, "stdout", io.StringIO()):
+                code = measure_run.main(argv)
+            return code, stderr.getvalue()
+
+    def test_a_broken_subagent_meta_does_not_stop_the_report(self):
+        code, _err = self._run_main({"abc.jsonl": "{}\n", "abc/subagents/x.jsonl": "{}\n",
+                                     "abc/subagents/x.meta.json": "{oops"}, ["/p"])
+        self.assertEqual(code, 0)
+
+    def test_an_ambiguous_session_id_is_named_not_guessed(self):
+        code, err = self._run_main({"abc111.jsonl": "{}\n", "abc222.jsonl": "{}\n"}, ["/p", "abc"])
+        self.assertEqual(code, 1)
+        self.assertIn("abc111", err)
+        self.assertIn("abc222", err)
+
+    def test_an_exact_session_id_wins_over_longer_names(self):
+        code, _err = self._run_main({"abc.jsonl": "{}\n", "abc2.jsonl": "{}\n"}, ["/p", "abc"])
+        self.assertEqual(code, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

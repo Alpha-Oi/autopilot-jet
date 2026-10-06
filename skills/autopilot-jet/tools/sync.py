@@ -128,36 +128,55 @@ def fail(msg):
     sys.exit(1)
 
 
+# Присваивание в начале state.js: `window.STATE =`, `const STATE =`. «=» внутри самого JSON (строка, ключ) головой не считается.
+_ASSIGN = re.compile(r"\s*(?:(?:const|let|var)\s+)?[A-Za-z_$][\w$.]*\s*=")
+
+
 def _state_body(raw):
-    """JSON из state.js: после `window.STATE =` в первой строке, без хвостового `;`."""
-    body = raw.split("=", 1)[1] if "=" in raw.split("\n", 1)[0] else raw
+    """JSON из state.js: после присваивания в начале файла, без хвостового `;`; чистый JSON берётся как есть."""
+    head = _ASSIGN.match(raw)
+    body = raw[head.end():] if head else raw
     return body.strip().rstrip(";")
+
+
+def _dicts(value):
+    """Элементы-объекты списка; не список и не-объекты внутри (битая запись) отбрасываются, а не роняют разбор."""
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
 
 
 def read_state():
     try:
-        raw = open(STATE, encoding="utf-8").read()
+        with open(STATE, encoding="utf-8") as handle:
+            raw = handle.read()
     except FileNotFoundError:
         fail("state.js ещё нет — снимок не вписан, сервер не тронут")
     try:
-        return json.loads(_state_body(raw))
+        state = json.loads(_state_body(raw))
     except json.JSONDecodeError as e:
         # Здесь и был режим отказа «файл помялся»: раньше он был виден только по
         # пустой странице, теперь — строкой с номером строки, сразу после записи.
         fail("state.js не разбирается (строка %d: %s) — снимок оставлен прежним" % (e.lineno, e.msg))
+    if not isinstance(state, dict):
+        fail("state.js не запись прогона (ожидался объект) — снимок оставлен прежним")
+    return state
 
 
 def write_snapshot(state):
     """Снимок внутрь страницы. Возвращает текст для отчёта."""
     try:
-        page = open(PAGE, encoding="utf-8").read()
+        with open(PAGE, encoding="utf-8") as handle:
+            page = handle.read()
     except FileNotFoundError:
         return "страницы нет — перекопируй dashboard.html из навыка"
-    i, j = page.find(BEGIN), page.find(END)
+    i = page.find(BEGIN)
+    j = page.find(END, i + len(BEGIN)) if i >= 0 else -1
     if i < 0 or j < 0:
         return "страница без маркеров снимка — перекопируй dashboard.html из навыка"
-    # </ внутри <script> закрыл бы тег и порвал страницу; < безопасен в JSON.
-    payload = "window.STATE=" + json.dumps(state, ensure_ascii=False).replace("</", "<\\/") + ";"
+    # </ внутри <script> закрыл бы тег и порвал страницу; <!-- открыл бы в нём комментарий; а маркер /*STATE-END*/ в
+    # самих данных заставил бы следующую запись принять его за конец снимка и оставить хвост. В JS-строке «\*»,
+    # «\!» и «\/» значат те же знаки, поэтому значение не меняется; < и * безопасны в остальном JSON.
+    payload = ("window.STATE=" + json.dumps(state, ensure_ascii=False)
+               .replace("</", "<\\/").replace("<!--", "<\\!--").replace("/*", "/\\*") + ";")
     new = page[: i + len(BEGIN)] + payload + page[j:]
     if new == page:
         return "снимок уже совпадал"
@@ -307,7 +326,7 @@ def serve(state):
     if port and pid:
         responding = http_ok(port)
         command = cmdline(pid)
-        if is_ours(command):
+        if is_ours(command) or launched_for(command, A):     # ps теряет кавычки: каталог с пробелом is_ours() не узнаёт
             if responding:
                 return "сервер жив: http://localhost:%d/dashboard.html" % port
             return ("записанный процесс найден, но HTTP не ответил — "
@@ -501,8 +520,8 @@ def closure_findings(state):
     снова пишется без заявленного возобновления: так воскресает то, что закрыли."""
     out = []
     if state.get("finishedAt"):
-        live = [str(s.get("id")) for s in (state.get("stages") or []) if s.get("status") == "active"]
-        busy = [str(item.get("id")) for item in (state.get("tickets") or []) if item.get("status") in LIVE_TICKET_STATUSES]
+        live = [str(s.get("id")) for s in _dicts(state.get("stages")) if s.get("status") == "active"]
+        busy = [str(item.get("id")) for item in _dicts(state.get("tickets")) if item.get("status") in LIVE_TICKET_STATUSES]
         if live:
             out.append("прогон закрыт (finishedAt), а этап %s снова active: закрытый прогон пишется молча" % ", ".join(live))
         if busy:
@@ -535,23 +554,35 @@ def run_status(state, now):
     return "open", "прогон открыт, последняя запись %d дн. назад" % max(int(days), 0)
 
 
-def check_run_status(directory):
-    """Режим --run-status: ничего не пишет. Возвращает код выхода."""
-    path = os.path.join(directory, "state.js")
+def _read_run_state(directory, missing="none · state.js нет: прогона здесь нет"):
+    """state.js каталога прогона для режимов только чтения. Возвращает (запись, None) или (None, код выхода).
+
+    Причину печатает сама: файла нет (код 0), не читается или не разбирается или не объект (код 3)."""
     try:
-        with open(path, encoding="utf-8") as handle:
+        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
             raw = handle.read()
     except FileNotFoundError:
-        print("none · state.js нет: прогона здесь нет")
-        return 0
+        print(missing)
+        return None, 0
     except OSError as e:
         print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
+        return None, 3
     try:
         state = json.loads(_state_body(raw))
     except json.JSONDecodeError:
         print("unknown · state.js не разбирается")
-        return 3
+        return None, 3
+    if not isinstance(state, dict):
+        print("unknown · state.js не разобран как запись прогона")
+        return None, 3
+    return state, None
+
+
+def check_run_status(directory):
+    """Режим --run-status: ничего не пишет. Возвращает код выхода."""
+    state, code = _read_run_state(directory)
+    if state is None:
+        return code
     verdict, why = run_status(state, datetime.now(timezone.utc))
     print("%s · %s" % (verdict, why))
     return {"open": 0, "closed": 1}.get(verdict, 3)
@@ -559,19 +590,9 @@ def check_run_status(directory):
 
 def check_other_window(directory):
     """Режим --other-window: ничего не пишет, сервер не трогает. Возвращает код выхода."""
-    try:
-        raw = open(os.path.join(directory, "state.js"), encoding="utf-8").read()
-    except FileNotFoundError:
-        print("resume · state.js нет — прогона здесь нет")
-        return 0
-    except OSError as e:
-        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
-    try:
-        state = json.loads(_state_body(raw))
-    except json.JSONDecodeError:
-        print("unknown · state.js не разбирается")
-        return 3
+    state, code = _read_run_state(directory, "resume · state.js нет — прогона здесь нет")
+    if state is None:
+        return code
     verdict, why = other_window(state, datetime.now(timezone.utc), server_serving(directory))
     print("%s · %s" % (verdict, why))
     return {"resume": 0, "other-window": 1}.get(verdict, 3)
@@ -658,23 +679,9 @@ def seal_findings(state, base):
 
 def check_brief_seal(directory):
     """Режим --brief-seal: ничего не пишет. Возвращает код выхода."""
-    try:
-        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
-            raw = handle.read()
-    except FileNotFoundError:
-        print("none · state.js нет: прогона здесь нет")
-        return 0
-    except OSError as e:
-        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
-    try:
-        state = json.loads(_state_body(raw))
-    except json.JSONDecodeError:
-        print("unknown · state.js не разбирается")
-        return 3
-    if not isinstance(state, dict):
-        print("unknown · state.js не разобран как запись прогона")
-        return 3
+    state, code = _read_run_state(directory)
+    if state is None:
+        return code
     rows = brief_seal_report(state, directory)
     if not rows:
         print("none · брифа в записи нет (нет dir или briefFile)")
@@ -758,23 +765,9 @@ def memory_findings(state, base):
 
 def check_memory_seal(directory):
     """Режим --memory-seal: ничего не пишет. Возвращает код выхода."""
-    try:
-        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
-            raw = handle.read()
-    except FileNotFoundError:
-        print("none · state.js нет: прогона здесь нет")
-        return 0
-    except OSError as e:
-        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
-    try:
-        state = json.loads(_state_body(raw))
-    except json.JSONDecodeError:
-        print("unknown · state.js не разбирается")
-        return 3
-    if not isinstance(state, dict):
-        print("unknown · state.js не разобран как запись прогона")
-        return 3
+    state, code = _read_run_state(directory)
+    if state is None:
+        return code
     rows = memory_seal_report(state, directory)
     if not rows:
         print("none · памяти проекта в записи нет (нет memoryFile)")
@@ -890,23 +883,9 @@ def unfinished_tickets(state):
 
 def check_zone(directory):
     """Режим --zone-check: ничего не пишет. Возвращает код выхода."""
-    try:
-        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
-            raw = handle.read()
-    except FileNotFoundError:
-        print("none · state.js нет: прогона здесь нет")
-        return 0
-    except OSError as e:
-        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
-    try:
-        state = json.loads(_state_body(raw))
-    except json.JSONDecodeError:
-        print("unknown · state.js не разбирается")
-        return 3
-    if not isinstance(state, dict):
-        print("unknown · state.js не разобран как запись прогона")
-        return 3
+    state, code = _read_run_state(directory)
+    if state is None:
+        return code
     rows = zone_report(state, os.path.dirname(os.path.abspath(directory)))
     waiting = unfinished_tickets(state)
     later = ("ещё не готовы: " + ", ".join(waiting)) if waiting else ""
@@ -1027,23 +1006,9 @@ def rollback_plan(state, root, history_of=commits_since, reverted_of=reverted_co
 
 def check_rollback_plan(directory):
     """Режим --rollback-plan: ничего не пишет. Возвращает код выхода."""
-    try:
-        with open(os.path.join(directory, "state.js"), encoding="utf-8") as handle:
-            raw = handle.read()
-    except FileNotFoundError:
-        print("none · state.js нет: прогона здесь нет")
-        return 0
-    except OSError as e:
-        print("unknown · state.js не прочитан (%s)" % (e.strerror or "ошибка"))
-        return 3
-    try:
-        state = json.loads(_state_body(raw))
-    except json.JSONDecodeError:
-        print("unknown · state.js не разбирается")
-        return 3
-    if not isinstance(state, dict):
-        print("unknown · state.js не разобран как запись прогона")
-        return 3
+    state, code = _read_run_state(directory)
+    if state is None:
+        return code
     status, detail = rollback_plan(state, os.path.dirname(os.path.abspath(directory)))
     if status == "none":
         print("none · откатывать нечего: %s" % detail)
@@ -1080,7 +1045,7 @@ def close_passed(state):
     и превратить их в done значило бы стереть сказанное о прогоне.
     """
     rank = {v: i for i, v in enumerate(ORDER)}
-    stages = state.get("stages") or []
+    stages = _dicts(state.get("stages"))
     live = [s for s in stages if s.get("status") == "active" and s.get("id") in rank]
     if len(live) < 2:
         return []
@@ -1106,8 +1071,10 @@ def close_passed(state):
 
 
 def save(state):
-    raw = open(STATE, encoding="utf-8").read()
-    head = raw.split("=", 1)[0]
+    with open(STATE, encoding="utf-8") as handle:
+        raw = handle.read()
+    match = _ASSIGN.match(raw)
+    head = raw[:match.end() - 1] if match else "window.STATE "     # чистый JSON получает присваивание, а не дописывается к себе
     tmp = STATE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         f.write(head + "=\n" + json.dumps(state, ensure_ascii=False, indent=2) + "\n")
@@ -1124,7 +1091,7 @@ def audit(state):
     сборкой, и заметил это пользователь, а не прогон.
     """
     out = []
-    stages = state.get("stages") or []
+    stages = _dicts(state.get("stages"))
     rank = {v: i for i, v in enumerate(ORDER)}
     live = [s["id"] for s in stages if s.get("status") == "active" and s.get("id") in rank]
     # Этап, до которого прогон дошёл, но который так и не отметили ни пройденным,
@@ -1138,7 +1105,7 @@ def audit(state):
     for s in stages:
         if s.get("status") == "done" and not s.get("finishedAt"):
             out.append("этап %s закрыт без finishedAt" % s.get("id"))
-    for t in state.get("tickets") or []:
+    for t in _dicts(state.get("tickets")):
         if t.get("status") in ("in-progress", "review", "repair") and not t.get("startedAt"):
             out.append("таск %s в работе без startedAt" % t.get("id"))
         if t.get("status") == "done" and not t.get("finishedAt"):
@@ -1155,12 +1122,11 @@ def _over(value, ceiling):
 
 
 def _zones_overlap(a, b):
-    """Зоны — списки путей-префиксов. Пересекаются, если один путь равен другому или лежит внутри него (по сегментам)."""
-    def segs(path):
-        return [part for part in str(path).replace("\\", "/").split("/") if part and part != "."]
+    """Зоны — списки путей-префиксов (зона-строка — один путь). Пересекаются, если один путь равен другому или лежит внутри него."""
+    a, b = [a] if isinstance(a, str) else a, [b] if isinstance(b, str) else b
     for x in a or []:
         for y in b or []:
-            sx, sy = segs(x), segs(y)
+            sx, sy = _path_segments(x), _path_segments(y)
             if sx and sy and (sx[:len(sy)] == sy or sy[:len(sx)] == sx):
                 return True
     return False
@@ -1193,7 +1159,7 @@ def audit_caps(state):
     Что делать с найденным — в phases/5-repair.md: отрез был неверным, это в отчёт, не в новую попытку.
     """
     out = []
-    tickets = [t for t in (state.get("tickets") or []) if isinstance(t, dict)]
+    tickets = _dicts(state.get("tickets"))
     for name in COUNTERS:
         names = [str(t.get("id")) for t in tickets if _over(t.get(name), COUNTER_CEILING)]
         if names:
@@ -1246,49 +1212,31 @@ def audit_dials(state):
     return out
 
 
+# Режимы только чтения: флаг -> функция(каталог) -> код выхода. Порядок проверки флагов — порядок записи.
+MODES = (
+    ("--zone-check", "check_zone"),
+    ("--rollback-plan", "check_rollback_plan"),
+    ("--memory-seal", "check_memory_seal"),
+    ("--brief-seal", "check_brief_seal"),
+    ("--run-status", "check_run_status"),
+    ("--aging", "check_aging"),
+    ("--other-window", "check_other_window"),
+)
+
+
 def main():
-    if "--zone-check" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--zone-check"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --zone-check [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_zone(os.path.abspath(rest[0]) if rest else A))
-    if "--rollback-plan" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--rollback-plan"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --rollback-plan [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_rollback_plan(os.path.abspath(rest[0]) if rest else A))
-    if "--memory-seal" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--memory-seal"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --memory-seal [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_memory_seal(os.path.abspath(rest[0]) if rest else A))
-    if "--brief-seal" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--brief-seal"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --brief-seal [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_brief_seal(os.path.abspath(rest[0]) if rest else A))
-    if "--run-status" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--run-status"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --run-status [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_run_status(os.path.abspath(rest[0]) if rest else A))
-    if "--aging" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--aging"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --aging [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_aging(os.path.abspath(rest[0]) if rest else A))
-    if "--other-window" in sys.argv:
-        rest = [a for a in sys.argv[1:] if a != "--other-window"]
-        if len(rest) > 1 or any(a.startswith("--") for a in rest):
-            print("использование: sync.py --other-window [КАТАЛОГ]")
-            sys.exit(2)
-        sys.exit(check_other_window(os.path.abspath(rest[0]) if rest else A))
+    for flag, mode in MODES:
+        if flag in sys.argv:
+            rest = [a for a in sys.argv[1:] if a != flag]
+            if len(rest) > 1 or any(a.startswith("--") for a in rest):
+                print("использование: sync.py %s [КАТАЛОГ]" % flag)
+                sys.exit(2)
+            sys.exit(globals()[mode](os.path.abspath(rest[0]) if rest else A))
+    unknown = [a for a in sys.argv[1:] if a != "--no-serve"]
+    if unknown:
+        print("использование: sync.py [--no-serve] | sync.py РЕЖИМ [КАТАЛОГ]; режимы: %s"
+              % " ".join(flag for flag, _mode in MODES))
+        sys.exit(2)
     state = read_state()
     passed = close_passed(state)
     if passed:
@@ -1298,8 +1246,11 @@ def main():
     print("%s · %s · обновлено %s" % (snap, srv, (state.get("updatedAt") or "?")[11:19]))
     for line in passed:
         print("  · " + line)
-    for line in (seal_findings(state, A) + memory_findings(state, A) + audit(state))[:5]:
+    findings = seal_findings(state, A) + memory_findings(state, A) + audit(state)
+    for line in findings[:5]:
         print("  ! " + line)
+    if len(findings) > 5:
+        print("  …и ещё находок: %d (названы первые пять; исправь их и запусти снова)" % (len(findings) - 5))
 
 
 if __name__ == "__main__":

@@ -247,5 +247,25 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("Traceback", done.stderr)
 
 
+class ValueTailTests(unittest.TestCase):
+    """Значение, оборванное знаком вне hex/base64, редактировалось не целиком: хвост оставался в тексте."""
+
+    VALUE = fake("", 36)
+
+    def test_the_tail_after_a_symbol_is_part_of_the_secret(self):
+        for text in ('API_KEY="%s!tailtail"' % self.VALUE, "token: %s#rest9" % self.VALUE):
+            with self.subTest(text=text):
+                result = redact_mod.redact(text).text
+                self.assertNotIn("tail", result)
+                self.assertNotIn("rest9", result)
+                self.assertIn("[REDACTED:", result)
+
+    def test_punctuation_around_the_value_is_kept(self):
+        self.assertEqual(redact_mod.redact("token: %s." % self.VALUE).text, "token: [REDACTED:TOKEN].")
+        self.assertEqual(redact_mod.redact("(secret=%s), next" % self.VALUE).text, "(secret=[REDACTED:SECRET]), next")
+        self.assertEqual(redact_mod.redact('"API_KEY": "%s", "x": 1' % self.VALUE).text,
+                         '"API_KEY": "[REDACTED:API_KEY]", "x": 1')
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7,7 +7,7 @@
 Активный worktree — ветка `development` (локальная копия автора — отдельный worktree).
 Целевой Public repository — `Alpha-Oi/autopilot-jet` (id `1372711955`, default `development`); runtime — Python standard library + dependency-free HTML/JavaScript.
 
-- Канонические исходники: `skills/autopilot-jet/SKILL.md`, `skills/autopilot-jet/tools/sync.py`, `skills/autopilot-jet/phases/dashboard-template.html`, `tools/measure-run.py`; `.agents/skills/autopilot-jet` и `.claude/skills/autopilot-jet` — symlink-chain на skill.
+- Канонические исходники: `skills/autopilot-jet/SKILL.md`, `skills/autopilot-jet/tools/sync.py`, `skills/autopilot-jet/phases/dashboard-template.html`, `tools/measure-run.py`; `.agents/skills/autopilot-jet` и `.claude/skills/autopilot-jet` — две независимые symlinks на skill.
 - `.autopilot/state.js` → runtime helper → embedded snapshot/loopback server → live dashboard; helper читает соседние файлы относительно собственного пути, не cwd.
 - Для существующего dashboard: `python -X utf8 -B .autopilot/sync.py --no-serve`; прямой запуск canonical helper его не обновляет, source/template правки не делать в runtime copy.
 - Invalid JSON не обновляет snapshot; unknown recorded PID сохраняется без duplicate launch/registry rewrite; durable decision — `docs/adr/0006-preserve-server-registry-on-unknown-process-status.md`.

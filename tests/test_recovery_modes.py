@@ -84,7 +84,6 @@ class ReferencesExistTests(unittest.TestCase):
     def setUp(self):
         _, self.rows = table()
         self.text = "\n".join(" ".join(row) for row in self.rows)
-        self.main = SYNC.read_text(encoding="utf-8")
 
     def test_every_phase_file_it_names_exists(self):
         paths = re.findall(r"`(phases/[\w\-.]+\.md)`", self.text)
@@ -98,7 +97,7 @@ class ReferencesExistTests(unittest.TestCase):
         self.assertEqual(sorted(set(flags)), ["--aging", "--other-window", "--rollback-plan", "--run-status"])
         for flag in flags:
             with self.subTest(flag=flag):
-                self.assertIn('if "%s" in sys.argv:' % flag, self.main)
+                self.assertIn(flag, [name for name, _mode in sync.MODES])
 
     def test_the_audit_ceilings_it_names_are_real(self):
         for counter in ("repairs", "retries", "handoffs"):
