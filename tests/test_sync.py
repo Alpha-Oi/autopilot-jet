@@ -1,3 +1,4 @@
+import base64
 import importlib.util
 from pathlib import Path
 import subprocess
@@ -12,6 +13,11 @@ sync = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(sync)
 
 
+def b64(text):
+    """Так строку запуска процесса отдаёт PowerShell на Windows: base64 от UTF-8 (см. POWERSHELL_BASE64 в sync.py)."""
+    return base64.b64encode(text.encode("utf-8")).decode("ascii")
+
+
 class ProcessQueryTests(unittest.TestCase):
     def test_failed_queries_do_not_confirm_partial_stdout(self):
         for platform in ("nt", "posix"):
@@ -24,7 +30,7 @@ class ProcessQueryTests(unittest.TestCase):
                 self.assertEqual(sync.iter_processes(), [])
 
     def test_cmdline_windows_uses_non_shell_system_query(self):
-        completed = subprocess.CompletedProcess([], 0, stdout="python -m http.server", stderr="")
+        completed = subprocess.CompletedProcess([], 0, stdout=b64("python -m http.server"), stderr="")
 
         with mock.patch.object(sync.os, "name", "nt"), \
                 mock.patch.object(sync.subprocess, "run", return_value=completed) as run:
@@ -55,8 +61,8 @@ class ProcessQueryTests(unittest.TestCase):
         delimiter = sync.PROCESS_DELIMITER
         completed = subprocess.CompletedProcess(
             [], 0,
-            stdout=("42%s python -m http.server\n77%sother.exe\n"
-                    % (delimiter, delimiter)),
+            stdout=("42%s%s\n77%s%s\n"
+                    % (delimiter, b64("python -m http.server"), delimiter, b64("other.exe"))),
             stderr="")
 
         with mock.patch.object(sync.os, "name", "nt"), \
