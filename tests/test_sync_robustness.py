@@ -5,7 +5,9 @@ sync.py обычным AttributeError, сервер в каталоге с пр�
 пересечения, а маркер снимка внутри данных рвал страницу при следующей записи.
 """
 
+import contextlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -61,8 +63,10 @@ class StateFileFormTests(unittest.TestCase):
         for body in ("[]", '"text"', "7", "null"):
             with self.subTest(body=body):
                 self.write("window.STATE = " + body)
-                with self.assertRaises(SystemExit):
+                # stdout в буфер: консоль Windows в CI не UTF-8, а сообщение русское (тесты-подпроцессы идут с -X utf8)
+                with contextlib.redirect_stdout(io.StringIO()) as out, self.assertRaises(SystemExit):
                     sync.read_state()
+                self.assertIn("не запись прогона", out.getvalue())
 
 
 class MalformedRecordTests(unittest.TestCase):
@@ -147,7 +151,7 @@ class ServeOwnershipTests(unittest.TestCase):
 
 class MainArgumentsTests(unittest.TestCase):
     def test_an_unknown_argument_is_a_usage_error_not_a_silent_sync(self):
-        with mock.patch.object(sys, "argv", ["sync.py", "--no-serv"]), \
+        with contextlib.redirect_stdout(io.StringIO()), mock.patch.object(sys, "argv", ["sync.py", "--no-serv"]), \
                 mock.patch.object(sync, "read_state", side_effect=AssertionError("ordinary sync ran")), \
                 mock.patch.object(sync, "serve", side_effect=AssertionError("server touched")), \
                 self.assertRaises(SystemExit) as raised:
@@ -164,7 +168,9 @@ class ReadModesOnMalformedRecordTests(unittest.TestCase):
     def test_other_window_on_a_list_record_is_unknown_not_a_crash(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "state.js").write_text("window.STATE = [1]", encoding="utf-8")
-            self.assertEqual(sync.check_other_window(tmp), 3)
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(sync.check_other_window(tmp), 3)
+            self.assertIn("unknown", out.getvalue())
 
 
 if __name__ == "__main__":
