@@ -80,6 +80,8 @@
 проверить нечем (нет zone или commit, коммита нет в git, git не ответил), 2 — ошибка вызова.
 """
 
+import base64
+import binascii
 import hashlib
 import json
 import os
@@ -200,11 +202,27 @@ def _query_timeout(seconds):
     return seconds * 4 if os.name == "nt" else seconds
 
 
+# Строка запуска процесса на Windows приходит из PowerShell, а PowerShell печатает в кодовой странице консоли (на русской
+# Windows это 866), тогда как Python читает вывод в локальной (cp1251). Русская буква в пути (`C:\Users\а\...`) портилась,
+# путь переставал совпадать с каталогом прогона, процесс считался чужим, и каждая синхронизация поднимала ещё один
+# сервер: на живом прогоне 2026-10-06 их осталось семь. Поэтому строка едет как base64 от UTF-8, чистый ASCII.
+POWERSHELL_BASE64 = "[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes([string]%s))"
+
+
+def _from_base64(text):
+    """Строка base64 от PowerShell -> текст UTF-8. Не разобралась: пустая строка, не искажённый путь."""
+    try:
+        return base64.b64decode(text.strip(), validate=True).decode("utf-8")
+    except (ValueError, binascii.Error):
+        return ""
+
+
 def cmdline(pid):
     if os.name == "nt":
         command = (
-            "(Get-CimInstance -ClassName Win32_Process -Filter "
-            "'ProcessId = %d' -ErrorAction Stop).CommandLine" % int(pid)
+            "$process = Get-CimInstance -ClassName Win32_Process -Filter "
+            "'ProcessId = %d' -ErrorAction Stop; " % int(pid)
+            + POWERSHELL_BASE64 % "$process.CommandLine"
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
@@ -212,7 +230,9 @@ def cmdline(pid):
     try:
         result = subprocess.run(argv, capture_output=True, text=True,
                                 timeout=_query_timeout(5), check=False)
-        return result.stdout.strip() if result.returncode == 0 else ""
+        if result.returncode != 0:
+            return ""
+        return _from_base64(result.stdout) if os.name == "nt" else result.stdout.strip()
     except (OSError, subprocess.SubprocessError, ValueError, TypeError):
         return ""
 
@@ -253,7 +273,7 @@ def iter_processes():
     if os.name == "nt":
         command = (
             "Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object { "
-            "'{0}{1}{2}' -f $_.ProcessId, [char]31, $_.CommandLine }"
+            "'{0}{1}{2}' -f $_.ProcessId, [char]31, " + POWERSHELL_BASE64 % "$_.CommandLine" + " }"
         )
         argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
     else:
@@ -270,6 +290,8 @@ def iter_processes():
     for line in output.splitlines():
         stripped = line.strip()
         pid_text, separator, command = stripped.partition(PROCESS_DELIMITER)
+        if separator and os.name == "nt":
+            command = _from_base64(command)
         if not separator:
             pid_text, separator, command = stripped.partition(" ")
         if separator and pid_text.isdigit():
@@ -1111,8 +1133,44 @@ def audit(state):
         if t.get("status") == "done" and not t.get("finishedAt"):
             out.append("таск %s закрыт без finishedAt" % t.get("id"))
     out.extend(closure_findings(state))
+    out.extend(audit_shapes(state))
     out.extend(audit_caps(state))
     out.extend(audit_dials(state))
+    return out
+
+
+def _count(value):
+    """Целое число (не bool, не строка, не дробь)."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def audit_shapes(state):
+    """Запись, у которой страница не может прочесть своё. Не переход и не потолок: форма полей.
+
+    Найдено на третьем пробном прогоне (2026-10-06, Windows): агент закрыл шесть этапов как `done` без `startedAt`, и
+    страница писала «не начат» рядом с зелёной точкой и «8 из 8 этапов пройдено»; итог слепой приёмки он записал как
+    `{verdict, drift}` вместо `{matched, checked, mismatches}`, и страница показала «/ требований подтверждено» без чисел
+    рядом с «Расхождений нет». Форма `blind` в инструкциях тогда нигде не была описана (теперь — `phases/7-instruments.md`).
+    Тут называются только эти две формы (этап без finishedAt уже назван выше, второй раз его не повторяем): старые записи без `blind` и со строкой в `tests` (она допустима, `fmtTests`
+    читает и строку) молчат. Поле, которого нет, не нарушение: audit молчит о том, чего не видит.
+    """
+    out = []
+    unopened = [str(s.get("id")) for s in _dicts(state.get("stages"))
+                if s.get("status") == "done" and s.get("finishedAt") and not s.get("startedAt")]
+    if unopened:
+        out.append("этапы %s закрыты как done без startedAt: на странице они «пройдены» без времени; если этап не шёл — "
+                   "пометь skipped с причиной, если шёл — впиши startedAt" % ", ".join(unopened))
+    blind = state.get("blind")
+    if blind is not None:
+        if not isinstance(blind, dict):
+            out.append("blind записан не объектом: ожидалось {matched, checked, mismatches}")
+        else:
+            lacking = [name for name in ("matched", "checked") if not _count(blind.get(name))]
+            if lacking:
+                out.append("blind без чисел %s (ожидалось {matched, checked, mismatches}): страница не покажет итог "
+                           "слепой приёмки" % ", ".join(lacking))
+            elif not isinstance(blind.get("mismatches"), list):
+                out.append("blind без списка mismatches: страница не скажет, были ли расхождения")
     return out
 
 

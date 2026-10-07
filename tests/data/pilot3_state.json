@@ -1,0 +1,142 @@
+{
+  "slug": "expense-summary-cli",
+  "dir": "2026-10-06-expense-summary-cli",
+  "title": "Консольные итоги расходов",
+  "mode": "semi",
+  "depth": "normal",
+  "polish": null,
+  "tier": "T0",
+  "briefFile": "2026-10-06-brief.md",
+  "briefSeals": {
+    "2026-10-06-brief.md": "4372fb939245e6c42a089ae5c8df8986e22ceed42bc25fbeac7cbc5c89ca7e2e"
+  },
+  "memorySeals": {
+    "CLAUDE.md": "832a4de3d88117c32e067d9971fd8469c9517f009d493503f81afcd864533ce2"
+  },
+  "memoryFile": "CLAUDE.md",
+  "skillDir": "C:/Users/а/.claude/skills/autopilot-jet",
+  "startedAt": "2026-10-06T15:38:14+03:00",
+  "updatedAt": "2026-10-06T15:42:48+03:00",
+  "finishedAt": "2026-10-06T15:42:48+03:00",
+  "stages": [
+    {
+      "id": "preflight",
+      "status": "done",
+      "startedAt": "2026-10-06T15:38:14+03:00",
+      "finishedAt": "2026-10-06T15:38:42+03:00"
+    },
+    {
+      "id": "manifest",
+      "status": "done",
+      "startedAt": "2026-10-06T15:38:42+03:00",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "briefing",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "spec",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "plan",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "build",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "review",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    },
+    {
+      "id": "final",
+      "status": "done",
+      "finishedAt": "2026-10-06T15:42:48+03:00"
+    }
+  ],
+  "requirements": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "inTicket": 0,
+    "inSpec": 0,
+    "placeholder": 0,
+    "deferred": 0,
+    "dropped": 0
+  },
+  "tickets": [],
+  "singlePass": {
+    "files": [
+      "expenses.py",
+      "test_expenses.py"
+    ],
+    "tests": "python -m unittest -> 12 passed",
+    "startedAt": null,
+    "finishedAt": "2026-10-06T15:42:48+03:00"
+  },
+  "tests": "12 passed",
+  "debt": {
+    "placeholders": [],
+    "assumptions": [],
+    "emptyEnv": []
+  },
+  "additions": [],
+  "coverage": {
+    "findings": 0,
+    "note": "G2: пропусков нет; сверх брифа — только проработка R07i/R08i (ASSUMPTION)"
+  },
+  "concerns": [
+    {
+      "file": "test_expenses.py",
+      "line": 45,
+      "note": "test_columns_are_aligned слабый: сравнивает только длины строк",
+      "verdict": "report"
+    },
+    {
+      "file": "test_expenses.py",
+      "line": 103,
+      "note": "assertIn по всему выводу вместо строки итогов",
+      "verdict": "report"
+    },
+    {
+      "file": "test_expenses.py",
+      "line": 98,
+      "note": "тест вызова без аргументов не проверяет пустой stdout",
+      "verdict": "report"
+    },
+    {
+      "file": "test_expenses.py",
+      "line": 80,
+      "note": "тесты ошибок файла не проверяют текст и путь в сообщении",
+      "verdict": "report"
+    },
+    {
+      "file": "expenses.py",
+      "line": 58,
+      "note": "первая строка с ≥3 полями и нечитаемой датой молча считается заголовком — по спецификации",
+      "verdict": "drop"
+    },
+    {
+      "file": "expenses.py",
+      "line": 96,
+      "note": "близкие имена cells/cells_text",
+      "verdict": "drop"
+    }
+  ],
+  "reviewers": {
+    "manifestSpec": "inline (T0)",
+    "craft": "одноразовый субагент, BLOCKING: нет"
+  },
+  "blind": {
+    "verdict": "все 5 требований брифа реализованы",
+    "drift": []
+  }
+}
